@@ -486,7 +486,9 @@ class PlaybackViewModel
                     }
                 val mediaSource =
                     if (!isLiveTv) {
-                        streamChoiceService.chooseSource(base, itemPlayback)
+                        streamChoiceService
+                            .chooseSource(base, itemPlayback)
+                            ?.let { withPlaybackInfoStreams(base.id, it) }
                     } else {
                         null
                     }

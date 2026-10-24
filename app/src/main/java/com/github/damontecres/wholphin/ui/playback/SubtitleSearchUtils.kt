@@ -141,7 +141,9 @@ fun PlaybackViewModel.downloadAndSwitchSubtitles(
                                 is PlaylistItem.Media -> PlaylistItem.Media(base)
                             }
                         mediaSource =
-                            base.data.mediaSources?.firstOrNull { it.id?.toUUIDOrNull() == currentPlayback.sourceId }
+                            base.data.mediaSources
+                                ?.firstOrNull { it.id?.toUUIDOrNull() == currentPlayback.sourceId }
+                                ?.let { withPlaybackInfoStreams(currentPlayback.itemId, it) }
                         if (mediaSource == null) {
                             // This shouldn't happen, but just in case
                             showToast(
