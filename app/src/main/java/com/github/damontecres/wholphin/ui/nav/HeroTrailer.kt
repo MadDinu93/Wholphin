@@ -12,26 +12,30 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
@@ -45,8 +49,25 @@ import androidx.media3.ui.compose.PlayerSurface
 import androidx.media3.ui.compose.SURFACE_TYPE_TEXTURE_VIEW
 import com.github.damontecres.wholphin.services.HeroTrailerService
 import com.github.damontecres.wholphin.services.HeroTrailerSource
+import com.github.damontecres.wholphin.ui.AspectRatios
 import kotlinx.coroutines.delay
+import kotlin.math.min
+import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.seconds
+
+/**
+ * Where the hero ends on screen, so the trailer can stay above the rows below it
+ */
+@Stable
+class HeroTrailerArea {
+    /** Bottom of the hero in root coordinates, 0 while no hero is shown */
+    var bottom by mutableFloatStateOf(0f)
+}
+
+/**
+ * Provided by [ApplicationContent] for the page showing the hero to report its [HeroTrailerArea]
+ */
+val LocalHeroTrailerArea = compositionLocalOf<HeroTrailerArea?> { null }
 
 /**
  * Plays the [HeroTrailerService]'s current trailer where the [Backdrop] image is, fading in once the video is playing
@@ -54,6 +75,7 @@ import kotlin.time.Duration.Companion.seconds
 @Composable
 fun HeroTrailerBackdrop(
     heroTrailerService: HeroTrailerService,
+    area: HeroTrailerArea,
     muted: Boolean,
     modifier: Modifier = Modifier,
 ) {
@@ -67,29 +89,49 @@ fun HeroTrailerBackdrop(
             targetState = source,
             animationSpec = tween(600),
             label = "hero_trailer",
-            // Same area and fades as the backdrop image, so the video takes its place
+            // Where the backdrop image is with the same fades, so the video takes its place, but only as tall as
+            // the hero so it does not reach the rows, and 16:9 so the video is shown whole, neither cropped nor
+            // stretched
             modifier =
                 Modifier
                     .align(Alignment.TopEnd)
-                    .fillMaxHeight(.7f)
-                    .fillMaxWidth(.7f)
+                    // Read in the layout phase, the hero moves with the top bar
+                    .layout { measurable, constraints ->
+                        val maxHeight = constraints.maxHeight * .7f
+                        val height = area.bottom.takeIf { it > 0f }?.coerceAtMost(maxHeight) ?: maxHeight
+                        val width = min(height * AspectRatios.WIDE, constraints.maxWidth * .7f)
+                        val placeable =
+                            measurable.measure(
+                                Constraints.fixed(width.roundToInt(), (width / AspectRatios.WIDE).roundToInt()),
+                            )
+                        layout(placeable.width, placeable.height) { placeable.place(0, 0) }
+                    }.clipToBounds()
                     .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
                     .drawWithContent {
+                        // Only the edges fade, the rest of the video stays opaque. The top one also hides the black
+                        // bars many trailers have in the video itself
                         val start = if (isRtl) size.width else 0f
+                        val end = if (isRtl) 0f else size.width
                         drawContent()
                         drawRect(
                             brush =
                                 Brush.horizontalGradient(
-                                    colors = listOf(Color.Transparent, Color.Black),
+                                    colorStops = arrayOf(0f to Color.Transparent, .35f to Color.Black),
                                     startX = start,
-                                    endX = size.width * 0.6f,
+                                    endX = end,
                                 ),
                             blendMode = BlendMode.DstIn,
                         )
                         drawRect(
                             brush =
                                 Brush.verticalGradient(
-                                    colorStops = arrayOf(0f to Color.Black, .6f to Color.Black, 1f to Color.Transparent),
+                                    colorStops =
+                                        arrayOf(
+                                            0f to Color.Transparent,
+                                            .12f to Color.Black,
+                                            .7f to Color.Black,
+                                            1f to Color.Transparent,
+                                        ),
                                 ),
                             blendMode = BlendMode.DstIn,
                         )
@@ -271,7 +313,10 @@ private fun youTubeCleanupScript(muted: Boolean): String =
       var style = document.createElement('style');
       style.textContent =
         '* { visibility: hidden !important; }' +
-        'video { visibility: visible !important; object-fit: cover !important; }' +
+        // The player places the video with offsets of its own, pinned here so it fills the frame exactly
+        'video { visibility: visible !important; object-fit: cover !important; position: fixed !important;' +
+        ' top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important;' +
+        ' margin: 0 !important; transform: none !important; }' +
         'html, body { background: transparent !important; }';
       function keepStyle() {
         if (!style.isConnected) (document.head || document.documentElement).appendChild(style);

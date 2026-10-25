@@ -87,7 +87,11 @@ val LocalTopNavBarState = compositionLocalOf<TopNavBarState?> { null }
 /** Vertical space the bar takes above the page content */
 val TopNavBarHeight = 76.dp
 
-private val TopNavContentStartPadding = 48.dp
+/** Distance of the cards and the bar from both screen edges, so the pages are centered on the screen */
+private val TopNavContentHorizontalPadding = 32.dp
+
+/** Rows and grids add this much of their own at the start, so it is left out there to keep both sides equal */
+private val TopNavContentStartInset = 16.dp
 
 /**
  * Apple TV style navigation: a row of tabs at the top of the root pages instead of the side drawer
@@ -152,7 +156,10 @@ fun TopNavigation(
                 modifier =
                     Modifier
                         .fillMaxSize()
-                        .padding(start = TopNavContentStartPadding, end = 16.dp)
+                        .padding(
+                            start = TopNavContentHorizontalPadding - TopNavContentStartInset,
+                            end = TopNavContentHorizontalPadding,
+                        )
                         // Read in the layout phase so the animation does not recompose the page
                         .layout { measurable, constraints ->
                             val top = topPadding.value.roundToPx()
@@ -173,7 +180,7 @@ fun TopNavigation(
                         .graphicsLayer {
                             alpha = barProgress.value
                             translationY = -(1f - barProgress.value) * size.height
-                        }.padding(start = TopNavContentStartPadding, end = 48.dp, top = 16.dp, bottom = 8.dp)
+                        }.padding(start = TopNavContentHorizontalPadding, end = TopNavContentHorizontalPadding, top = 16.dp, bottom = 8.dp)
                         .onFocusChanged { barFocused = it.hasFocus }
                         .focusGroup()
                         .focusProperties {

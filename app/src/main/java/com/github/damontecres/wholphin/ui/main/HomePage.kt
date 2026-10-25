@@ -38,6 +38,8 @@ import androidx.compose.ui.focus.focusRestorer
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
@@ -83,6 +85,7 @@ import com.github.damontecres.wholphin.ui.detail.PlaylistDialog
 import com.github.damontecres.wholphin.ui.indexOfFirstOrNull
 import com.github.damontecres.wholphin.ui.isNotNullOrBlank
 import com.github.damontecres.wholphin.ui.nav.Destination
+import com.github.damontecres.wholphin.ui.nav.LocalHeroTrailerArea
 import com.github.damontecres.wholphin.ui.nav.LocalTopNavBarState
 import com.github.damontecres.wholphin.ui.playback.isPlayKeyUp
 import com.github.damontecres.wholphin.ui.playback.playable
@@ -386,7 +389,21 @@ fun HomePageContent(
                     }.fillMaxSize(),
         ) {
             if (showHero) {
-                headerComposable.invoke(focusedItem)
+                val heroTrailerArea = LocalHeroTrailerArea.current
+                if (heroTrailerArea != null) {
+                    DisposableEffect(heroTrailerArea) { onDispose { heroTrailerArea.bottom = 0f } }
+                }
+                Box(
+                    modifier =
+                        if (heroTrailerArea != null) {
+                            // Tells the trailer where the hero ends, so it stays above the rows
+                            Modifier.onGloballyPositioned { heroTrailerArea.bottom = it.boundsInRoot().bottom }
+                        } else {
+                            Modifier
+                        },
+                ) {
+                    headerComposable.invoke(focusedItem)
+                }
             }
 
             val density = LocalDensity.current

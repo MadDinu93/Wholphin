@@ -4,7 +4,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -71,46 +73,50 @@ fun ApplicationContent(
             viewModel = viewModel,
             hideImage = heroTrailerPlaying,
         )
+        val heroTrailerArea = remember { HeroTrailerArea() }
         HeroTrailerBackdrop(
             heroTrailerService = viewModel.heroTrailerService,
+            area = heroTrailerArea,
             muted = preferences.appPreferences.interfacePreferences.muteHeroTrailer,
         )
         val navDrawerListState = rememberLazyListState()
-        NavDisplay(
-            backStack = navigationManager.backStack,
-            onBack = { navigationManager.goBack() },
-            entryDecorators =
-                listOf(
-                    rememberSaveableStateHolderNavEntryDecorator(),
-                    rememberViewModelStoreNavEntryDecorator(),
-                ),
-            entryProvider = { key ->
-                key as Destination
-                val contentKey = "${key}_${server?.id}_${user?.id}"
-                NavEntry(key, contentKey = contentKey) {
-                    if (key.fullScreen) {
-                        DestinationContent(
-                            destination = key,
-                            preferences = preferences,
-                            onClearBackdrop = viewModel::clearBackdrop,
-                            modifier = Modifier.fillMaxSize(),
-                        )
-                    } else if (user != null && server != null) {
-                        NavDrawer(
-                            destination = key,
-                            preferences = preferences,
-                            user = user,
-                            server = server,
-                            drawerState = drawerState,
-                            navDrawerListState = navDrawerListState,
-                            onClearBackdrop = viewModel::clearBackdrop,
-                            modifier = Modifier.fillMaxSize(),
-                        )
-                    } else {
-                        ErrorMessage("Trying to go to $key without a user logged in", null)
+        CompositionLocalProvider(LocalHeroTrailerArea provides heroTrailerArea) {
+            NavDisplay(
+                backStack = navigationManager.backStack,
+                onBack = { navigationManager.goBack() },
+                entryDecorators =
+                    listOf(
+                        rememberSaveableStateHolderNavEntryDecorator(),
+                        rememberViewModelStoreNavEntryDecorator(),
+                    ),
+                entryProvider = { key ->
+                    key as Destination
+                    val contentKey = "${key}_${server?.id}_${user?.id}"
+                    NavEntry(key, contentKey = contentKey) {
+                        if (key.fullScreen) {
+                            DestinationContent(
+                                destination = key,
+                                preferences = preferences,
+                                onClearBackdrop = viewModel::clearBackdrop,
+                                modifier = Modifier.fillMaxSize(),
+                            )
+                        } else if (user != null && server != null) {
+                            NavDrawer(
+                                destination = key,
+                                preferences = preferences,
+                                user = user,
+                                server = server,
+                                drawerState = drawerState,
+                                navDrawerListState = navDrawerListState,
+                                onClearBackdrop = viewModel::clearBackdrop,
+                                modifier = Modifier.fillMaxSize(),
+                            )
+                        } else {
+                            ErrorMessage("Trying to go to $key without a user logged in", null)
+                        }
                     }
-                }
-            },
-        )
+                },
+            )
+        }
     }
 }

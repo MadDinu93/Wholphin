@@ -1,6 +1,7 @@
 package com.github.damontecres.wholphin.ui.preferences
 
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -8,6 +9,7 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -21,7 +23,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -34,12 +38,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.tv.material3.ListItem
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import androidx.tv.material3.surfaceColorAtElevation
@@ -107,8 +113,11 @@ fun PreferencesContent(
     val firstFocusRequester = remember { FocusRequester() }
     val lastFocusRequester = remember { FocusRequester() }
 
+    // The selected category and the setting focused in it
     var focusedIndex by rememberSaveable { mutableStateOf(Pair(0, 0)) }
-    val state = rememberLazyListState()
+    // Whether focus was on the settings rather than the categories, so coming back from a sub screen restores it
+    var focusInPreferences by rememberSaveable { mutableStateOf(false) }
+    val categoryFocusRequester = remember { FocusRequester() }
     var preferences by remember { mutableStateOf(initialPreferences) }
     val currentUser by viewModel.currentUser.collectAsState()
     var showPinFlow by remember { mutableStateOf(false) }
@@ -201,94 +210,134 @@ fun PreferencesContent(
             preferences.autoCheckForUpdates &&
             updateAvailable
 
+    val selectedGroup = focusedIndex.first.coerceIn(0, prefList.lastIndex)
+    // Each category starts at its top
+    val state = remember(selectedGroup) { LazyListState() }
+
+    BackHandler(enabled = focusInPreferences) {
+        // Back from a setting first returns to its category
+        categoryFocusRequester.tryRequestFocus()
+    }
+
     AnimatedVisibility(
         visible = visible,
-        enter = fadeIn() + slideInHorizontally { it / 2 },
-        exit = fadeOut() + slideOutHorizontally { it / 2 },
+        enter = fadeIn() + slideInHorizontally { -it / 4 },
+        exit = fadeOut() + slideOutHorizontally { -it / 4 },
         modifier = modifier,
     ) {
         LaunchedEffect(Unit) {
-            focusRequester.tryRequestFocus()
+            if (!focusInPreferences || !focusRequester.tryRequestFocus()) {
+                categoryFocusRequester.tryRequestFocus()
+            }
         }
-        Column(
-            modifier = Modifier.background(MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)),
+        // The categories on the left, the settings of the focused category on the right
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(32.dp),
+            modifier = Modifier.fillMaxSize(),
         ) {
-            Text(
-                text = stringResource(screenTitle),
-                style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.onSurface,
-                textAlign = TextAlign.Center,
+            Column(
                 modifier =
                     Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp),
-            )
-            LazyColumn(
-                state = state,
-                horizontalAlignment = Alignment.Start,
-                verticalArrangement = Arrangement.spacedBy(0.dp),
-                contentPadding = PaddingValues(16.dp),
-                modifier = Modifier.fillMaxSize(),
+                        .fillMaxWidth(.3f)
+                        .fillMaxHeight()
+                        .background(
+                            MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp),
+                            RoundedCornerShape(12.dp),
+                        ).focusGroup()
+                        .focusProperties {
+                            onEnter = { categoryFocusRequester.tryRequestFocus() }
+                        },
             ) {
-                if (showUpdate) {
-                    item {
-                        val interactionSource = remember { MutableInteractionSource() }
-                        val focused = interactionSource.collectIsFocusedAsState().value
-                        val updateFocusRequester = remember { FocusRequester() }
-                        LaunchedEffect(Unit) {
-                            if (focusedIndex.first == 0 && focusedIndex.second == 0) {
-                                // Only re-focus if the user hasn't moved
-                                updateFocusRequester.tryRequestFocus()
+                Text(
+                    text = stringResource(screenTitle),
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
+                )
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    contentPadding = PaddingValues(start = 12.dp, end = 12.dp, bottom = 16.dp),
+                    modifier = Modifier.fillMaxSize(),
+                ) {
+                    if (showUpdate) {
+                        item {
+                            val updateFocusRequester = remember { FocusRequester() }
+                            LaunchedEffect(Unit) {
+                                if (focusedIndex.first == 0 && focusedIndex.second == 0 && !focusInPreferences) {
+                                    // Only re-focus if the user hasn't moved
+                                    updateFocusRequester.tryRequestFocus()
+                                }
                             }
+                            ClickPreference(
+                                title = stringResource(R.string.install_update),
+                                onClick = {
+                                    if (movementSounds) playOnClickSound(context)
+                                    viewModel.navigationManager.navigateTo(Destination.UpdateApp)
+                                },
+                                summary = release?.version?.toString(),
+                                modifier =
+                                    Modifier
+                                        .focusRequester(updateFocusRequester)
+                                        .playSoundOnFocus(movementSounds),
+                            )
                         }
-                        ClickPreference(
-                            title = stringResource(R.string.install_update),
-                            onClick = {
-                                if (movementSounds) playOnClickSound(context)
-                                viewModel.navigationManager.navigateTo(Destination.UpdateApp)
-                            },
-                            summary = release?.version?.toString(),
-                            interactionSource = interactionSource,
+                    }
+                    itemsIndexed(prefList) { groupIndex, group ->
+                        ListItem(
+                            selected = groupIndex == selectedGroup,
+                            onClick = { focusRequester.tryRequestFocus() },
+                            headlineContent = { PreferenceTitle(stringResource(group.title)) },
                             modifier =
                                 Modifier
-                                    .focusRequester(updateFocusRequester)
-                                    .focusRequester(firstFocusRequester)
-                                    .playSoundOnFocus(movementSounds)
-                                    .lazyListWrapScrolling(
-                                        state = state,
-                                        focused = focused,
-                                        isFirst = true,
-                                        isLast = false,
-                                        firstFocusRequester = firstFocusRequester,
-                                        lastFocusRequester = lastFocusRequester,
-                                    ),
+                                    .ifElse(
+                                        groupIndex == selectedGroup,
+                                        Modifier.focusRequester(categoryFocusRequester),
+                                    ).onFocusChanged {
+                                        if (it.isFocused) {
+                                            focusInPreferences = false
+                                            if (groupIndex != selectedGroup) focusedIndex = Pair(groupIndex, 0)
+                                        }
+                                    },
                         )
                     }
                 }
-                prefList.forEachIndexed { groupIndex, group ->
-                    item {
-                        Text(
-                            text = stringResource(group.title),
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            textAlign = TextAlign.Start,
-                            modifier =
-                                Modifier
-                                    .fillMaxWidth()
-                                    .padding(top = 8.dp, bottom = 4.dp),
-                        )
-                    }
-                    val groupPreferences =
-                        group.preferences +
-                            group.conditionalPreferences
-                                .filter { it.condition.invoke(preferences) }
-                                .map { it.preferences }
-                                .flatten()
+            }
+            val groupIndex = selectedGroup
+            val group = prefList[groupIndex]
+            val groupPreferences =
+                group.preferences +
+                    group.conditionalPreferences
+                        .filter { it.condition.invoke(preferences) }
+                        .map { it.preferences }
+                        .flatten()
+            Column(
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .onFocusChanged { if (it.hasFocus) focusInPreferences = true }
+                        .focusGroup()
+                        .focusProperties {
+                            onEnter = { focusRequester.tryRequestFocus() }
+                        },
+            ) {
+                Text(
+                    text = stringResource(group.title),
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 16.dp),
+                )
+                LazyColumn(
+                    state = state,
+                    horizontalAlignment = Alignment.Start,
+                    verticalArrangement = Arrangement.spacedBy(0.dp),
+                    contentPadding = PaddingValues(bottom = 16.dp),
+                    modifier = Modifier.fillMaxSize(),
+                ) {
                     groupPreferences.forEachIndexed { prefIndex, pref ->
                         pref as AppPreference<AppPreferences, Any>
-                        val isFirst = groupIndex == 0 && prefIndex == 0 && !showUpdate
-                        val isLast =
-                            groupIndex == prefList.lastIndex && prefIndex == groupPreferences.lastIndex
+                        val isFirst = prefIndex == 0
+                        val isLast = prefIndex == groupPreferences.lastIndex
                         item {
                             val interactionSource = remember { MutableInteractionSource() }
                             val focused = interactionSource.collectIsFocusedAsState().value
@@ -843,9 +892,8 @@ fun PreferencesPage(
                     initialPreferences,
                     preferenceScreenOption,
                     Modifier
-                        .fillMaxWidth(.4f)
-                        .fillMaxHeight()
-                        .align(Alignment.TopEnd),
+                        .fillMaxSize()
+                        .padding(horizontal = 48.dp, vertical = 27.dp),
                 )
             }
         }
