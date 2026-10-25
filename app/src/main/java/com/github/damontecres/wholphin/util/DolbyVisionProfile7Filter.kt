@@ -89,11 +89,31 @@ class DolbyVisionProfile7Filter(
     /** The access unit without its enhancement layer, where libdovi rewrites the RPU. Direct, because the native code needs its address. */
     private var scratch: ByteBuffer? = null
 
+    private var profileConfirmed = false
+
+    private var timedCount = 0
+    private var timedNanos = 0L
+    private var timedMaxNanos = 0L
+    private var timedBytes = 0L
+
     private var convertedCount = 0
     private var passedThroughCount = 0
     private var refusedCount = 0
 
     override fun filter(
+        data: ByteBuffer,
+        offset: Int,
+        size: Int,
+    ): Int {
+        val started = System.nanoTime()
+        try {
+            return convert(data, offset, size)
+        } finally {
+            recordTiming(System.nanoTime() - started, size)
+        }
+    }
+
+    private fun convert(
         data: ByteBuffer,
         offset: Int,
         size: Int,
@@ -105,18 +125,24 @@ class DolbyVisionProfile7Filter(
 
         val staging = staging(size)
         window(data, offset, size).get(staging, 0, size)
-        if (!carriesRpu(staging, size)) {
+
+        // One walk over the access unit both drops the enhancement layer and looks for the RPU:
+        // on a 32-bit TV every extra pass over a multi megabyte UHD frame shows up as stutter
+        val scratch = scratch(size + RPU_GROWTH_HEADROOM_BYTES)
+        val kept = copyWithoutEnhancementLayer(staging, size, scratch)
+        if (kept < 0) {
             passedThroughCount++
             return size
         }
-
-        val scratch = scratch(size + RPU_GROWTH_HEADROOM_BYTES)
-        val kept = copyWithoutEnhancementLayer(staging, size, scratch)
         val converted =
             try {
-                if (rewriter.profileOf(scratch, kept) != DOLBY_VISION_PROFILE_7) {
-                    passedThroughCount++
-                    return size
+                // The profile does not change within a stream, so libdovi parses it once
+                if (!profileConfirmed) {
+                    if (rewriter.profileOf(scratch, kept) != DOLBY_VISION_PROFILE_7) {
+                        passedThroughCount++
+                        return size
+                    }
+                    profileConfirmed = true
                 }
                 rewriter.convertToProfile8(scratch, kept)
             } catch (e: RuntimeException) {
@@ -131,6 +157,31 @@ class DolbyVisionProfile7Filter(
         window(data, offset, converted).put(window(scratch, 0, converted))
         convertedCount++
         return converted
+    }
+
+    private fun recordTiming(
+        nanos: Long,
+        size: Int,
+    ) {
+        timedCount++
+        timedNanos += nanos
+        timedBytes += size
+        if (nanos > timedMaxNanos) {
+            timedMaxNanos = nanos
+        }
+        if (timedCount == TIMING_LOG_INTERVAL) {
+            Timber.i(
+                "Profile 7 filter: %d access units, avg %d us, max %d us, avg %d KB",
+                timedCount,
+                timedNanos / timedCount / 1000,
+                timedMaxNanos / 1000,
+                timedBytes / timedCount / 1024,
+            )
+            timedCount = 0
+            timedNanos = 0
+            timedMaxNanos = 0
+            timedBytes = 0
+        }
     }
 
     private fun rewriter(): RpuRewriter? {
@@ -199,6 +250,9 @@ class DolbyVisionProfile7Filter(
          */
         const val RPU_GROWTH_HEADROOM_BYTES = 4 * 1024
 
+        /** About ten seconds of 24 fps video between timing log lines. */
+        const val TIMING_LOG_INTERVAL = 240
+
         private fun startsWithStartCode(
             data: ByteBuffer,
             offset: Int,
@@ -215,28 +269,10 @@ class DolbyVisionProfile7Filter(
                 )
         }
 
-        /** Whether the Annex B access unit in `[0, length)` of [source] carries an RPU. */
-        private fun carriesRpu(
-            source: ByteArray,
-            length: Int,
-        ): Boolean {
-            var unit = 0
-            while (unit < length) {
-                val payload = unit + startCodeLength(source, unit)
-                if (payload >= length) {
-                    return false
-                }
-                if (nalUnitType(source[payload]) == NAL_UNIT_TYPE_RPU) {
-                    return true
-                }
-                unit = nextStartCode(source, payload, length)
-            }
-            return false
-        }
-
         /**
          * Copies the Annex B access unit in `[0, length)` of [source] into [target] from index 0,
-         * leaving out every enhancement layer NAL unit, and returns the number of bytes copied.
+         * leaving out every enhancement layer NAL unit, and returns the number of bytes copied, or
+         * -1 when the access unit carries no RPU and so has nothing to convert.
          */
         fun copyWithoutEnhancementLayer(
             source: ByteArray,
@@ -245,6 +281,7 @@ class DolbyVisionProfile7Filter(
         ): Int {
             var unit = 0
             var written = 0
+            var rpuFound = false
             while (unit < length) {
                 val payload = unit + startCodeLength(source, unit)
                 if (payload >= length) {
@@ -254,13 +291,17 @@ class DolbyVisionProfile7Filter(
                     break
                 }
                 val next = nextStartCode(source, payload, length)
-                if (nalUnitType(source[payload]) != NAL_UNIT_TYPE_ENHANCEMENT_LAYER) {
+                val type = nalUnitType(source[payload])
+                if (type == NAL_UNIT_TYPE_RPU) {
+                    rpuFound = true
+                }
+                if (type != NAL_UNIT_TYPE_ENHANCEMENT_LAYER) {
                     target.put(source, unit, next - unit)
                     written += next - unit
                 }
                 unit = next
             }
-            return written
+            return if (rpuFound) written else -1
         }
 
         /**
@@ -300,12 +341,21 @@ class DolbyVisionProfile7Filter(
             from: Int,
             limit: Int,
         ): Int {
+            // Looks at every third byte: a byte above 1 cannot be part of a start code, so the
+            // two positions before it are skipped too
             var i = from
             while (i + 2 < limit) {
-                if (data[i] == 0.toByte() && data[i + 1] == 0.toByte() && data[i + 2] == 1.toByte()) {
-                    return if (i > from && data[i - 1] == 0.toByte()) i - 1 else i
+                val third = data[i + 2].toInt() and 0xFF
+                if (third > 1) {
+                    i += 3
+                } else if (third == 1) {
+                    if (data[i] == 0.toByte() && data[i + 1] == 0.toByte()) {
+                        return if (i > from && data[i - 1] == 0.toByte()) i - 1 else i
+                    }
+                    i += 3
+                } else {
+                    i++
                 }
-                i++
             }
             return limit
         }

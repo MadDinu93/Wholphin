@@ -180,7 +180,7 @@ class AppPreferencesSerializer
                         ExperimentalPreferences
                             .newBuilder()
                             .apply {
-                                enabled = false
+                                enabled = ExperimentalPreference.Enable.defaultValue
                                 videoTunnelingEnabled = false
                                 preferAc3Surround = ExperimentalPreference.PreferAc3ForSurround.defaultValue
                                 disableAudioOffload = ExperimentalPreference.DisableAudioOffload.defaultValue

@@ -10,7 +10,7 @@ object ExperimentalPreference {
     val Enable =
         AppSwitchPreference<AppPreferences>(
             title = R.string.experimental_settings,
-            defaultValue = false,
+            defaultValue = true,
             getter = { it.experimentalPreferences.enabled },
             setter = { prefs, value ->
                 prefs.updateExperimentalPreferences { enabled = value }
@@ -40,7 +40,7 @@ object ExperimentalPreference {
     val PreferDolbyVisionOverHdr10Plus =
         AppSwitchPreference<AppPreferences>(
             title = R.string.prefer_dovi_over_hdr10_plus,
-            defaultValue = false,
+            defaultValue = true,
             getter = { it.experimentalPreferences.preferDolbyVisionOverHdr10Plus },
             setter = { prefs, value ->
                 prefs.updateExperimentalPreferences { preferDolbyVisionOverHdr10Plus = value }
@@ -51,7 +51,7 @@ object ExperimentalPreference {
     val ConvertDolbyVisionProfile7 =
         AppSwitchPreference<AppPreferences>(
             title = R.string.convert_dovi_profile_7,
-            defaultValue = false,
+            defaultValue = true,
             getter = { it.experimentalPreferences.convertDolbyVisionProfile7 },
             setter = { prefs, value ->
                 prefs.updateExperimentalPreferences { convertDolbyVisionProfile7 = value }
