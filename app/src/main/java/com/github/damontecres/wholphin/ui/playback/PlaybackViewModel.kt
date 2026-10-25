@@ -111,6 +111,7 @@ import org.jellyfin.sdk.model.DeviceInfo
 import org.jellyfin.sdk.model.api.BaseItemKind
 import org.jellyfin.sdk.model.api.ImageType
 import org.jellyfin.sdk.model.api.MediaSegmentType
+import org.jellyfin.sdk.model.api.MediaSourceInfo
 import org.jellyfin.sdk.model.api.MediaStreamType
 import org.jellyfin.sdk.model.api.MediaType
 import org.jellyfin.sdk.model.api.PlayMethod
@@ -119,8 +120,6 @@ import org.jellyfin.sdk.model.api.PlaystateCommand
 import org.jellyfin.sdk.model.api.PlaystateMessage
 import org.jellyfin.sdk.model.api.PlaystateRequest
 import org.jellyfin.sdk.model.api.TrickplayInfo
-import org.jellyfin.sdk.model.api.VideoRange
-import org.jellyfin.sdk.model.api.VideoRangeType
 import org.jellyfin.sdk.model.extensions.inWholeTicks
 import org.jellyfin.sdk.model.extensions.ticks
 import org.jellyfin.sdk.model.serializer.toUUIDOrNull
@@ -191,6 +190,13 @@ class PlaybackViewModel
         internal var forceTranscoding: Boolean = false
         private var activityListener: TrackActivityPlaybackListener? = null
         private var trackChangeListener: TracksChangedListener? = null
+
+        /**
+         * The source the track menus were built from when its streams came from a separate PlaybackInfo
+         * request (see [withPlaybackInfoStreams]), until the indexes are checked against the source
+         * actually played
+         */
+        internal var playbackInfoStreamsSource: MediaSourceInfo? = null
         private val jobs = mutableListOf<Job>()
         private var subscribeJob: Job? = null
 
@@ -232,27 +238,50 @@ class PlaybackViewModel
             jobs.forEach { it.cancel() }
         }
 
-        private suspend fun createPlayer(
+        internal fun choosePlayerBackend(
             isHdr: Boolean,
             is4k: Boolean,
-        ) {
+        ): PlayerBackend {
             val softwareDecoding =
                 !preferences.appPreferences.playbackPreferences.mpvOptions.enableHardwareDecoding
             val requestBackend =
                 (destination as? Destination.Playback)?.backend
                     ?: preferences.appPreferences.playbackPreferences.playerBackend
-            val playerBackend =
-                when (requestBackend) {
-                    PlayerBackend.UNRECOGNIZED,
-                    PlayerBackend.EXO_PLAYER,
-                    -> PlayerBackend.EXO_PLAYER
+            return when (requestBackend) {
+                PlayerBackend.UNRECOGNIZED,
+                PlayerBackend.EXO_PLAYER,
+                -> PlayerBackend.EXO_PLAYER
 
-                    PlayerBackend.MPV -> PlayerBackend.MPV
+                PlayerBackend.MPV -> PlayerBackend.MPV
 
-                    PlayerBackend.PREFER_MPV -> if (isHdr || (is4k && softwareDecoding)) PlayerBackend.EXO_PLAYER else PlayerBackend.MPV
+                PlayerBackend.PREFER_MPV -> if (isHdr || (is4k && softwareDecoding)) PlayerBackend.EXO_PLAYER else PlayerBackend.MPV
 
-                    PlayerBackend.EXTERNAL_PLAYER -> throw IllegalStateException("Cannot use this for external playback")
-                }
+                PlayerBackend.EXTERNAL_PLAYER -> throw IllegalStateException("Cannot use this for external playback")
+            }
+        }
+
+        internal suspend fun deviceProfileFor(backend: PlayerBackend) =
+            if (backend == PlayerBackend.EXO_PLAYER) {
+                deviceProfileService.getOrCreateDeviceProfile(
+                    preferences.appPreferences,
+                    serverRepository.currentServer?.serverVersion,
+                )
+            } else {
+                mpvDeviceProfile
+            }
+
+        internal val maxStreamingBitrate: Int
+            get() =
+                (
+                    preferences.appPreferences.playbackPreferences.maxBitrate
+                        .takeIf { it > 0 } ?: AppPreference.DEFAULT_BITRATE
+                ).toInt()
+
+        private suspend fun createPlayer(
+            isHdr: Boolean,
+            is4k: Boolean,
+        ) {
+            val playerBackend = choosePlayerBackend(isHdr, is4k)
 
             Timber.d("Selected backend: %s", playerBackend)
             if (currentPlayer.value?.backend != playerBackend) {
@@ -513,18 +542,7 @@ class PlaybackViewModel
                     return@withContext false
                 }
 
-                val videoStream =
-                    mediaSource
-                        ?.mediaStreams
-                        ?.firstOrNull { it.type == MediaStreamType.VIDEO }
-                        ?.let {
-                            val isHdr =
-                                it.videoRange == VideoRange.HDR ||
-                                    (it.videoRangeType != VideoRangeType.SDR && it.videoRangeType != VideoRangeType.UNKNOWN)
-                            // Often times 4k movies have a wider aspect ratio so the height is lower even though the width is still 3840
-                            val is4k = (it.width ?: 0) > 2560 || (it.height ?: 0) > 1440
-                            SimpleVideoStream(it.index, isHdr, is4k)
-                        }
+                val videoStream = mediaSource?.simpleVideoStream()
 
                 // Create the correct player for the media
                 createPlayer(videoStream?.hdr == true, videoStream?.is4k == true)
@@ -662,30 +680,19 @@ class PlaybackViewModel
                     positionMs,
                 )
 
-                val maxBitrate =
-                    preferences.appPreferences.playbackPreferences.maxBitrate
-                        .takeIf { it > 0 } ?: AppPreference.DEFAULT_BITRATE
                 val response by
                     api.mediaInfoApi
                         .getPostedPlaybackInfo(
                             itemId,
                             PlaybackInfoDto(
                                 startTimeTicks = null,
-                                deviceProfile =
-                                    if (currentPlayer.value!!.backend == PlayerBackend.EXO_PLAYER) {
-                                        deviceProfileService.getOrCreateDeviceProfile(
-                                            preferences.appPreferences,
-                                            serverRepository.currentServer?.serverVersion,
-                                        )
-                                    } else {
-                                        mpvDeviceProfile
-                                    },
+                                deviceProfile = deviceProfileFor(currentPlayer.value!!.backend),
                                 maxAudioChannels = null,
                                 audioStreamIndex = audioIndex,
                                 subtitleStreamIndex = subtitleIndex,
                                 mediaSourceId = sourceId,
                                 alwaysBurnInSubtitleWhenTranscoding = false,
-                                maxStreamingBitrate = maxBitrate.toInt(),
+                                maxStreamingBitrate = maxStreamingBitrate,
                                 enableDirectPlay = enableDirectPlay,
                                 enableDirectStream = enableDirectStream,
                                 allowVideoStreamCopy = enableDirectStream,
@@ -701,6 +708,23 @@ class PlaybackViewModel
                 }
                 val source = response.mediaSources.firstOrNull()
                 source?.let { source ->
+                    // The track menus and the automatic choice may come from a separate PlaybackInfo
+                    // request (see withPlaybackInfoStreams): use the same tracks of the source played
+                    val tracks = remapToPlayedSource(source, audioIndex, subtitleIndex)
+                    if (tracks != (audioIndex to subtitleIndex) && !source.supportsDirectPlay) {
+                        // The server already set up the stream for the old indexes
+                        changeStreams(
+                            item = item,
+                            sourceId = sourceId,
+                            audioIndex = tracks.first,
+                            subtitleIndex = tracks.second,
+                            positionMs = positionMs,
+                            enableDirectPlay = enableDirectPlay,
+                            enableDirectStream = enableDirectStream,
+                        )
+                        return@withContext
+                    }
+                    val (audioIndex, subtitleIndex) = tracks
                     val mediaUrl =
                         if (source.supportsDirectPlay) {
                             if (source.isRemote && source.path.isNotNullOrBlank()) {
