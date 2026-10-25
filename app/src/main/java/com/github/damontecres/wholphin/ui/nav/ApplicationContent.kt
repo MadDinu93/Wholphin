@@ -24,6 +24,7 @@ import com.github.damontecres.wholphin.preferences.UserPreferences
 import com.github.damontecres.wholphin.services.BackdropService
 import com.github.damontecres.wholphin.services.HeroTrailerService
 import com.github.damontecres.wholphin.services.NavigationManager
+import com.github.damontecres.wholphin.services.ThemeSongPlayer
 import com.github.damontecres.wholphin.ui.components.ErrorMessage
 import com.github.damontecres.wholphin.ui.launchIO
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -39,6 +40,7 @@ class ApplicationContentViewModel
     constructor(
         val backdropService: BackdropService,
         val heroTrailerService: HeroTrailerService,
+        val themeSongPlayer: ThemeSongPlayer,
     ) : ViewModel() {
         fun clearBackdrop() {
             viewModelScope.launchIO { backdropService.clearBackdrop() }
@@ -65,24 +67,22 @@ fun ApplicationContent(
         modifier = modifier,
     ) {
         val backdropStyle = preferences.appPreferences.interfacePreferences.backdropStyle
-        // Otherwise the trailers play inside the cards, see CardTrailers
-        val trailerInBackdrop = !preferences.appPreferences.interfacePreferences.cardTrailers
         val heroTrailerPlaying by viewModel.heroTrailerService.playing.collectAsStateWithLifecycle()
+        // Otherwise the trailer plays inside a card, see CardTrailers
+        val heroTrailerInCard by viewModel.heroTrailerService.inCard.collectAsStateWithLifecycle()
         Backdrop(
             drawerIsOpen = drawerState.isOpen,
             backdropStyle = backdropStyle,
             enableTopScrim = enableTopScrim,
             viewModel = viewModel,
-            hideImage = trailerInBackdrop && heroTrailerPlaying,
+            hideImage = heroTrailerPlaying && !heroTrailerInCard,
         )
         val heroTrailerArea = remember { HeroTrailerArea() }
-        if (trailerInBackdrop) {
-            HeroTrailerBackdrop(
-                heroTrailerService = viewModel.heroTrailerService,
-                area = heroTrailerArea,
-                muted = preferences.appPreferences.interfacePreferences.muteHeroTrailer,
-            )
-        }
+        HeroTrailerBackdrop(
+            heroTrailerService = viewModel.heroTrailerService,
+            area = heroTrailerArea,
+            muted = preferences.appPreferences.interfacePreferences.muteHeroTrailer,
+        )
         val navDrawerListState = rememberLazyListState()
         CompositionLocalProvider(LocalHeroTrailerArea provides heroTrailerArea) {
             NavDisplay(

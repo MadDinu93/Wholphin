@@ -241,6 +241,7 @@ fun HomePage(
                 if (!showHero) viewModel.clearBackdrop()
             }
             val cardTrailers = rememberCardTrailers(viewModel.heroTrailerService, interfacePreferences.muteHeroTrailer)
+            val trailerOwner = remember { Any() }
             HomePageContent(
                 homeRows = homeRows,
                 position = position,
@@ -256,7 +257,9 @@ fun HomePage(
                 onClickViewMore = onClickViewMore,
                 showHero = showHero,
                 onTrailerItemChanged =
-                    viewModel.heroTrailerService::focus.takeIf {
+                    { item: BaseItem? ->
+                        viewModel.heroTrailerService.focus(item, trailerOwner, inCard = interfacePreferences.cardTrailers)
+                    }.takeIf {
                         interfacePreferences.cardTrailers || !interfacePreferences.disableHeroTrailer
                     },
                 cardTrailers = cardTrailers.takeIf { interfacePreferences.cardTrailers },

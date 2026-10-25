@@ -421,6 +421,7 @@ fun RecommendedContent(
                 if (!showHero) viewModel.clearBackdrop()
             }
             val cardTrailers = rememberCardTrailers(viewModel.heroTrailerService, interfacePreferences.muteHeroTrailer)
+            val trailerOwner = remember { Any() }
             HomePageContent(
                 homeRows = state.rows,
                 position = position,
@@ -466,7 +467,9 @@ fun RecommendedContent(
                 onClickViewMore = viewModel::onClickViewMore,
                 showHero = showHero,
                 onTrailerItemChanged =
-                    viewModel.heroTrailerService::focus.takeIf {
+                    { item: BaseItem? ->
+                        viewModel.heroTrailerService.focus(item, trailerOwner, inCard = interfacePreferences.cardTrailers)
+                    }.takeIf {
                         interfacePreferences.cardTrailers || !interfacePreferences.disableHeroTrailer
                     },
                 cardTrailers = cardTrailers.takeIf { interfacePreferences.cardTrailers },

@@ -72,17 +72,33 @@ class HeroTrailerService
         /** Whether the [current] trailer is on screen, so the backdrop image can make way for it */
         val playing: StateFlow<Boolean> = _playing
 
+        private val _inCard = MutableStateFlow(false)
+
+        /** Whether the [current] trailer plays inside the focused card rather than behind the hero */
+        val inCard: StateFlow<Boolean> = _inCard
+
         // Keyed by the item that has the trailers, a null value means it has none we can play
         private val cache = ConcurrentHashMap<UUID, Optional>()
         private var job: Job? = null
+        private var owner: Any? = null
 
         /**
          * The hero now shows [item], or nothing if null. Stops any trailer and starts the delay for the new one.
+         *
+         * With an [owner], such as a page, clearing it with a null [item] only happens if no one else has asked for a
+         * trailer since. Pages starting and closing during navigation then do not stop each other's trailers.
          */
-        fun focus(item: BaseItem?) {
+        fun focus(
+            item: BaseItem?,
+            owner: Any? = null,
+            inCard: Boolean = false,
+        ) {
+            if (item == null && owner != null && owner !== this.owner) return
+            this.owner = owner
             job?.cancel()
             _current.value = null
             _playing.value = false
+            _inCard.value = inCard
             if (item == null) return
             job =
                 scope.launch {

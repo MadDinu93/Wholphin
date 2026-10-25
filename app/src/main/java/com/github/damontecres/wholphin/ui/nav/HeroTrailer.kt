@@ -50,6 +50,9 @@ import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.compose.PlayerSurface
 import androidx.media3.ui.compose.SURFACE_TYPE_TEXTURE_VIEW
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.github.damontecres.wholphin.data.model.BaseItem
+import com.github.damontecres.wholphin.preferences.UserPreferences
 import com.github.damontecres.wholphin.services.HeroTrailerService
 import com.github.damontecres.wholphin.services.HeroTrailerSource
 import com.github.damontecres.wholphin.ui.AspectRatios
@@ -83,7 +86,10 @@ fun HeroTrailerBackdrop(
     muted: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    val source by heroTrailerService.current.collectAsStateWithLifecycle()
+    val current by heroTrailerService.current.collectAsStateWithLifecycle()
+    val inCard by heroTrailerService.inCard.collectAsStateWithLifecycle()
+    // Otherwise the focused card plays it, see CardTrailers
+    val source = current.takeUnless { inCard }
     LifecycleEventEffect(Lifecycle.Event.ON_STOP) {
         heroTrailerService.focus(null)
     }
@@ -163,6 +169,7 @@ fun HeroTrailerBackdrop(
 class CardTrailers(
     val heroTrailerService: HeroTrailerService,
     val current: State<HeroTrailerSource?>,
+    val inCard: State<Boolean>,
     val playing: State<Boolean>,
     val muted: Boolean,
 )
@@ -175,9 +182,10 @@ fun rememberCardTrailers(
     muted: Boolean,
 ): CardTrailers {
     val current = heroTrailerService.current.collectAsStateWithLifecycle()
+    val inCard = heroTrailerService.inCard.collectAsStateWithLifecycle()
     val playing = heroTrailerService.playing.collectAsStateWithLifecycle()
-    return remember(heroTrailerService, current, playing, muted) {
-        CardTrailers(heroTrailerService, current, playing, muted)
+    return remember(heroTrailerService, current, inCard, playing, muted) {
+        CardTrailers(heroTrailerService, current, inCard, playing, muted)
     }
 }
 
@@ -190,7 +198,39 @@ fun rememberCardTrailers(
 fun rememberCardTrailer(itemId: UUID?): State<HeroTrailerSource?> {
     val cardTrailers = LocalCardTrailers.current
     return remember(cardTrailers, itemId) {
-        derivedStateOf { cardTrailers?.current?.value?.takeIf { it.itemId == itemId } }
+        derivedStateOf {
+            cardTrailers
+                ?.takeIf { it.inCard.value }
+                ?.current
+                ?.value
+                ?.takeIf { it.itemId == itemId }
+        }
+    }
+}
+
+/**
+ * Plays the trailer of [item] behind its details page, where the hero's would be, after the same delay
+ *
+ * Its sound takes over from the theme music.
+ */
+@Composable
+fun DetailsTrailer(
+    item: BaseItem?,
+    preferences: UserPreferences,
+    viewModel: ApplicationContentViewModel = hiltViewModel(),
+) {
+    val interfacePreferences = preferences.appPreferences.interfacePreferences
+    // Either trailer setting means trailers are wanted
+    if (interfacePreferences.disableHeroTrailer && !interfacePreferences.cardTrailers) return
+    val heroTrailerService = viewModel.heroTrailerService
+    val owner = remember { Any() }
+    LaunchedEffect(item?.id) { heroTrailerService.focus(item, owner) }
+    DisposableEffect(Unit) { onDispose { heroTrailerService.focus(null, owner) } }
+    if (!interfacePreferences.muteHeroTrailer) {
+        val playing by heroTrailerService.playing.collectAsStateWithLifecycle()
+        LaunchedEffect(playing) {
+            if (playing) viewModel.themeSongPlayer.stop()
+        }
     }
 }
 

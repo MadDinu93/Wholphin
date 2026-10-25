@@ -81,6 +81,7 @@ import com.github.damontecres.wholphin.ui.discover.DiscoverRow
 import com.github.damontecres.wholphin.ui.discover.DiscoverRowData
 import com.github.damontecres.wholphin.ui.letNotEmpty
 import com.github.damontecres.wholphin.ui.nav.Destination
+import com.github.damontecres.wholphin.ui.nav.DetailsTrailer
 import com.github.damontecres.wholphin.ui.rememberInt
 import com.github.damontecres.wholphin.ui.util.ResStringProvider
 import com.github.damontecres.wholphin.util.DataLoadingState
@@ -108,6 +109,7 @@ fun SeriesDetails(
     val context = LocalContext.current
 
     val state by viewModel.state.collectAsState()
+    DetailsTrailer((state.series as? DataLoadingState.Success)?.data, preferences)
     val playlistState by playlistViewModel.playlistState.collectAsState()
 
     var overviewDialog by remember { mutableStateOf<ItemDetailsDialogInfo?>(null) }
