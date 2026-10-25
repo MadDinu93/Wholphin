@@ -1,142 +1,59 @@
-# Wholphin - an OSS Android TV client for Jellyfin
+# Thorphin - an Android TV client built for Remux
 
-> "Never half-phin two jellies. Always wholphin one jelly."
+Thorphin is a fork of [Wholphin](https://github.com/damontecres/Wholphin), the open-source Android TV client for Jellyfin. It aims to be the main player for [Remux](https://github.com/lostb1t/remux), with an interface closer to the Apple TV apps.
 
-Wholphin is an open-source Android TV client for Jellyfin. It aims to provide a different app UI that's inspired by Plex for users interested in migrating to Jellyfin.
+Remux is a self-hosted media server that speaks the Jellyfin API. Instead of scanning a library of files, it resolves streams on demand from Stremio addons, WebDAV shares and local storage. Jellyfin clients can connect to it, but they assume a Jellyfin server and miss things such as the subtitles addons provide. Thorphin fixes those gaps, and plays the Dolby Vision remuxes these catalogs are full of on TVs that cannot play them in Dolby Vision on their own.
 
-This is not a fork of the [official client](https://github.com/jellyfin/jellyfin-androidtv). Wholphin's user interface and controls have been written completely from scratch. Wholphin supports playing media using either ExoPlayer or MPV.
+Thorphin still works with a regular Jellyfin server. Everything Wholphin does is still here: ExoPlayer and MPV playback, a customizable home page, Live TV, music, Seerr, trickplay and more, see the [Wholphin README](https://github.com/damontecres/Wholphin#features).
 
-<p align="center">
-<a href="https://github.com/damontecres/Wholphin/releases">
-<img alt="Current Release" src="https://img.shields.io/github/release/damontecres/wholphin.svg"/>
-</a>
-<a href="https://translate.codeberg.org/engage/wholphin/">
-<img src="https://translate.codeberg.org/widget/wholphin/wholphin/svg-badge.svg" alt="Translation status" />
-</a>
-<br/>
-<a href="https://play.google.com/store/apps/details?id=com.github.damontecres.wholphin">
-<img width="180" alt="Get Wholphin on Google Play" src="https://github.com/user-attachments/assets/2550a4cb-ce46-47a1-ae24-f33a169234b7"/>
-</a>
-<a href="https://www.amazon.com/gp/product/B0G8RQQR9T/ref=mas_pm_wholphin">
-<img width="180" alt="Get Wholphin on Amazon AppStore" src="https://github.com/user-attachments/assets/1f3a3b26-4b4f-44b1-9741-f4c895c8a53b"/>
-</a>
+## What Thorphin adds
 
+### Remux
 
-</p>
+- **Addon subtitles.** Remux lists subtitle streams, including the external ones from addons, only in the PlaybackInfo response and not in the item's media sources. Thorphin reads them from there, so they show up in the subtitle menu and in the automatic subtitle choice.
+- **The right tracks for the release that plays.** Remux picks the release and numbers the subtitle tracks based on the device profile and bitrate limit. Thorphin sends the same ones as the playback request, then matches the chosen audio and subtitle tracks against the source actually played. An "English" entry plays English instead of another language from a different release.
+- **A Library page.** Remux catalogs often add dozens of libraries. Instead of one navigation row per library, a single Library page shows them all. You can still pin individual libraries.
 
-![v0_5_1_home](https://github.com/user-attachments/assets/62bb1703-abdf-4154-9054-e00b6ceb57b5)
+### Dolby Vision
 
-## Features
+- **Profile 7 to 8.1 conversion.** UHD Blu-ray remuxes use Dolby Vision profile 7, which many TV decoders (MediaTek ones, for example) do not play in Dolby Vision. Thorphin rewrites the RPU into its profile 8.1 form and drops the enhancement layer while playing, the way Kodi, Vimu and Dune do. Nothing is re-encoded. It is on by default for new installs (Settings > Experimental) and only applies to devices without a profile 7 decoder.
 
-### User interface
+### Apple TV style interface
 
-- Customize the home page to see the content you are interested in
-    - Use poster or thumb images, show/hide titles, add/remove/re-order different types of rows!
-    - Option to combine the Continue Watching & Next Up into a single row
-    - Pin collections, playlists, favorites, genres, and studios
-    - Remove series from next up
-- A navigation drawer for quick access to libraries, favorites, search, and settings from almost anywhere in the app
-- Integration with [Seerr](https://github.com/seerr-team/seerr) to discover new movies and TV shows
-    - Note: only available when installed from [GitHub](https://github.com/damontecres/Wholphin/releases/latest) or the [Play store](https://play.google.com/store/apps/details?id=com.github.damontecres.wholphin)
-- Customize library display
-  - Option to show Movie/TV Show titles
-  - Choose image types & size
-  - Choose from grid or list layouts
-- Play theme music, if available
-- Customize subtitle style for plain text subtitles with separate HDR settings
-- Search & download subtitles (requires compatible server plugin such as [OpenSubtitles](https://github.com/jellyfin/jellyfin-plugin-opensubtitles))
-- Multiple app color themes
-- Protect user profile switches with PIN code or require server login
-- Change the user interface language per user
-- In-app & Android OS screensaver support
-
-### Playback
-
-- Different media playback engines:
-  - **ExoPlayer** w/ optional extra audio, SSA/ASS, & AV1 software decoding
-  - **MPV** for direct playing anything with great SSA/ASS subtitle support
-- Plex inspired playback controls:
-  - Using D-Pad left/right for seeking during playback
-  - Quickly access video chapters & queue during playback
-  - Optionally skip back a few seconds when resuming playback
-- Live TV & DVR support
-- Music & music video support
-- Cinema mode/pre-roll intro support (requires compatible server plugin such as [Intros](https://github.com/jellyfin/jellyfin-plugin-intros))
-- Auto play next episodes with pass out protection
-- Option for automatic refresh rate & resolution switching on supported displays
-- Trickplay (video preview) support
-- Subtly show playback position along the bottom of the screen while seeking w/ D-Pad
-
-### Roadmap
-
-See [here for the roadmap](https://github.com/damontecres/Wholphin/wiki#roadmap)
+- **Top navigation bar.** Pill tabs (Home, Library, pinned items, Search, Settings) with the profile on the left replace the side drawer. The bar slides away while you browse the rows. The side drawer is still available under Settings > Interface > Navigation style.
+- **Hero card** (optional). The details of the focused item are shown above the rows: logo, year, ratings, runtime, genres and overview.
+- **Background trailers.** After 5 seconds on an item, its trailer replaces the hero image, with sound, Netflix style. Thorphin uses a trailer on the server when there is one, otherwise the YouTube trailer from the metadata, shown without any YouTube player controls. It can be turned off, or muted, in Settings > Interface.
+- **Cards.** Rounder posters with "Genre · ★ rating" along the bottom, and titles with the year below them.
 
 ## Installation
 
-Using [Google Play](https://play.google.com/store/apps/details?id=com.github.damontecres.wholphin) or [Amazon appstore](https://www.amazon.com/gp/product/B0G8RQQR9T/ref=mas_pm_wholphin) are the fastest way to install. But you can follow these instructions to install without needing an app store
+There are no store listings or release builds yet. Build the APK and sideload it:
 
-Downloader Code: `8668671`
+```sh
+./gradlew :app:assembleAppstoreDebug
+adb install -r app/build/outputs/apk/appstore/debug/Thorphin-appstore-debug-<version>-armeabi-v7a.apk
+```
 
-1. Enable side-loading "unknown" apps
-    - https://androidtvnews.com/unknown-sources-chromecast-google-tv/
-    - https://www.xda-developers.com/how-to-sideload-apps-android-tv/
-    - https://developer.android.com/distribute/marketing-tools/alternative-distribution#unknown-sources
-    - https://www.aftvnews.com/how-to-enable-apps-from-unknown-sources-on-an-amazon-fire-tv-or-fire-tv-stick/
-2. Install the APK on your Android TV device with one of these options:
-    - Install a browser program such as [Downloader](https://www.aftvnews.com/downloader/), use it to get the latest apk with short code `8668671` or URL: http://aftv.news/8668671
-    - Download the latest APK release from the [releases page](https://github.com/damontecres/Wholphin/releases/latest) or http://aftv.news/8668671
-        - Put the APK on an SD Card/USB stick/network share and use a file manager app from the Google Play Store / Amazon AppStore (e.g. `FX File Explorer`). Android's preinstalled file manager probably will not work!
-        - Use `Send files to TV` from the Google Play Store on your phone & TV
-        - (Expert) Use [ADB](https://developer.android.com/studio/command-line/adb) to install the APK from your computer ([guide](https://fossbytes.com/side-load-apps-android-tv/#h-how-to-sideload-apps-on-your-android-tv-using-adb))
+- Pick the APK matching the device's ABI (`adb shell getprop ro.product.cpu.abilist`). Most TVs are `armeabi-v7a` or `arm64-v8a`.
+- Use the `appstore` flavor. The built-in updater of the `default` flavor still checks Wholphin's releases.
+- A release build (`assembleAppstoreRelease`) needs a signing config, set with the `release.signing.config` Gradle property, or the APK comes out unsigned.
+- The debug build installs as a separate app (`io.github.maddinu93.thorphin.debug`) next to the release one (`io.github.maddinu93.thorphin`).
 
-### Upgrading the app
-
-After the initial install above, the app will automatically check for updates. The updates can be installed in settings.
-
-The first time you attempt an update, the OS should guide you through enabling the required additional permissions for the app to install updates.
-
-Note: if installed via an app store, the app store will handle updates.
+See [DEVELOPMENT.md](DEVELOPMENT.md) for the development setup.
 
 ## Compatibility
 
-Requires Android 6+ (or Fire TV OS 6+) and Jellyfin server `10.10.x` or `10.11.x` (tested on primarily `10.11`).
-
-The app is tested on a variety of Android TV/Fire TV OS devices, but if you encounter issues, please file an issue!
-
-Seerr integration is generally tested with the latest stable version. Older versions may not work as expected. The Seerr server should configured with integration to your Jellyfin server for full compatibility.
-
-## Contributions
-
-Issues and pull requests are always welcome! Please check before submitting that your issue or pull request is not a duplicate.
-
-If you plan to contribute, please read the [contributing guide](CONTRIBUTING.md)!
-
-You can [help translate Wholphin](https://translate.codeberg.org/engage/wholphin/)!
+- Android 6+ / Fire TV OS 6+.
+- Remux, or a Jellyfin server `10.10.x` / `10.11.x`.
+- Tested mostly on a Philips Google TV (TA5, MediaTek).
 
 ## Acknowledgements
 
-- Thanks to the Jellyfin team for creating and maintaining such a great open-source media server
-- Thanks to the official Jellyfin Android TV client developers, some code for creating the device direct play profile is adapted from there
-- Thanks to the Jellyfin Kotlin SDK developers for making it easier to interact with the Jellyfin server API
-- Thanks to numerous other libraries that make app development even possible
+- [Wholphin](https://github.com/damontecres/Wholphin) by damontecres, which Thorphin is built on. Almost all of the app is their work.
+- [Remux](https://github.com/lostb1t/remux) by lostb1t.
+- The Jellyfin team, the official Jellyfin Android TV client developers and the Jellyfin Kotlin SDK developers, as credited by Wholphin.
+- ExoplayerHdrUtils (`com.suyashbelekar:exoplayerhdrutils`, libdovi), used for the Dolby Vision conversion.
 
-## Additional screenshots
+## License
 
-### Customized home page
-![customize_home_example](https://github.com/user-attachments/assets/9a4f04b7-9604-4ea7-b352-50f2b15dc2f1)
-
-### Movie library browsing
-![v0_5_1_library](https://github.com/user-attachments/assets/fad0424b-0631-4438-a8bc-d4fbb95a5bf3)
-
-### Movie page
-![v0_5_1_movie](https://github.com/user-attachments/assets/849aad34-49d5-4864-8de7-005bbcb68ac6)
-
-### Series page
-![v0_5_1_series](https://github.com/user-attachments/assets/655389e1-6a6f-43bc-85e1-e2feffb20429)
-
-### Genres in library
-![v0_5_1_genres](https://github.com/user-attachments/assets/5bbcbeb6-edc9-42c7-a1d8-d92fa432a498)
-
-
-### Playlist
-![v0_5_1_playlist](https://github.com/user-attachments/assets/98268f7d-479d-41c6-b47b-3e67bbe661bc)
+Thorphin is licensed under the GNU General Public License v2, like Wholphin. See [LICENSE](LICENSE).
