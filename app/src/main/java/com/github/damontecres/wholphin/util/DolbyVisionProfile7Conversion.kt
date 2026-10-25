@@ -26,10 +26,14 @@ import com.github.damontecres.wholphin.util.profile.MediaCodecCapabilitiesTest
  */
 object DolbyVisionProfile7Conversion {
     /**
-     * True when the user asked for the conversion and this device is one it helps: its Dolby
-     * Vision decoder lists profile 8 but not profile 7. A device which decodes profile 7 itself
-     * is left alone, since it can use the enhancement layer the conversion would throw away, and
-     * a device without a profile 8 decoder has nothing to hand the converted stream to.
+     * True when the user asked for the conversion and this device is one it helps: it has a Dolby
+     * Vision decoder but that decoder does not list profile 7. A device which decodes profile 7
+     * itself is left alone, since it can use the enhancement layer the conversion would throw
+     * away, and a device without a Dolby Vision decoder has nothing to hand the converted stream to.
+     *
+     * Any Dolby Vision decoder is assumed to take single-layer profile 8, as in
+     * [MediaCodecCapabilitiesTest.supportsHevcDolbyVision]: MediaTek TV decoders such as
+     * `c2.mtk.dvhe.stn.decoder` only list profile 5 yet play profile 8 as Dolby Vision.
      */
     fun isWanted(
         experimental: ExperimentalPreferences,
@@ -37,7 +41,7 @@ object DolbyVisionProfile7Conversion {
     ): Boolean =
         experimental.enabled { convertDolbyVisionProfile7 } &&
             !mediaTest.supportsHevcDolbyVisionEL() &&
-            mediaTest.supportsHevcDolbyVisionProfile8()
+            mediaTest.supportsHevcDolbyVision()
 
     /** Whether [format] is a Dolby Vision profile 7 video track, in either sample entry form. */
     fun isProfile7(format: Format): Boolean {

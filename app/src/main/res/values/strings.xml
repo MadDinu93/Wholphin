@@ -1,6 +1,6 @@
 <resources>
-    <string name="app_name" translatable="false">Wholphin</string>
-    <string name="app_name_long" translatable="false">Wholphin</string>
+    <string name="app_name" translatable="false">Thorphin</string>
+    <string name="app_name_long" translatable="false">Thorphin</string>
 
     <string name="about">About</string>
     <string name="active_recordings">Active Recordings</string>
@@ -823,7 +823,7 @@
     <string name="select_all">Select all</string>
     <string name="separate_types">Separate types</string>
     <string name="prefer_logos">Prefer showing logos for titles</string>
-    <string name="updated_toast">Wholphin updated to %s</string>
+    <string name="updated_toast">Thorphin updated to %s</string>
     <string name="remove_continue_watching">Remove from continue watching</string>
     <string name="remove_next_up">Remove series from next up</string>
     <string name="view_removed_next_up">View series removed from next up</string>
