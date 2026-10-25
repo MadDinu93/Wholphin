@@ -48,6 +48,13 @@ val gitTags =
         .standardOutput.asText
         .get()
 
+// Thorphin: one more for every commit, so each build is an update to launchers and the Play Store
+val gitCommitCount =
+    providers
+        .exec { commandLine("git", "rev-list", "--count", "HEAD") }
+        .standardOutput.asText
+        .get()
+
 val gitDescribe =
     providers
         .exec { commandLine("git", "describe", "--tags", "--long", "--match=v*") }
@@ -75,7 +82,7 @@ configure<ApplicationExtension> {
         applicationId = "io.github.maddinu93.thorphin"
         minSdk = libs.versions.minSdk.getInt()
         targetSdk = libs.versions.targetSdk.getInt()
-        versionCode = gitTags.trim().lines().size
+        versionCode = gitCommitCount.trim().toInt()
         versionName = gitDescribe.trim().removePrefix("v").ifBlank { "0.0.0" }
         testInstrumentationRunner = "com.github.damontecres.wholphin.test.WholphinTestRunner"
 
