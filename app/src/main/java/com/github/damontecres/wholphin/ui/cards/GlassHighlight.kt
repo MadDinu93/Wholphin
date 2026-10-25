@@ -12,24 +12,30 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.unit.dp
 
 /**
  * Apple TV style glass look for a focused card: a thin rim that catches the light along the top, a soft gloss from
  * the top left and a sheen that sweeps across once when the card gets focus.
  *
- * Goes on the content inside the card, which is clipped to [PosterCardShape]. It only draws, so nothing is composed or
+ * Goes on the content inside the card, which is clipped to the same [shape]. It only draws, so nothing is composed or
  * laid out again while it animates.
  */
 @Composable
-fun Modifier.glassHighlight(interactionSource: InteractionSource): Modifier {
+fun Modifier.glassHighlight(
+    interactionSource: InteractionSource,
+    shape: Shape = PosterCardShape,
+): Modifier {
     val focused by interactionSource.collectIsFocusedAsState()
     val focusAlpha = animateFloatAsState(if (focused) 1f else 0f, tween(if (focused) 250 else 150), label = "glass")
     val sheen = remember { Animatable(1f) }
@@ -40,7 +46,6 @@ fun Modifier.glassHighlight(interactionSource: InteractionSource): Modifier {
         }
     }
     return drawWithCache {
-        val radius = PosterCardCornerRadius.toPx()
         val rimWidth = 1.5.dp.toPx()
         val rim =
             Brush.verticalGradient(
@@ -82,37 +87,24 @@ fun Modifier.glassHighlight(interactionSource: InteractionSource): Modifier {
             }
 
             // A soft glow just inside the edge gives the glass its thickness, the rim is where it catches the light
-            innerRim(Color.White.copy(alpha = .05f), 10.dp.toPx(), radius, alpha)
-            innerRim(Color.White.copy(alpha = .1f), 4.dp.toPx(), radius, alpha)
-            innerRim(rim, rimWidth, radius, alpha)
+            innerRim(shape, SolidColor(Color.White.copy(alpha = .05f)), 10.dp.toPx(), alpha)
+            innerRim(shape, SolidColor(Color.White.copy(alpha = .1f)), 4.dp.toPx(), alpha)
+            innerRim(shape, rim, rimWidth, alpha)
         }
     }
 }
 
+/**
+ * Strokes the [shape] just inside the edge
+ */
 private fun DrawScope.innerRim(
-    color: Color,
-    width: Float,
-    radius: Float,
-    alpha: Float,
-) = drawRoundRect(
-    color = color,
-    topLeft = Offset(width / 2, width / 2),
-    size = Size(size.width - width, size.height - width),
-    cornerRadius = CornerRadius((radius - width / 2).coerceAtLeast(0f)),
-    style = Stroke(width),
-    alpha = alpha,
-)
-
-private fun DrawScope.innerRim(
+    shape: Shape,
     brush: Brush,
     width: Float,
-    radius: Float,
     alpha: Float,
-) = drawRoundRect(
-    brush = brush,
-    topLeft = Offset(width / 2, width / 2),
-    size = Size(size.width - width, size.height - width),
-    cornerRadius = CornerRadius((radius - width / 2).coerceAtLeast(0f)),
-    style = Stroke(width),
-    alpha = alpha,
-)
+) {
+    val outline = shape.createOutline(Size(size.width - width, size.height - width), layoutDirection, this)
+    translate(width / 2, width / 2) {
+        drawOutline(outline, brush, alpha = alpha, style = Stroke(width))
+    }
+}

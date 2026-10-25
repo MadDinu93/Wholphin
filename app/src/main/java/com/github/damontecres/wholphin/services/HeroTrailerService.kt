@@ -12,6 +12,7 @@ import com.github.damontecres.wholphin.data.model.LocalTrailer
 import com.github.damontecres.wholphin.data.model.RemoteTrailer
 import com.github.damontecres.wholphin.services.hilt.AuthOkHttpClient
 import com.github.damontecres.wholphin.services.hilt.IoCoroutineScope
+import com.github.damontecres.wholphin.services.hilt.StandardOkHttpClient
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -44,10 +45,10 @@ sealed interface HeroTrailerSource {
         val url: String,
     ) : HeroTrailerSource
 
-    /** A YouTube trailer, played with the embedded YouTube player */
-    data class YouTube(
+    /** A video from anywhere else, given as a link to the video itself, played with ExoPlayer */
+    data class Direct(
         override val itemId: UUID,
-        val videoId: String,
+        val url: String,
     ) : HeroTrailerSource
 }
 
@@ -60,6 +61,7 @@ class HeroTrailerService
     constructor(
         @param:ApplicationContext private val context: Context,
         @param:AuthOkHttpClient private val authOkHttpClient: OkHttpClient,
+        @param:StandardOkHttpClient private val standardOkHttpClient: OkHttpClient,
         private val api: ApiClient,
         private val trailerService: TrailerService,
         @param:IoCoroutineScope private val scope: CoroutineScope,
@@ -124,12 +126,18 @@ class HeroTrailerService
             }
         }
 
+        /**
+         * @param fromServer whether the video is on the Jellyfin server, only then are the user's credentials sent
+         */
         @OptIn(UnstableApi::class)
-        fun createPlayer(): ExoPlayer =
+        fun createPlayer(fromServer: Boolean): ExoPlayer =
             ExoPlayer
                 .Builder(context)
-                .setMediaSourceFactory(DefaultMediaSourceFactory(OkHttpDataSource.Factory(authOkHttpClient)))
-                .build()
+                .setMediaSourceFactory(
+                    DefaultMediaSourceFactory(
+                        OkHttpDataSource.Factory(if (fromServer) authOkHttpClient else standardOkHttpClient),
+                    ),
+                ).build()
 
         private suspend fun resolve(item: BaseItem): HeroTrailerSource? {
             val trailerItemId =
@@ -150,10 +158,15 @@ class HeroTrailerService
                             url = api.videosApi.getVideoStreamUrl(itemId = local.baseItem.id, static = true),
                         )
                     } else {
-                        trailerService
-                            .getRemoteTrailers(full)
-                            .firstNotNullOfOrNull { (it as? RemoteTrailer)?.url?.youTubeVideoId() }
-                            ?.let { HeroTrailerSource.YouTube(itemId = item.id, videoId = it) }
+                        val remoteUrls =
+                            trailerService
+                                .getRemoteTrailers(full)
+                                .mapNotNull { (it as? RemoteTrailer)?.url?.unwrapTrailerUrl() }
+                        // Only links to the video itself, such as from the Thorphin Trailers add-on. YouTube pages are
+                        // not played, a link that turns out to be another web page fails to play and the image comes back.
+                        remoteUrls
+                            .firstOrNull { it.isVideoUrl() }
+                            ?.let { HeroTrailerSource.Direct(itemId = item.id, url = it) }
                     }
                 } catch (ex: Exception) {
                     Timber.w(ex, "Could not get trailers for %s", trailerItemId)
@@ -166,7 +179,7 @@ class HeroTrailerService
         private fun HeroTrailerSource.withItemId(itemId: UUID) =
             when (this) {
                 is HeroTrailerSource.Local -> copy(itemId = itemId)
-                is HeroTrailerSource.YouTube -> copy(itemId = itemId)
+                is HeroTrailerSource.Direct -> copy(itemId = itemId)
             }
 
         private data class Optional(
@@ -179,29 +192,24 @@ class HeroTrailerService
     }
 
 /**
- * The video id of a youtube.com/watch?v=, youtu.be/ or youtube.com/embed/ URL
+ * Remux turns every trailer its add-ons give into a YouTube link, so a link to a video elsewhere arrives as
+ * youtube.com/watch?v=https://... and is taken back out here
  */
-internal fun String.youTubeVideoId(): String? {
-    val uri = this.toUri()
-    val host = uri.host?.removePrefix("www.")?.removePrefix("m.") ?: return null
-    val id =
-        when (host) {
-            "youtube.com", "youtube-nocookie.com" -> {
-                uri.getQueryParameter("v")
-                    ?: uri.pathSegments
-                        .takeIf { it.size >= 2 && (it[0] == "embed" || it[0] == "shorts") }
-                        ?.get(1)
-            }
+internal fun String.unwrapTrailerUrl(): String =
+    if (isYouTubeUrl()) {
+        toUri().getQueryParameter("v")?.takeIf { it.isWebUrl() } ?: this
+    } else {
+        this
+    }
 
-            "youtu.be" -> {
-                uri.pathSegments.firstOrNull()
-            }
+/**
+ * Whether this links to a video to play rather than to a page, which is all that is known without loading it
+ */
+internal fun String.isVideoUrl() = isWebUrl() && !isYouTubeUrl()
 
-            else -> {
-                null
-            }
-        }
-    return id?.takeIf { YOUTUBE_ID.matches(it) }
+private fun String.isWebUrl() = startsWith("https://", ignoreCase = true) || startsWith("http://", ignoreCase = true)
+
+private fun String.isYouTubeUrl(): Boolean {
+    val host = toUri().host?.lowercase() ?: return false
+    return host.endsWith("youtube.com") || host.endsWith("youtu.be") || host.endsWith("youtube-nocookie.com")
 }
-
-private val YOUTUBE_ID = Regex("[A-Za-z0-9_-]{11}")

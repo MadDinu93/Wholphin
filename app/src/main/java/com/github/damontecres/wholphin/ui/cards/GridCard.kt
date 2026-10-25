@@ -102,17 +102,13 @@ fun GridCard(
                     contentScale = imageContentScale,
                     fillWidth = fillWidth,
                     fillHeight = fillHeight,
+                    showInfo = imageAspectRatio < 1f,
                     modifier =
                         Modifier
                             .fillMaxWidth()
                             .aspectRatio(imageAspectRatio.coerceAtLeast(AspectRatios.MIN))
                             .background(MaterialTheme.colorScheme.surfaceVariant),
                 )
-                val playedPercent = dto?.userData?.playedPercentage ?: 0.0
-                // Would cover the progress bar
-                if (imageAspectRatio < 1f && (playedPercent <= 0.0 || playedPercent >= 100.0)) {
-                    PosterInfoOverlay(item)
-                }
             }
         }
         AnimatedVisibility(showTitle) {

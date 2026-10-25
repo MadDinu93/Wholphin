@@ -44,6 +44,7 @@ import com.github.damontecres.wholphin.ui.discover.DiscoverPage
 import com.github.damontecres.wholphin.ui.discover.DiscoverRequestGrid
 import com.github.damontecres.wholphin.ui.main.HomePage
 import com.github.damontecres.wholphin.ui.main.settings.HomeSettingsPage
+import com.github.damontecres.wholphin.ui.playback.TrailerVideoPage
 import com.github.damontecres.wholphin.ui.playback.PlayExternalPage
 import com.github.damontecres.wholphin.ui.playback.PlaybackPage
 import com.github.damontecres.wholphin.ui.preferences.PreferencesPage
@@ -358,6 +359,10 @@ fun DestinationContent(
 
         Destination.NowPlaying -> {
             NowPlayingPage(modifier)
+        }
+
+        is Destination.TrailerVideo -> {
+            TrailerVideoPage(destination.url, modifier)
         }
 
         Destination.UpdateApp -> {

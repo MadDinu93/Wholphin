@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -82,9 +83,14 @@ fun UserProfilePreferencesContent(
     modifier: Modifier = Modifier,
     viewModel: UserPreferencesViewModel = hiltViewModel(),
     onFocus: (Int, Int) -> Unit = { _, _ -> },
+    // False when shown inside the settings page, which has its own title and moves focus itself
+    showTitle: Boolean = true,
+    takeFocus: Boolean = true,
+    focusRequester: FocusRequester = remember { FocusRequester() },
+    // More settings listed after the profile's
+    footer: LazyListScope.() -> Unit = {},
 ) {
     val context = LocalContext.current
-    val focusRequester = remember { FocusRequester() }
     var focusedIndex by rememberSaveable { mutableStateOf(Pair(0, 0)) }
     val state = rememberLazyListState()
 
@@ -106,22 +112,30 @@ fun UserProfilePreferencesContent(
         exit = fadeOut() + slideOutHorizontally { it / 2 },
         modifier = modifier,
     ) {
-        LaunchedEffect(Unit) {
-            focusRequester.tryRequestFocus()
+        if (takeFocus) {
+            LaunchedEffect(Unit) {
+                focusRequester.tryRequestFocus()
+            }
         }
         Column(
-            modifier = Modifier.background(MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)),
+            modifier =
+                Modifier.ifElse(
+                    showTitle,
+                    Modifier.background(MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)),
+                ),
         ) {
-            Text(
-                text = stringResource(R.string.profile_specific_settings),
-                style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.onSurface,
-                textAlign = TextAlign.Center,
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp),
-            )
+            if (showTitle) {
+                Text(
+                    text = stringResource(R.string.profile_specific_settings),
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    textAlign = TextAlign.Center,
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                )
+            }
             LazyColumn(
                 state = state,
                 horizontalAlignment = Alignment.Start,
@@ -270,6 +284,7 @@ fun UserProfilePreferencesContent(
                         }
                     }
                 }
+                footer()
             }
         }
     }

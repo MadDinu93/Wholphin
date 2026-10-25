@@ -396,8 +396,22 @@
     <string name="show_home_hero_summary_on">Detaliile elementului selectat apar deasupra rândurilor</string>
     <string name="show_home_hero_summary_off">Rândurile încep din partea de sus a paginii</string>
     <string name="hero_trailer">Trailer în Hero</string>
-    <string name="hero_trailer_summary_on">După 5 secunde trailerul rulează în spatele hero-ului, întâi cel local, apoi de pe YouTube</string>
+    <string name="hero_trailer_summary_on">După 5 secunde trailerul rulează în spatele hero-ului: unul de pe server sau unul spre care trimite un addon</string>
     <string name="hero_trailer_sound">Sunet pentru trailere</string>
     <string name="card_trailers">Trailere în carduri</string>
+    <string name="theme_glass">Liquid Glass</string>
+    <string name="settings_appearance">Aspect</string>
+    <string name="settings_home_screen">Ecran principal</string>
+    <string name="settings_trailers_music">Trailere și muzică</string>
+    <string name="settings_quality_player">Calitate și player</string>
+    <string name="settings_screensaver_slideshow">Screensaver și slideshow</string>
+    <string name="settings_integrations">Integrări</string>
+    <string name="settings_system">Sistem</string>
+    <string name="card_info">Gen și notă pe carduri</string>
+    <string name="card_info_summary_on">Apar în partea de sus a posterelor de filme și seriale</string>
+    <string name="audio_and_subtitles">Audio și subtitrări</string>
+    <string name="card_progress_style">Progres pe carduri</string>
+    <string name="card_progress_bottom">Bară de-a lungul marginii de sus</string>
+    <string name="card_progress_top_compact">Mic, în colțul din stânga sus</string>
     <string name="card_trailers_summary_on">După 5 secunde trailerul rulează în cardul selectat, care se lărgește pentru el, în locul celui din spatele hero-ului</string>
 </resources>

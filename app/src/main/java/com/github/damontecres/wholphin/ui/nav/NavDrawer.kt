@@ -87,6 +87,7 @@ import com.github.damontecres.wholphin.ui.preferences.PreferenceScreenOption
 import com.github.damontecres.wholphin.ui.setup.UserIconCardImage
 import com.github.damontecres.wholphin.ui.spacedByWithFooter
 import com.github.damontecres.wholphin.ui.theme.LocalTheme
+import com.github.damontecres.wholphin.ui.theme.isMonochrome
 import com.github.damontecres.wholphin.ui.toServerString
 import com.github.damontecres.wholphin.ui.tryRequestFocus
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -742,7 +743,7 @@ fun navItemColor(
     drawerOpen: Boolean,
 ): Color {
     val theme = LocalTheme.current
-    if (theme == AppThemeColors.OLED_BLACK) {
+    if (theme.isMonochrome) {
         return when {
             selected && focused -> Color.Black
             selected && !drawerOpen -> Color.White.copy(alpha = .5f)
@@ -771,6 +772,7 @@ fun navItemColor(
                     -> MaterialTheme.colorScheme.border
 
                     AppThemeColors.BOLD_BLUE,
+                    AppThemeColors.GLASS,
                     AppThemeColors.OLED_BLACK,
                     -> MaterialTheme.colorScheme.primary
                 }

@@ -25,6 +25,8 @@ import com.github.damontecres.wholphin.services.BackdropService
 import com.github.damontecres.wholphin.services.HeroTrailerService
 import com.github.damontecres.wholphin.services.NavigationManager
 import com.github.damontecres.wholphin.services.ThemeSongPlayer
+import com.github.damontecres.wholphin.ui.cards.LocalCardProgressStyle
+import com.github.damontecres.wholphin.ui.cards.LocalShowCardInfo
 import com.github.damontecres.wholphin.ui.components.ErrorMessage
 import com.github.damontecres.wholphin.ui.launchIO
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -84,7 +86,11 @@ fun ApplicationContent(
             muted = preferences.appPreferences.interfacePreferences.muteHeroTrailer,
         )
         val navDrawerListState = rememberLazyListState()
-        CompositionLocalProvider(LocalHeroTrailerArea provides heroTrailerArea) {
+        CompositionLocalProvider(
+            LocalHeroTrailerArea provides heroTrailerArea,
+            LocalCardProgressStyle provides preferences.appPreferences.interfacePreferences.cardProgressStyle,
+            LocalShowCardInfo provides !preferences.appPreferences.interfacePreferences.hideCardInfo,
+        ) {
             NavDisplay(
                 backStack = navigationManager.backStack,
                 onBack = { navigationManager.goBack() },

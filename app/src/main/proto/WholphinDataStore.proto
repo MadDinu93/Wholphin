@@ -120,7 +120,9 @@ enum ThemeSongVolume {
 }
 
 enum AppThemeColors {
-  PURPLE = 0;
+  // Thorphin's own grey, white and black look. Wholphin's purple, the old default, had this number so that
+  // everyone who never picked a theme gets it
+  GLASS = 0;
   BLUE = 1;
   GREEN = 2;
   ORANGE = 3;
@@ -128,6 +130,7 @@ enum AppThemeColors {
   OLED_BLACK = 5;
   RED = 6;
   BROWN = 7;
+  PURPLE = 8;
 }
 
 enum EdgeStyle{
@@ -169,6 +172,13 @@ message LiveTvPreferences {
 enum NavigationStyle{
   NAVIGATION_TOP_BAR = 0;
   NAVIGATION_SIDE_DRAWER = 1;
+}
+
+enum CardProgressStyle{
+  // A thin bar along the top of the card, with the time left under it
+  PROGRESS_TOP_BAR = 0;
+  // A small bar in an opaque box in the top left corner
+  PROGRESS_TOP_COMPACT = 1;
 }
 
 enum BackdropStyle{
@@ -223,6 +233,9 @@ message InterfacePreferences {
   bool mute_hero_trailer = 19;
   // Trailers play inside the focused card instead of behind the hero
   bool card_trailers = 20;
+  CardProgressStyle card_progress_style = 21;
+  // Inverted so that the genre and rating show on cards without a migration
+  bool hide_card_info = 22;
 }
 
 message AdvancedPreferences {

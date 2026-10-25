@@ -160,6 +160,8 @@ fun sliderActiveColor(focused: Boolean): Color {
             }
         }
 
+        AppThemeColors.GLASS,
+
         AppThemeColors.OLED_BLACK -> {
             if (focused) {
                 MaterialTheme.colorScheme.primaryContainer
@@ -195,6 +197,8 @@ fun sliderInactiveColor(focused: Boolean): Color {
         -> {
             MaterialTheme.colorScheme.secondaryContainer.copy(alpha = .66f)
         }
+
+        AppThemeColors.GLASS,
 
         AppThemeColors.OLED_BLACK -> {
             if (focused) {

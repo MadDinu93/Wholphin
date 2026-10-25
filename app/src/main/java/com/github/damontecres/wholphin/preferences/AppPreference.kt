@@ -11,6 +11,7 @@ import com.github.damontecres.wholphin.WholphinApplication
 import com.github.damontecres.wholphin.services.UpdateChecker
 import com.github.damontecres.wholphin.ui.nav.Destination
 import com.github.damontecres.wholphin.ui.preferences.ConditionalPreferences
+import com.github.damontecres.wholphin.ui.preferences.InlinePreferencePage
 import com.github.damontecres.wholphin.ui.preferences.PreferenceGroup
 import com.github.damontecres.wholphin.ui.preferences.PreferenceScreenOption
 import com.github.damontecres.wholphin.ui.preferences.PreferenceValidation
@@ -560,7 +561,7 @@ sealed interface AppPreference<Pref, T> {
         val ThemeColors =
             AppChoicePreference<AppPreferences, AppThemeColors>(
                 title = R.string.app_theme,
-                defaultValue = AppThemeColors.PURPLE,
+                defaultValue = AppThemeColors.GLASS,
                 getter = { it.interfacePreferences.appThemeColors },
                 setter = { prefs, value ->
                     prefs.updateInterfacePreferences { appThemeColors = value }
@@ -593,6 +594,31 @@ sealed interface AppPreference<Pref, T> {
                 displayValues = R.array.navigation_style_options,
                 indexToValue = { NavigationStyle.forNumber(it) },
                 valueToIndex = { if (it != NavigationStyle.UNRECOGNIZED) it.number else 0 },
+            )
+
+        val CardProgressStylePref =
+            AppChoicePreference<AppPreferences, CardProgressStyle>(
+                title = R.string.card_progress_style,
+                defaultValue = CardProgressStyle.PROGRESS_TOP_BAR,
+                getter = { it.interfacePreferences.cardProgressStyle },
+                setter = { prefs, value ->
+                    prefs.updateInterfacePreferences { cardProgressStyle = value }
+                },
+                displayValues = R.array.card_progress_style_options,
+                indexToValue = { CardProgressStyle.forNumber(it) },
+                valueToIndex = { if (it != CardProgressStyle.UNRECOGNIZED) it.number else 0 },
+            )
+
+        val CardInfo =
+            AppSwitchPreference<AppPreferences>(
+                title = R.string.card_info,
+                defaultValue = true,
+                getter = { !it.interfacePreferences.hideCardInfo },
+                setter = { prefs, value ->
+                    prefs.updateInterfacePreferences { hideCardInfo = !value }
+                },
+                summaryOn = R.string.card_info_summary_on,
+                summaryOff = R.string.disabled,
             )
 
         val ShowHomeHero =
@@ -691,7 +717,7 @@ sealed interface AppPreference<Pref, T> {
         val UpdateUrl =
             AppStringPreference<AppPreferences>(
                 title = R.string.update_url,
-                defaultValue = "https://api.github.com/repos/damontecres/Wholphin/releases/latest",
+                defaultValue = "https://api.github.com/repos/MadDinu93/Thorphin/releases/latest",
                 getter = { it.updateUrl },
                 setter = { prefs, value ->
                     prefs.update { updateUrl = value }
@@ -703,12 +729,6 @@ sealed interface AppPreference<Pref, T> {
             AppDestinationPreference<AppPreferences>(
                 title = R.string.license_info,
                 destination = Destination.License,
-            )
-
-        val AdvancedSettings =
-            AppDestinationPreference<AppPreferences>(
-                title = R.string.advanced_settings,
-                destination = Destination.Settings(PreferenceScreenOption.ADVANCED),
             )
 
         val UserProfileSettings =
@@ -1231,77 +1251,6 @@ sealed interface AppPreference<Pref, T> {
     }
 }
 
-val basicPreferences =
-    listOf(
-        PreferenceGroup(
-            title = R.string.ui_interface,
-            preferences =
-                listOf(
-                    AppPreference.SignInAuto,
-                    AppPreference.RememberSelectedTab,
-                    AppPreference.PlayThemeMusic,
-                    AppPreference.SubtitleStyle,
-                    AppPreference.ThemeColors,
-                    AppPreference.NavigationStylePref,
-                    AppPreference.ShowHomeHero,
-                    AppPreference.HeroTrailer,
-                    AppPreference.CardTrailers,
-                    AppPreference.HeroTrailerSound,
-                    AppPreference.ScreensaverSettings,
-                ),
-        ),
-        PreferenceGroup(
-            title = R.string.playback,
-            preferences =
-                listOf(
-                    AppPreference.SkipForward,
-                    AppPreference.SkipBack,
-                    AppPreference.SkipBackOnResume,
-                ),
-        ),
-        PreferenceGroup(
-            title = R.string.next_up,
-            preferences =
-                listOf(
-                    AppPreference.ShowNextUpTiming,
-                    AppPreference.AutoPlayNextUp,
-                    AppPreference.AutoPlayNextDelay,
-                    AppPreference.PassOutProtection,
-                ),
-        ),
-        PreferenceGroup(
-            title = R.string.profile_specific_settings,
-            preferences =
-                listOf(
-                    AppPreference.ProtectProfilePreference,
-                    AppPreference.CustomizeHome,
-                    AppPreference.UserPinnedNavDrawerItems,
-                    AppPreference.UserInterfaceLanguage,
-                    AppPreference.UserProfileSettings,
-                ),
-        ),
-        PreferenceGroup(
-            title = R.string.about,
-            preferences =
-                buildList {
-                    add(AppPreference.InstalledVersion)
-                    if (UpdateChecker.ACTIVE) {
-                        add(AppPreference.Update)
-                    }
-                },
-        ),
-        PreferenceGroup(
-            title = R.string.more,
-            preferences =
-                buildList {
-                    if (BuildConfig.DISCOVER_ENABLED) {
-                        add(AppPreference.SeerrIntegration)
-                    }
-                    add(AppPreference.AdvancedSettings)
-                },
-        ),
-    )
-
 private val ExoPlayerSettings =
     listOf(
         AppPreference.FfmpegPreference,
@@ -1368,22 +1317,59 @@ val SkipSegmentPreferences =
         ),
     )
 
-val advancedPreferences =
+val basicPreferences =
     buildList {
         add(
             PreferenceGroup(
-                title = R.string.ui_interface,
+                title = R.string.profile,
                 preferences =
                     listOf(
+                        AppPreference.ProtectProfilePreference,
+                        AppPreference.SignInAuto,
+                        AppPreference.UserInterfaceLanguage,
+                        AppPreference.QuickConnect,
+                    ),
+            ),
+        )
+        add(
+            PreferenceGroup(
+                title = R.string.settings_appearance,
+                preferences =
+                    listOf(
+                        AppPreference.ThemeColors,
+                        AppPreference.NavigationStylePref,
+                        AppPreference.UserPinnedNavDrawerItems,
                         AppPreference.ShowClock,
-                        AppPreference.BackdropStylePref,
                         AppPreference.ShowLogos,
-                        AppPreference.ManageMedia,
+                        AppPreference.BackdropStylePref,
                         AppPreference.DisplayTogglesPref,
+                        AppPreference.RememberSelectedTab,
                         // Temporarily disabled, see https://github.com/damontecres/Wholphin/pull/127#issuecomment-3478058418
 //                    AppPreference.NavDrawerSwitchOnFocus,
-                        AppPreference.SlideshowDuration,
-                        AppPreference.SlideshowPlayVideos,
+                    ),
+            ),
+        )
+        add(
+            PreferenceGroup(
+                title = R.string.settings_home_screen,
+                preferences =
+                    listOf(
+                        AppPreference.CustomizeHome,
+                        AppPreference.ShowHomeHero,
+                        AppPreference.CardProgressStylePref,
+                        AppPreference.CardInfo,
+                    ),
+            ),
+        )
+        add(
+            PreferenceGroup(
+                title = R.string.settings_trailers_music,
+                preferences =
+                    listOf(
+                        AppPreference.HeroTrailer,
+                        AppPreference.CardTrailers,
+                        AppPreference.HeroTrailerSound,
+                        AppPreference.PlayThemeMusic,
                     ),
             ),
         )
@@ -1392,24 +1378,49 @@ val advancedPreferences =
                 title = R.string.playback,
                 preferences =
                     listOf(
+                        AppPreference.SkipForward,
+                        AppPreference.SkipBack,
+                        AppPreference.SkipBackOnResume,
                         AppPreference.OneClickPause,
                         AppPreference.ControllerTimeout,
+                        AppPreference.DpadSeekModePref,
                         AppPreference.CinemaMode,
                         AppPreference.GlobalContentScale,
                         AppPreference.SkipSegments,
-                        AppPreference.DpadSeekModePref,
-                        AppPreference.MaxResolutionPref,
-                        AppPreference.MaxBitrate,
-                        AppPreference.RefreshRateSwitching,
-                        AppPreference.ResolutionSwitching,
-                        AppPreference.PlaybackDebugInfo,
                     ),
             ),
         )
         add(
             PreferenceGroup(
-                title = R.string.player_backend,
-                preferences = listOf(AppPreference.PlayerBackendPref),
+                title = R.string.audio_and_subtitles,
+                // Shown under the audio and subtitle settings of the user's profile
+                preferences = listOf(AppPreference.SubtitleStyle),
+                inlinePage = InlinePreferencePage.USER_PROFILE,
+            ),
+        )
+        add(
+            PreferenceGroup(
+                title = R.string.next_up,
+                preferences =
+                    listOf(
+                        AppPreference.ShowNextUpTiming,
+                        AppPreference.AutoPlayNextUp,
+                        AppPreference.AutoPlayNextDelay,
+                        AppPreference.PassOutProtection,
+                    ),
+            ),
+        )
+        add(
+            PreferenceGroup(
+                title = R.string.settings_quality_player,
+                preferences =
+                    listOf(
+                        AppPreference.MaxResolutionPref,
+                        AppPreference.MaxBitrate,
+                        AppPreference.RefreshRateSwitching,
+                        AppPreference.ResolutionSwitching,
+                        AppPreference.PlayerBackendPref,
+                    ),
                 conditionalPreferences =
                     listOf(
                         ConditionalPreferences(
@@ -1434,32 +1445,49 @@ val advancedPreferences =
                     ),
             ),
         )
-        if (UpdateChecker.ACTIVE) {
-            add(
-                PreferenceGroup(
-                    title = R.string.updates,
-                    preferences =
-                        listOf(
-                            AppPreference.AutoCheckForUpdates,
-                            AppPreference.UpdateUrl,
-                        ),
-                ),
-            )
-        }
         add(
             PreferenceGroup(
-                title = R.string.more,
+                title = R.string.settings_screensaver_slideshow,
                 preferences =
                     listOf(
-                        AppPreference.QuickConnect,
-                        AppPreference.SendAppLogs,
-                        AppPreference.SendCrashReports,
-                        AppPreference.DebugLogging,
-                        AppPreference.ImageDiskCacheSize,
-                        AppPreference.ClearImageCache,
-                        ExperimentalPreference.Enable,
-                        AppPreference.OssLicenseInfo,
+                        AppPreference.ScreensaverSettings,
+                        AppPreference.SlideshowDuration,
+                        AppPreference.SlideshowPlayVideos,
                     ),
+            ),
+        )
+        add(
+            PreferenceGroup(
+                title = R.string.settings_integrations,
+                preferences =
+                    buildList {
+                        if (BuildConfig.DISCOVER_ENABLED) {
+                            add(AppPreference.SeerrIntegration)
+                        }
+                        add(AppPreference.ManageMedia)
+                    },
+            ),
+        )
+        add(
+            PreferenceGroup(
+                title = R.string.settings_system,
+                preferences =
+                    buildList {
+                        add(AppPreference.InstalledVersion)
+                        if (UpdateChecker.ACTIVE) {
+                            add(AppPreference.Update)
+                            add(AppPreference.AutoCheckForUpdates)
+                            add(AppPreference.UpdateUrl)
+                        }
+                        add(AppPreference.ImageDiskCacheSize)
+                        add(AppPreference.ClearImageCache)
+                        add(AppPreference.SendAppLogs)
+                        add(AppPreference.SendCrashReports)
+                        add(AppPreference.DebugLogging)
+                        add(AppPreference.PlaybackDebugInfo)
+                        add(AppPreference.OssLicenseInfo)
+                        add(ExperimentalPreference.Enable)
+                    },
                 conditionalPreferences =
                     listOf(
                         ConditionalPreferences(

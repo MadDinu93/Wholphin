@@ -64,7 +64,6 @@ import com.github.damontecres.wholphin.preferences.MpvPreferences
 import com.github.damontecres.wholphin.preferences.PlayerBackend
 import com.github.damontecres.wholphin.preferences.ScreensaverPreference
 import com.github.damontecres.wholphin.preferences.SkipSegmentPreferences
-import com.github.damontecres.wholphin.preferences.advancedPreferences
 import com.github.damontecres.wholphin.preferences.basicPreferences
 import com.github.damontecres.wholphin.preferences.experimentalPreferences
 import com.github.damontecres.wholphin.preferences.lazyListWrapScrolling
@@ -94,6 +93,7 @@ import com.github.damontecres.wholphin.util.DataLoadingState
 import com.github.damontecres.wholphin.util.ExceptionHandler
 import com.github.damontecres.wholphin.util.LoadingState
 import kotlinx.coroutines.launch
+import com.github.damontecres.wholphin.ui.preferences.user.UserProfilePreferencesContent
 import timber.log.Timber
 import java.util.Locale
 
@@ -162,7 +162,8 @@ fun PreferencesContent(
     val prefList =
         when (preferenceScreenOption) {
             PreferenceScreenOption.BASIC -> basicPreferences
-            PreferenceScreenOption.ADVANCED -> advancedPreferences
+            // Its settings moved into the categories of the main screen
+            PreferenceScreenOption.ADVANCED -> basicPreferences
             PreferenceScreenOption.EXO_PLAYER -> ExoPlayerPreferences
             PreferenceScreenOption.MPV -> MpvPreferences
             PreferenceScreenOption.SCREENSAVER -> screensaverPreferences
@@ -327,7 +328,34 @@ fun PreferencesContent(
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 16.dp),
                 )
-                LazyColumn(
+                if (group.inlinePage == InlinePreferencePage.USER_PROFILE) {
+                    UserProfilePreferencesContent(
+                        showTitle = false,
+                        takeFocus = false,
+                        focusRequester = focusRequester,
+                        footer = {
+                            groupPreferences.forEach { pref ->
+                                pref as AppPreference<AppPreferences, Any>
+                                item {
+                                    ComposablePreference(
+                                        preference = pref,
+                                        value = pref.getter.invoke(preferences),
+                                        onNavigate = viewModel.navigationManager::navigateTo,
+                                        onValueChange = { newValue ->
+                                            scope.launch(ExceptionHandler()) {
+                                                preferences =
+                                                    viewModel.preferenceDataStore.updateData { prefs ->
+                                                        pref.setter(prefs, newValue)
+                                                    }
+                                            }
+                                        },
+                                    )
+                                }
+                            }
+                        },
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                } else LazyColumn(
                     state = state,
                     horizontalAlignment = Alignment.Start,
                     verticalArrangement = Arrangement.spacedBy(0.dp),

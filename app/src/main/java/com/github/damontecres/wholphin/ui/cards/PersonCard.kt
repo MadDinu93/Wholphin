@@ -1,6 +1,5 @@
 package com.github.damontecres.wholphin.ui.cards
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
@@ -29,7 +28,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.tv.material3.Border
 import androidx.tv.material3.Card
 import androidx.tv.material3.CardDefaults
 import androidx.tv.material3.MaterialTheme
@@ -105,18 +103,8 @@ fun PersonCard(
             onLongClick = onLongClick,
             interactionSource = interactionSource,
             shape = CardDefaults.shape(CircleShape),
-            border =
-                CardDefaults.border(
-                    focusedBorder =
-                        Border(
-                            border =
-                                BorderStroke(
-                                    width = 3.dp,
-                                    color = MaterialTheme.colorScheme.border,
-                                ),
-                            shape = CircleShape,
-                        ),
-                ),
+            border = posterCardBorder(),
+            scale = posterCardScale(),
             colors =
                 CardDefaults.colors(
                     containerColor = Color.Transparent,
@@ -159,7 +147,8 @@ fun PersonCard(
                     Modifier
                         .fillMaxWidth()
                         .aspectRatio(AspectRatios.SQUARE)
-                        .clip(CircleShape),
+                        .clip(CircleShape)
+                        .glassHighlight(interactionSource, CircleShape),
             )
         }
         SlidingCardText(focused) {

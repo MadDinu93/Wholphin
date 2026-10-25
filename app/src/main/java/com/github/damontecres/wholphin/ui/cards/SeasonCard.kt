@@ -70,6 +70,7 @@ fun SeasonCard(
         interactionSource = interactionSource,
         showImageOverlay = showImageOverlay,
         aspectRatio = aspectRatio,
+        item = item,
     )
 }
 
@@ -136,6 +137,7 @@ fun SeasonCard(
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     showImageOverlay: Boolean = false,
     aspectRatio: Float = AspectRatios.TALL,
+    item: BaseItem? = null,
 ) {
     val focused by interactionSource.collectIsFocusedAsState()
     // Do not use `by` here, this way we are Defer reads and recompositions to only when modifier calculates
@@ -162,6 +164,9 @@ fun SeasonCard(
             onClick = onClick,
             onLongClick = onLongClick,
             interactionSource = interactionSource,
+            shape = CardDefaults.shape(PosterCardShape),
+            border = posterCardBorder(),
+            scale = posterCardScale(),
             colors =
                 CardDefaults.colors(
                     containerColor = Color.Transparent,
@@ -170,7 +175,8 @@ fun SeasonCard(
             Box(
                 modifier =
                     Modifier
-                        .fillMaxSize(),
+                        .fillMaxSize()
+                        .glassHighlight(interactionSource),
             ) {
                 ItemCardImage(
                     imageUrl = imageUrl,
@@ -181,6 +187,8 @@ fun SeasonCard(
                     unwatchedCount = unplayedItemCount,
                     watchedPercent = playedPercentage,
                     numberOfVersions = numberOfVersions,
+                    item = item,
+                    showInfo = aspectRatio < 1f,
                     useFallbackText = false,
                     modifier =
                         Modifier

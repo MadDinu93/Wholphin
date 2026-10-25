@@ -80,6 +80,7 @@ import com.github.damontecres.wholphin.ui.seekBack
 import com.github.damontecres.wholphin.ui.seekForward
 import com.github.damontecres.wholphin.ui.skipStringRes
 import com.github.damontecres.wholphin.ui.theme.LocalTheme
+import com.github.damontecres.wholphin.ui.theme.isMonochrome
 import com.github.damontecres.wholphin.ui.theme.WholphinTheme
 import com.github.damontecres.wholphin.ui.tryRequestFocus
 import com.github.damontecres.wholphin.util.ExceptionHandler
@@ -491,7 +492,7 @@ fun PlaybackButton(
             painter = painterResource(iconRes),
             contentDescription = "",
             tint =
-                if (LocalTheme.current == AppThemeColors.OLED_BLACK) {
+                if (LocalTheme.current.isMonochrome) {
                     LocalContentColor.current
                 } else {
                     MaterialTheme.colorScheme.onSurface
@@ -535,7 +536,7 @@ fun PlaybackFaButton(
             color =
                 if (textColor.isSpecified) {
                     textColor
-                } else if (LocalTheme.current == AppThemeColors.OLED_BLACK) {
+                } else if (LocalTheme.current.isMonochrome) {
                     LocalContentColor.current
                 } else {
                     MaterialTheme.colorScheme.onSurface

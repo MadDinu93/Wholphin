@@ -506,5 +506,15 @@ class AppUpgradeHandler
                     }
                 }
             }
+            // Thorphin's own releases instead of Wholphin's, unless the user set another address
+            appPreferences.updateData {
+                if (it.updateUrl == WHOLPHIN_UPDATE_URL) {
+                    it.update { updateUrl = AppPreference.UpdateUrl.defaultValue }
+                } else {
+                    it
+                }
+            }
         }
     }
+
+private const val WHOLPHIN_UPDATE_URL = "https://api.github.com/repos/damontecres/Wholphin/releases/latest"

@@ -169,6 +169,12 @@ sealed class Destination(
     @Serializable
     data object NowPlaying : Destination(true)
 
+    /** A trailer given as a link to the video itself, played full screen */
+    @Serializable
+    data class TrailerVideo(
+        val url: String,
+    ) : Destination(true)
+
     @Serializable
     data object UpdateApp : Destination(true)
 

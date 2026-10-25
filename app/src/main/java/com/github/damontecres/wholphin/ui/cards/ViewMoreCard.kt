@@ -88,6 +88,9 @@ fun ViewMoreCard(
             onClick = onClick,
             onLongClick = onLongClick,
             interactionSource = interactionSource,
+            shape = CardDefaults.shape(PosterCardShape),
+            border = posterCardBorder(),
+            scale = posterCardScale(),
             colors =
                 CardDefaults.colors(
                     containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp),
@@ -95,7 +98,7 @@ fun ViewMoreCard(
         ) {
             Box(
                 contentAlignment = Alignment.Center,
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxSize().glassHighlight(interactionSource),
             ) {
                 Icon(
                     imageVector = Icons.Default.ArrowForward,

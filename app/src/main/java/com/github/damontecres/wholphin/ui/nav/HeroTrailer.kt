@@ -1,12 +1,5 @@
 package com.github.damontecres.wholphin.ui.nav
 
-import android.annotation.SuppressLint
-import android.graphics.Color as AndroidColor
-import android.net.Uri
-import android.view.ViewGroup
-import android.webkit.JavascriptInterface
-import android.webkit.WebView
-import android.webkit.WebViewClient
 import androidx.annotation.OptIn
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.animateFloatAsState
@@ -40,7 +33,6 @@ import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -263,9 +255,10 @@ fun TrailerPlayer(
     val playerModifier = modifier.graphicsLayer { this.alpha = alpha }
     when (trailer) {
         is HeroTrailerSource.Local -> {
-            LocalTrailerPlayer(
+            TrailerVideoPlayer(
                 heroTrailerService = heroTrailerService,
                 url = trailer.url,
+                fromServer = true,
                 muted = muted,
                 onPlaying = onPlaying,
                 onEnded = onEnded,
@@ -273,9 +266,11 @@ fun TrailerPlayer(
             )
         }
 
-        is HeroTrailerSource.YouTube -> {
-            YouTubeTrailerPlayer(
-                videoId = trailer.videoId,
+        is HeroTrailerSource.Direct -> {
+            TrailerVideoPlayer(
+                heroTrailerService = heroTrailerService,
+                url = trailer.url,
+                fromServer = false,
                 muted = muted,
                 onPlaying = onPlaying,
                 onEnded = onEnded,
@@ -287,15 +282,16 @@ fun TrailerPlayer(
 
 @OptIn(UnstableApi::class)
 @Composable
-private fun LocalTrailerPlayer(
+private fun TrailerVideoPlayer(
     heroTrailerService: HeroTrailerService,
     url: String,
+    fromServer: Boolean,
     muted: Boolean,
     onPlaying: () -> Unit,
     onEnded: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val player = remember(url) { heroTrailerService.createPlayer() }
+    val player = remember(url) { heroTrailerService.createPlayer(fromServer) }
     val currentOnPlaying by rememberUpdatedState(onPlaying)
     val currentOnEnded by rememberUpdatedState(onEnded)
     DisposableEffect(player) {
@@ -332,143 +328,3 @@ private fun LocalTrailerPlayer(
         modifier = modifier,
     )
 }
-
-@SuppressLint("SetJavaScriptEnabled")
-@Composable
-private fun YouTubeTrailerPlayer(
-    videoId: String,
-    muted: Boolean,
-    onPlaying: () -> Unit,
-    onEnded: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val currentOnPlaying by rememberUpdatedState(onPlaying)
-    val currentOnEnded by rememberUpdatedState(onEnded)
-    AndroidView(
-        factory = { context ->
-            WebView(context).apply {
-                layoutParams =
-                    ViewGroup.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                    )
-                // Only a picture, the D-pad must stay on the rows
-                isFocusable = false
-                isFocusableInTouchMode = false
-                descendantFocusability = ViewGroup.FOCUS_BLOCK_DESCENDANTS
-                setBackgroundColor(AndroidColor.TRANSPARENT)
-                settings.javaScriptEnabled = true
-                settings.domStorageEnabled = true
-                settings.mediaPlaybackRequiresUserGesture = false
-                addJavascriptInterface(
-                    object {
-                        @JavascriptInterface
-                        fun onReveal() {
-                            post { currentOnPlaying() }
-                        }
-
-                        @JavascriptInterface
-                        fun onEnded() {
-                            post { currentOnEnded() }
-                        }
-                    },
-                    "Thorphin",
-                )
-                val script = youTubeCleanupScript(muted)
-                webViewClient =
-                    object : WebViewClient() {
-                        override fun onPageFinished(
-                            view: WebView,
-                            url: String?,
-                        ) {
-                            view.evaluateJavascript(script, null)
-                        }
-                    }
-                // The embed page is loaded directly rather than in an iframe, so its player UI can be hidden.
-                // YouTube refuses embeds (error 152) unless the referrer identifies the app.
-                val origin = "https://" + context.packageName
-                loadUrl(youTubeEmbedUrl(videoId, muted, origin), mapOf("Referer" to "$origin/"))
-            }
-        },
-        onRelease = {
-            it.stopLoading()
-            it.destroy()
-        },
-        modifier = modifier,
-    )
-}
-
-private fun youTubeEmbedUrl(
-    videoId: String,
-    muted: Boolean,
-    origin: String,
-) = "https://www.youtube.com/embed/$videoId?autoplay=1&mute=${if (muted) 1 else 0}&controls=0&disablekb=1&fs=0" +
-    "&iv_load_policy=3&modestbranding=1&playsinline=1&rel=0&cc_load_policy=0&origin=${Uri.encode(origin)}"
-
-/**
- * Hides every part of the YouTube player UI (play button, play/pause icon, title, logo, spinner, end screen) and
- * drives the video element directly: the app is told to show it on the first frame and to go back to the image just
- * before the end, so the suggestions never appear.
- */
-private fun youTubeCleanupScript(muted: Boolean): String =
-    """
-    (function() {
-      if (window.__thorphin) return;
-      window.__thorphin = true;
-      // YouTube renames its player classes, so instead of hiding them one by one everything is made invisible
-      // and only the video element is shown again (visibility, unlike display, can be undone by a child)
-      var style = document.createElement('style');
-      style.textContent =
-        '* { visibility: hidden !important; }' +
-        // The player places the video with offsets of its own, pinned here so it fills the frame exactly
-        'video { visibility: visible !important; object-fit: cover !important; position: fixed !important;' +
-        ' top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important;' +
-        ' margin: 0 !important; transform: none !important; }' +
-        'html, body { background: transparent !important; }';
-      function keepStyle() {
-        if (!style.isConnected) (document.head || document.documentElement).appendChild(style);
-      }
-      keepStyle();
-      setInterval(keepStyle, 250);
-      var tries = 0;
-      function hook() {
-        var video = document.querySelector('video');
-        if (!video) {
-          if (document.querySelector('.ytp-error') || ++tries > 100) {
-            console.log('HeroTrailer no video');
-            Thorphin.onEnded();
-          } else {
-            setTimeout(hook, 100);
-          }
-          return;
-        }
-        var revealed = false;
-        var ended = false;
-        video.muted = $muted;
-        if (!$muted) video.volume = 1;
-        video.addEventListener('timeupdate', function() {
-          if (!revealed && video.currentTime > 0.1) {
-            revealed = true;
-            console.log('HeroTrailer reveal');
-            Thorphin.onReveal();
-          }
-          if (!ended && video.duration > 0 && video.currentTime >= video.duration - 1) {
-            ended = true;
-            Thorphin.onEnded();
-          }
-        });
-        video.addEventListener('ended', function() {
-          if (!ended) { ended = true; Thorphin.onEnded(); }
-        });
-        var started = video.play();
-        if (started && started.catch) {
-          started.catch(function(e) {
-            console.log('HeroTrailer play failed ' + e);
-            video.muted = true;
-            video.play();
-          });
-        }
-      }
-      hook();
-    })();
-    """.trimIndent()

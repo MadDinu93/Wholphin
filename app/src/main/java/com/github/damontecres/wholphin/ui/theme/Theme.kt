@@ -8,6 +8,7 @@ import com.github.damontecres.wholphin.preferences.AppThemeColors
 import com.github.damontecres.wholphin.ui.theme.colors.BlueThemeColors
 import com.github.damontecres.wholphin.ui.theme.colors.BoldBlueThemeColors
 import com.github.damontecres.wholphin.ui.theme.colors.BrownThemeColors
+import com.github.damontecres.wholphin.ui.theme.colors.GlassThemeColors
 import com.github.damontecres.wholphin.ui.theme.colors.GreenThemeColors
 import com.github.damontecres.wholphin.ui.theme.colors.OledThemeColors
 import com.github.damontecres.wholphin.ui.theme.colors.OrangeThemeColors
@@ -15,10 +16,11 @@ import com.github.damontecres.wholphin.ui.theme.colors.PurpleThemeColors
 import com.github.damontecres.wholphin.ui.theme.colors.RedThemeColors
 
 val LocalTheme =
-    compositionLocalOf<AppThemeColors> { AppThemeColors.PURPLE }
+    compositionLocalOf<AppThemeColors> { AppThemeColors.GLASS }
 
 fun getThemeColors(appThemeColors: AppThemeColors): ThemeColors =
     when (appThemeColors) {
+        AppThemeColors.GLASS -> GlassThemeColors
         AppThemeColors.PURPLE -> PurpleThemeColors
         AppThemeColors.BLUE -> BlueThemeColors
         AppThemeColors.GREEN -> GreenThemeColors
@@ -27,13 +29,19 @@ fun getThemeColors(appThemeColors: AppThemeColors): ThemeColors =
         AppThemeColors.BOLD_BLUE -> BoldBlueThemeColors
         AppThemeColors.RED -> RedThemeColors
         AppThemeColors.BROWN -> BrownThemeColors
-        AppThemeColors.UNRECOGNIZED -> PurpleThemeColors
+        AppThemeColors.UNRECOGNIZED -> GlassThemeColors
     }
+
+/**
+ * Themes of greys only, which some components draw differently so they do not disappear
+ */
+val AppThemeColors.isMonochrome: Boolean
+    get() = this == AppThemeColors.OLED_BLACK || this == AppThemeColors.GLASS
 
 @Composable
 fun WholphinTheme(
     darkTheme: Boolean = true,
-    appThemeColors: AppThemeColors = AppThemeColors.PURPLE,
+    appThemeColors: AppThemeColors = AppThemeColors.GLASS,
     content: @Composable () -> Unit,
 ) {
     val themeColors = getThemeColors(appThemeColors)

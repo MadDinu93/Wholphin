@@ -87,6 +87,9 @@ fun DiscoverItemCard(
             onClick = onClick,
             onLongClick = onLongClick,
             interactionSource = interactionSource,
+            shape = CardDefaults.shape(PosterCardShape),
+            border = posterCardBorder(),
+            scale = posterCardScale(),
             colors =
                 CardDefaults.colors(
                     containerColor = Color.Transparent,
@@ -95,7 +98,8 @@ fun DiscoverItemCard(
             Box(
                 modifier =
                     Modifier
-                        .fillMaxSize(),
+                        .fillMaxSize()
+                        .glassHighlight(interactionSource),
             ) {
                 ItemCardImage(
                     imageUrl = item?.posterUrl,

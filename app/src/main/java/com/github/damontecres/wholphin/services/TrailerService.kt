@@ -28,7 +28,7 @@ class TrailerService
         fun getRemoteTrailers(item: BaseItem): List<Trailer> =
             item.data.remoteTrailers
                 ?.mapNotNull { t ->
-                    t.url?.let { url ->
+                    t.url?.unwrapTrailerUrl()?.let { url ->
                         val name =
                             t.name
                                 // TODO would be nice to clean up the trailer name
@@ -97,8 +97,13 @@ class TrailerService
                     }
 
                     is RemoteTrailer -> {
-                        val intent = Intent(Intent.ACTION_VIEW, trailer.url.toUri())
-                        context.startActivity(intent)
+                        if (trailer.url.isVideoUrl()) {
+                            // A video file, such as from the Thorphin Trailers add-on, plays in the app
+                            navigateTo.invoke(Destination.TrailerVideo(trailer.url))
+                        } else {
+                            // A web page, such as YouTube, opens in the app that handles it
+                            context.startActivity(Intent(Intent.ACTION_VIEW, trailer.url.toUri()))
+                        }
                     }
                 }
             }

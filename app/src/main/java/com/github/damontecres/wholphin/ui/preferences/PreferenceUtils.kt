@@ -18,7 +18,16 @@ data class PreferenceGroup<T>(
     @param:StringRes val title: Int,
     val preferences: List<AppPreference<T, out Any?>>,
     val conditionalPreferences: List<ConditionalPreferences<T>> = listOf(),
+    val inlinePage: InlinePreferencePage? = null,
 )
+
+/**
+ * Settings kept elsewhere that a category shows in place of its own [PreferenceGroup.preferences]
+ */
+enum class InlinePreferencePage {
+    /** The audio and subtitle settings of the user's profile, see [com.github.damontecres.wholphin.preferences.UserProfileSettings] */
+    USER_PROFILE,
+}
 
 data class ConditionalPreferences<T>(
     val condition: (T) -> Boolean,

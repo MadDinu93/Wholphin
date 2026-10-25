@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
 import androidx.tv.material3.Card
+import androidx.tv.material3.CardDefaults
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import coil3.compose.AsyncImage
@@ -59,13 +60,17 @@ fun ChapterCard(
             )
         }
     var width by remember { mutableStateOf(AspectRatios.WIDE * cardHeight) }
+    val cardInteractionSource = interactionSource ?: remember { MutableInteractionSource() }
     Card(
         modifier = modifier.height(cardHeight),
         onClick = onClick,
         onLongClick = onLongClick,
-        interactionSource = interactionSource,
+        interactionSource = cardInteractionSource,
+        shape = CardDefaults.shape(PosterCardShape),
+        border = posterCardBorder(),
+        scale = posterCardScale(),
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = Modifier.fillMaxSize().glassHighlight(cardInteractionSource)) {
             AsyncImage(
                 model = imageUrl,
                 contentDescription = null,

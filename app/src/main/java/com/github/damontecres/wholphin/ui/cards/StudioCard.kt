@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -71,6 +70,9 @@ fun StudioCard(
         onClick = onClick,
         onLongClick = onLongClick,
         interactionSource = interactionSource,
+        shape = CardDefaults.shape(PosterCardShape),
+        border = posterCardBorder(),
+        scale = posterCardScale(),
         colors =
             CardDefaults.colors(
                 containerColor = Color.Transparent,
@@ -82,7 +84,8 @@ fun StudioCard(
                 Modifier
                     .aspectRatio(AspectRatios.WIDE)
                     .fillMaxSize()
-                    .clip(RoundedCornerShape(8.dp)),
+                    .clip(PosterCardShape)
+                    .glassHighlight(interactionSource),
         ) {
             if (imageUrl != null && !error) {
                 AsyncImage(
