@@ -64,3 +64,6 @@ app/src/main/jnilibs
 app/src/main/jnilibs/
 scripts/mpv/deps/
 scripts/mpv/prefix/
+
+# Screenshots from a real library, with posters and people the app has no rights to
+store/screenshots/

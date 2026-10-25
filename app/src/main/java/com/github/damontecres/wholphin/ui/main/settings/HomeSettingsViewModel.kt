@@ -303,13 +303,8 @@ class HomeSettingsViewModel
                 val newRow =
                     when (rowType) {
                         LibraryRowType.RECENTLY_ADDED -> {
-                            val title =
-                                library.name.let {
-                                    ResArgStringProvider(
-                                        R.string.recently_added_in,
-                                        it,
-                                    )
-                                }
+                            // Thorphin: the library's own name, not "Recently added in ..."
+                            val title = StringStringProvider(library.name)
                             HomeRowConfigDisplay(
                                 id = id,
                                 title = title,

@@ -106,6 +106,20 @@ configure<ApplicationExtension> {
                 enableV4Signing = true
             }
         }
+        // Thorphin: the Google Play upload key, from local.properties (release.signing.config=upload)
+        val localPropertiesFile = project.rootProject.file("local.properties")
+        if (localPropertiesFile.exists()) {
+            val properties = Properties()
+            localPropertiesFile.inputStream().use { properties.load(it) }
+            properties.getProperty("upload.storeFile")?.let { uploadStoreFile ->
+                create("upload") {
+                    storeFile = file(uploadStoreFile)
+                    storePassword = properties.getProperty("upload.storePassword")
+                    keyAlias = properties.getProperty("upload.keyAlias")
+                    keyPassword = properties.getProperty("upload.keyPassword")
+                }
+            }
+        }
     }
 
     buildTypes {
@@ -220,6 +234,14 @@ configure<ApplicationExtension> {
 }
 
 androidComponents {
+    // Builds for profiling and trying out on a device stay on the debug key, so they install over each other. Set
+    // here, the baseline profile plugin gives them the release key after the build types are configured.
+    val debugSigning = extensions.getByType<ApplicationExtension>().signingConfigs.getByName("debug")
+    onVariants(selector().all()) { variant ->
+        if (variant.buildType == "nonMinifiedRelease" || variant.buildType == "benchmarkRelease") {
+            variant.signingConfig.setConfig(debugSigning)
+        }
+    }
     onVariants(selector().all()) { variant ->
         variant.outputs
             .map { it as com.android.build.api.variant.impl.VariantOutputImpl }

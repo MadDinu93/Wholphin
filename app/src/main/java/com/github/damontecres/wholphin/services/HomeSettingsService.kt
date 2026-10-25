@@ -416,11 +416,8 @@ class HomeSettingsService
                                         viewOptionsForCollectionType(library.collectionType)
                                     HomeRowConfigDisplay(
                                         id = id++,
-                                        title =
-                                            ResArgStringProvider(
-                                                R.string.recently_added_in,
-                                                library.name ?: "",
-                                            ),
+                                        // Thorphin: the library's own name, not "Recently added in ..."
+                                        title = StringStringProvider(library.name ?: ""),
                                         config =
                                             HomeRowConfig.RecentlyAdded(
                                                 parentId = library.itemId,
@@ -504,7 +501,8 @@ class HomeSettingsService
                 }
 
                 is HomeRowConfig.RecentlyAdded -> {
-                    val title = getItemName(R.string.recently_added_in, config.parentId)
+                    // Thorphin: the library's own name, not "Recently added in ..."
+                    val title = getItemName(null, config.parentId)
                     HomeRowConfigDisplay(
                         id,
                         title,
@@ -661,8 +659,9 @@ class UnsupportedHomeSettingsVersionException(
     val maxSupportedVersion: Int = SUPPORTED_HOME_PAGE_SETTINGS_VERSION,
 ) : Exception("Unsupported version $unsupportedVersion, max supported is $maxSupportedVersion")
 
+// Thorphin: the library's own name, not "Recently added in ..."
 fun getRecentlyAddedTitle(name: String?): StringProvider =
-    name?.let { ResArgStringProvider(R.string.recently_added_in, it) }
+    name?.let { StringStringProvider(it) }
         ?: ResStringProvider(R.string.recently_added)
 
 fun viewOptionsForCollectionType(collectionType: CollectionType?): HomeRowViewOptions =
