@@ -138,6 +138,13 @@ class NavDrawerViewModel
                     )
                 }
 
+                NavDrawerItem.Libraries -> {
+                    setIndex(index)
+                    navigationManager.navigateToFromDrawer(
+                        Destination.Libraries,
+                    )
+                }
+
                 is ServerNavDrawerItem -> {
                     setIndex(index)
                     navigationManager.navigateToFromDrawer(item.destination)
@@ -161,17 +168,17 @@ class NavDrawerViewModel
         fun updateSelectedIndex() {
             viewModelScope.launchDefault {
                 val asDestinations =
-                    buildList {
-                        addAll(serviceState.value.items)
-                        addAll(serviceState.value.moreItems)
-                    }.map {
+                    serviceState.value.items.map {
                         when (it) {
                             is ServerNavDrawerItem -> it.destination
                             is NavDrawerItem.Favorites -> Destination.Favorites
                             is NavDrawerItem.Discover -> Destination.Discover
+                            is NavDrawerItem.Libraries -> Destination.Libraries
                             else -> null
                         }
                     }
+                val librariesIndex = asDestinations.indexOf(Destination.Libraries)
+                val libraryIds = serviceState.value.allLibraries.map { it.itemId }.toSet()
 
                 val backstack = navigationManager.backStack.toList().reversed()
                 for (i in 0..<backstack.size) {
@@ -187,6 +194,9 @@ class NavDrawerViewModel
                             val idx = asDestinations.indexOf(key)
                             if (idx >= 0) {
                                 idx
+                            } else if (librariesIndex >= 0 && key.libraryId() in libraryIds) {
+                                // A library which is reached through the Library page, not its own drawer row
+                                librariesIndex
                             } else {
                                 null
                             }
@@ -243,6 +253,14 @@ sealed interface NavDrawerItem {
 
         override fun name(context: Context): String = context.getString(R.string.discover)
     }
+
+    /** Opens a page with every library, so they do not each need a row in the drawer */
+    object Libraries : NavDrawerItem {
+        override val id: String
+            get() = "a_libraries"
+
+        override fun name(context: Context): String = context.getString(R.string.library)
+    }
 }
 
 /**
@@ -262,6 +280,13 @@ data class ServerNavDrawerItem(
         fun getId(itemId: UUID) = "s_" + itemId.toServerString()
     }
 }
+
+private fun Destination.libraryId(): UUID? =
+    when (this) {
+        is Destination.MediaItem -> itemId
+        is Destination.Recordings -> itemId
+        else -> null
+    }
 
 private const val HOME_INDEX = -1
 private const val SEARCH_INDEX = -2
@@ -464,60 +489,6 @@ fun NavDrawer(
                                         ),
                             )
                         }
-                        if (serviceState.moreItems.isNotEmpty()) {
-                            item {
-                                val index = serviceState.items.size
-                                val interactionSource = remember { MutableInteractionSource() }
-                                NavItem(
-                                    library = NavDrawerItem.More,
-                                    selected = false,
-                                    moreExpanded = moreExpanded,
-                                    drawerOpen = isOpen,
-                                    interactionSource = interactionSource,
-                                    onClick = {
-                                        viewModel.onClickDrawerItem(index, NavDrawerItem.More)
-                                    },
-                                    modifier =
-                                        Modifier
-                                            .ifElse(
-                                                selectedIndex == index,
-                                                Modifier.focusRequester(focusRequester),
-                                            ),
-                                )
-                            }
-                        }
-                        if (moreExpanded) {
-                            itemsIndexed(serviceState.moreItems) { index, it ->
-                                val adjustedIndex =
-                                    remember(serviceState) { (index + serviceState.items.size) }
-                                val interactionSource = remember { MutableInteractionSource() }
-                                NavItem(
-                                    library = it,
-                                    selected = selectedIndex == adjustedIndex,
-                                    moreExpanded = moreExpanded,
-                                    drawerOpen = isOpen,
-                                    onClick = {
-                                        viewModel.onClickDrawerItem(
-                                            adjustedIndex,
-                                            it,
-                                        )
-                                    },
-                                    containerColor =
-                                        if (isOpen) {
-                                            MaterialTheme.colorScheme.surface.copy(alpha = .5f)
-                                        } else {
-                                            Color.Unspecified
-                                        },
-                                    interactionSource = interactionSource,
-                                    modifier =
-                                        Modifier
-                                            .ifElse(
-                                                selectedIndex == adjustedIndex,
-                                                Modifier.focusRequester(focusRequester),
-                                            ),
-                                )
-                            }
-                        }
                         item {
                             val interactionSource = remember { MutableInteractionSource() }
                             IconNavItem(
@@ -672,6 +643,10 @@ fun NavigationDrawerScope.NavItem(
 
                 NavDrawerItem.Discover -> {
                     R.string.fa_magnifying_glass_plus
+                }
+
+                NavDrawerItem.Libraries -> {
+                    R.string.fa_layer_group
                 }
 
                 is ServerNavDrawerItem -> {

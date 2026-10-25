@@ -55,6 +55,7 @@ import com.github.damontecres.wholphin.ui.launchDefault
 import com.github.damontecres.wholphin.ui.launchIO
 import com.github.damontecres.wholphin.ui.main.settings.MoveDirection
 import com.github.damontecres.wholphin.ui.nav.NavDrawerItem
+import com.github.damontecres.wholphin.ui.nav.ServerNavDrawerItem
 import com.github.damontecres.wholphin.ui.theme.WholphinTheme
 import com.github.damontecres.wholphin.util.ExceptionHandler
 import com.github.damontecres.wholphin.util.WholphinDispatchers
@@ -330,9 +331,13 @@ class NavDrawerPreferencesViewModel
                         }.mapNotNull {
                             if (!seerr && it is NavDrawerItem.Discover) {
                                 null
+                            } else if (it is NavDrawerItem.Libraries) {
+                                // Always in the drawer
+                                null
                             } else {
-                                // Assume pinned if unknown
-                                val pinned = navDrawerPins[it.id]?.type ?: NavPinType.PINNED
+                                // Built-in pages are assumed pinned if unknown, libraries are not, as in NavDrawerService
+                                val defaultPin = if (it is ServerNavDrawerItem) NavPinType.UNPINNED else NavPinType.PINNED
+                                val pinned = navDrawerPins[it.id]?.type ?: defaultPin
                                 NavDrawerPin(
                                     it.id,
                                     it.name(context),

@@ -201,20 +201,10 @@ class NavDrawerService
             val libraries =
                 allLibraries
                     .map {
-                        val destination =
-                            if (it.isRecordingFolder) {
-                                Destination.Recordings(it.itemId)
-                            } else {
-                                Destination.MediaItem(
-                                    it.itemId,
-                                    it.type,
-                                    it.collectionType,
-                                )
-                            }
                         ServerNavDrawerItem(
                             itemId = it.itemId,
                             name = it.name,
-                            destination = destination,
+                            destination = it.destination(),
                             type = it.collectionType,
                         )
                     }
@@ -225,7 +215,9 @@ class NavDrawerService
                     serverPreferencesDao.getNavDrawerPinnedItems(user).associateBy { it.itemId }
                 }
 
-            val items = mutableListOf<NavDrawerItem>()
+            // Every library is on the Library page; the drawer only lists the ones the user pinned
+            // explicitly, so that a server with many catalogs does not push Settings off screen
+            val items = mutableListOf<NavDrawerItem>(NavDrawerItem.Libraries)
             val moreItems = mutableListOf<NavDrawerItem>()
             allItems
                 // Sort by order if non-default, existing items before customize will have -1 value
@@ -233,11 +225,13 @@ class NavDrawerService
                 // Items the user doesn't have access to anymore will be skipped
                 .sortedBy { navDrawerPins[it.id]?.order?.takeIf { it >= 0 } ?: Int.MAX_VALUE }
                 .forEach {
-                    // Assume pinned if unknown
-                    val pinned = navDrawerPins[it.id]?.type ?: NavPinType.PINNED
+                    // Built-in pages are assumed pinned if unknown, libraries are not
+                    val defaultPin = if (it is ServerNavDrawerItem) NavPinType.UNPINNED else NavPinType.PINNED
+                    val pinned = navDrawerPins[it.id]?.type ?: defaultPin
                     if (pinned == NavPinType.PINNED) {
                         items.add(it)
                     } else {
+                        // Not shown in the drawer, but kept for the drawer customization settings
                         moreItems.add(it)
                     }
                 }
@@ -261,3 +255,11 @@ data class NavDrawerItemState(
 )
 
 val UserDto.tvAccess: Boolean get() = policy?.enableLiveTvAccess == true
+
+/** The page a library opens to, from the nav drawer or the Library page */
+fun Library.destination(): Destination =
+    if (isRecordingFolder) {
+        Destination.Recordings(itemId)
+    } else {
+        Destination.MediaItem(itemId, type, collectionType)
+    }
