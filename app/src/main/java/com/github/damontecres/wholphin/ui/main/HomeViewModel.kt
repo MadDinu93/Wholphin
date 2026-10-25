@@ -38,7 +38,6 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
@@ -229,46 +228,41 @@ class HomeViewModel
                             }
                         }
 
-                if (refresh) {
-                    // Replace rows as they complete
-                    val remaining = deferred.withIndex().toMutableList()
-                    while (remaining.isNotEmpty()) {
-                        val (rowIndex, rowData) =
-                            select {
-                                // "Return" the first remaining that is completed
-                                remaining
-                                    .forEach { (rowIndex, deferred) ->
-                                        deferred.onAwait { rowIndex to it }
-                                    }
-                            }
-                        Timber.v("Got row data index=%s", rowIndex)
-                        remaining.removeIf { it.index == rowIndex }
-                        _state.update { state ->
-                            val newRows =
-                                state.homeRows.toMutableList().apply {
-                                    set(rowIndex, rowData)
+                // Replace rows as they complete. On a first load the page is shown as soon as its first row is
+                // ready, rather than waiting for the slowest row
+                val remaining = deferred.withIndex().toMutableList()
+                while (remaining.isNotEmpty()) {
+                    val (rowIndex, rowData) =
+                        select {
+                            // "Return" the first remaining that is completed
+                            remaining
+                                .forEach { (rowIndex, deferred) ->
+                                    deferred.onAwait { rowIndex to it }
                                 }
-                            state.copy(
-                                homeRows = newRows,
-                            )
                         }
-                    }
-                    _state.update {
-                        it.copy(
-                            loadingState = LoadingState.Success,
-                            refreshState = LoadingState.Success,
+                    Timber.v("Got row data index=%s", rowIndex)
+                    remaining.removeIf { it.index == rowIndex }
+                    _state.update { state ->
+                        val newRows =
+                            state.homeRows.toMutableList().apply {
+                                set(rowIndex, rowData)
+                            }
+                        state.copy(
+                            homeRows = newRows,
+                            loadingState =
+                                if (refresh || isFirstRowReady(newRows)) {
+                                    LoadingState.Success
+                                } else {
+                                    state.loadingState
+                                },
                         )
                     }
-                } else {
-                    val rows = deferred.awaitAll()
-                    Timber.v("Got all rows")
-                    _state.update {
-                        it.copy(
-                            loadingState = LoadingState.Success,
-                            refreshState = LoadingState.Success,
-                            homeRows = rows,
-                        )
-                    }
+                }
+                _state.update {
+                    it.copy(
+                        loadingState = LoadingState.Success,
+                        refreshState = LoadingState.Success,
+                    )
                 }
                 Timber.d("Home page load complete")
             } catch (ex: CancellationException) {
@@ -378,6 +372,14 @@ data class HomeState(
             )
     }
 }
+
+/**
+ * Whether the first row that will be shown has loaded, empty rows are not shown
+ */
+private fun isFirstRowReady(rows: List<HomeRowLoadingState>): Boolean =
+    rows
+        .firstOrNull { !(it is HomeRowLoadingState.Success && it.items.isEmpty()) }
+        .let { it !is HomeRowLoadingState.Pending && it !is HomeRowLoadingState.Loading }
 
 /**
  * Whether a row is a "is watching" type

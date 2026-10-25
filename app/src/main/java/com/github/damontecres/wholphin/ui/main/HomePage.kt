@@ -43,6 +43,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
@@ -393,11 +394,20 @@ fun HomePageContent(
                 if (heroTrailerArea != null) {
                     DisposableEffect(heroTrailerArea) { onDispose { heroTrailerArea.bottom = 0f } }
                 }
+                // The first row's title sits right under the hero, see ItemRowTitle
+                val textMeasurer = rememberTextMeasurer()
+                val rowTitleStyle = MaterialTheme.typography.titleLarge
+                val rowTitleHeight =
+                    remember(textMeasurer, rowTitleStyle) {
+                        textMeasurer.measure("Continue watching", rowTitleStyle).size.height
+                    }
                 Box(
                     modifier =
                         if (heroTrailerArea != null) {
-                            // Tells the trailer where the hero ends, so it stays above the rows
-                            Modifier.onGloballyPositioned { heroTrailerArea.bottom = it.boundsInRoot().bottom }
+                            // Tells the trailer to end level with the bottom of the first row's title
+                            Modifier.onGloballyPositioned {
+                                heroTrailerArea.bottom = it.boundsInRoot().bottom + rowTitleHeight
+                            }
                         } else {
                             Modifier
                         },

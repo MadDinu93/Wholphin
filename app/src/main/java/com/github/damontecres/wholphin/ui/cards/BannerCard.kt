@@ -99,6 +99,8 @@ fun BannerCard(
         }
     var imageError by remember(imageUrl) { mutableStateOf(false) }
 
+    val cardInteractionSource = interactionSource ?: remember { MutableInteractionSource() }
+
     // Stabilize callbacks to prevent AsyncImage from recomposing
     val currentOnClick by rememberUpdatedState(onClick)
     val currentOnLongClick by rememberUpdatedState(onLongClick)
@@ -107,9 +109,10 @@ fun BannerCard(
         modifier = modifier.size(cardHeight * aspectRatio, cardHeight),
         onClick = { currentOnClick() },
         onLongClick = { currentOnLongClick() },
-        interactionSource = interactionSource,
+        interactionSource = cardInteractionSource,
         shape = CardDefaults.shape(PosterCardShape),
         border = posterCardBorder(),
+        scale = posterCardScale(),
         colors =
             CardDefaults.colors(
 //                containerColor = Color.Transparent,
@@ -118,7 +121,8 @@ fun BannerCard(
         Box(
             modifier =
                 Modifier
-                    .fillMaxSize(),
+                    .fillMaxSize()
+                    .glassHighlight(cardInteractionSource),
 //                    .background(MaterialTheme.colorScheme.surfaceVariant),
         ) {
             if (!imageError && imageUrl != null) {

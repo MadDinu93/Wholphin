@@ -160,12 +160,13 @@ fun TopNavigation(
                             start = TopNavContentHorizontalPadding - TopNavContentStartInset,
                             end = TopNavContentHorizontalPadding,
                         )
-                        // Read in the layout phase so the animation does not recompose the page
+                        // Measured once for where the bar ends up, only the placement follows the animation, so the
+                        // page is not measured again every frame while the bar slides
                         .layout { measurable, constraints ->
-                            val top = topPadding.value.roundToPx()
-                            val placeable = measurable.measure(constraints.offset(vertical = -top))
-                            layout(placeable.width, placeable.height + top) {
-                                placeable.place(0, top)
+                            val targetTop = if (barVisible) TopNavBarHeight.roundToPx() else 0
+                            val placeable = measurable.measure(constraints.offset(vertical = -targetTop))
+                            layout(placeable.width, placeable.height + targetTop) {
+                                placeable.place(0, topPadding.value.roundToPx())
                             }
                         },
             )

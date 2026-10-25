@@ -1,6 +1,5 @@
 package com.github.damontecres.wholphin.ui.cards
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -26,19 +25,19 @@ import com.github.damontecres.wholphin.data.model.BaseItem
 import org.jellyfin.sdk.model.api.BaseItemKind
 import java.util.Locale
 
-/** Rounded corners for image cards, rounder than the default for an Apple TV look */
-val PosterCardShape = RoundedCornerShape(12.dp)
+/** Corner radius of image cards, rounder than the default for an Apple TV look */
+val PosterCardCornerRadius = 12.dp
 
-/** The default card focus border, but following [PosterCardShape] */
+/** Rounded corners for image cards, rounder than the default for an Apple TV look */
+val PosterCardShape = RoundedCornerShape(PosterCardCornerRadius)
+
+/** No outline on focus, [glassHighlight] draws the edge instead */
 @Composable
-fun posterCardBorder(): CardBorder =
-    CardDefaults.border(
-        focusedBorder =
-            Border(
-                border = BorderStroke(3.dp, MaterialTheme.colorScheme.border),
-                shape = PosterCardShape,
-            ),
-    )
+fun posterCardBorder(): CardBorder = CardDefaults.border(focusedBorder = Border.None)
+
+/** Focused cards lift towards the viewer */
+@Composable
+fun posterCardScale() = CardDefaults.scale(focusedScale = 1.1f)
 
 /**
  * Shows "Genre · ★ 8.3" along the bottom of a movie or series poster

@@ -9,6 +9,7 @@ import com.github.damontecres.wholphin.util.WholphinDispatchers
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -101,15 +102,19 @@ class ServerRepository
                 }
                 Timber.v("Changing user to ${user.name} on ${server.url}")
                 apiClient.update(baseUrl = server.url, accessToken = user.accessToken)
+                // Both at once, this is on the way to the home page at startup
+                val sysInfo =
+                    async {
+                        try {
+                            apiClient.systemApi.getPublicSystemInfo().content
+                        } catch (ex: Exception) {
+                            Timber.w(ex, "Exception fetching public system info")
+                            null
+                        }
+                    }
                 val userDto by apiClient.userApi.getCurrentUser()
                 val updatedServer =
-                    try {
-                        val sysInfo by apiClient.systemApi.getPublicSystemInfo()
-                        server.copy(name = sysInfo.serverName, version = sysInfo.version)
-                    } catch (ex: Exception) {
-                        Timber.w(ex, "Exception fetching public system info")
-                        server
-                    }
+                    sysInfo.await()?.let { server.copy(name = it.serverName, version = it.version) } ?: server
                 var updatedUser =
                     user.copy(
                         id = userDto.id,

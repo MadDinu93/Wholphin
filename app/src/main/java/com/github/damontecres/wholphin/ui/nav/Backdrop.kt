@@ -107,6 +107,8 @@ fun Backdrop(
             modifier =
                 modifier
                     .fillMaxSize()
+                    // Drawn once into a layer, rather than four full screen gradients every frame something moves
+                    .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
                     .drawBehind {
                         drawRect(color = baseBackgroundColor)
                         val start = if (isRtl) size.width else 0f

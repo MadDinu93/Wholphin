@@ -56,11 +56,11 @@ import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.seconds
 
 /**
- * Where the hero ends on screen, so the trailer can stay above the rows below it
+ * Where the trailer should end on screen, so it does not reach the cards below the hero
  */
 @Stable
 class HeroTrailerArea {
-    /** Bottom of the hero in root coordinates, 0 while no hero is shown */
+    /** Where the trailer's bottom goes in root coordinates, 0 while no hero is shown */
     var bottom by mutableFloatStateOf(0f)
 }
 
@@ -89,8 +89,8 @@ fun HeroTrailerBackdrop(
             targetState = source,
             animationSpec = tween(600),
             label = "hero_trailer",
-            // Where the backdrop image is with the same fades, so the video takes its place, but only as tall as
-            // the hero so it does not reach the rows, and 16:9 so the video is shown whole, neither cropped nor
+            // Where the backdrop image is with the same fades, so the video takes its place, but ending level with
+            // the first row's title so it does not reach the cards, and 16:9 so the video is shown whole, neither cropped nor
             // stretched
             modifier =
                 Modifier
@@ -99,7 +99,8 @@ fun HeroTrailerBackdrop(
                     .layout { measurable, constraints ->
                         val maxHeight = constraints.maxHeight * .7f
                         val height = area.bottom.takeIf { it > 0f }?.coerceAtMost(maxHeight) ?: maxHeight
-                        val width = min(height * AspectRatios.WIDE, constraints.maxWidth * .7f)
+                        // It may grow to the left over the hero's text, which stays readable thanks to the faded edge
+                        val width = min(height * AspectRatios.WIDE, constraints.maxWidth * .8f)
                         val placeable =
                             measurable.measure(
                                 Constraints.fixed(width.roundToInt(), (width / AspectRatios.WIDE).roundToInt()),

@@ -18,6 +18,7 @@ plugins {
     alias(libs.plugins.kotlin.plugin.serialization)
     alias(libs.plugins.aboutLibraries)
     alias(libs.plugins.openapi.generator)
+    alias(libs.plugins.baselineprofile)
 }
 
 val isCI = providers.environmentVariable("CI").orElse("false").map { it.toBoolean() }
@@ -231,6 +232,16 @@ androidComponents {
                     "Thorphin-${variant.flavorName}-${variant.buildType}-${output.versionName.get()}-${output.versionCode.get()}$abi.apk"
                 output.outputFileName = outputFileName
             }
+    }
+}
+
+baselineProfile {
+    // One profile for every flavor, they share nearly all of their code, so only the default one is profiled
+    mergeIntoMain = true
+    variants {
+        create("default") {
+            from(project(":baselineprofile"))
+        }
     }
 }
 

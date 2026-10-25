@@ -80,12 +80,13 @@ fun GridCard(
             interactionSource = interactionSource,
             shape = CardDefaults.shape(PosterCardShape),
             border = posterCardBorder(),
+            scale = posterCardScale(),
             colors =
                 CardDefaults.colors(
                     containerColor = Color.Transparent,
                 ),
         ) {
-            Box {
+            Box(modifier = Modifier.glassHighlight(interactionSource)) {
                 ItemCardImage(
                     item = item,
                     imageType = imageType.imageType,

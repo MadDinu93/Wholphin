@@ -48,6 +48,9 @@ class BackdropService
     ) {
         private val extractedColorCache = LruCache<String, ExtractedColors>(50)
 
+        /** The backdrop takes up 70% of the screen width */
+        private val backdropWidth = (context.resources.displayMetrics.widthPixels * .7f).toInt()
+
         private val _backdropFlow = MutableStateFlow<BackdropResult>(BackdropResult.NONE)
         val backdropFlow = _backdropFlow
 
@@ -60,7 +63,8 @@ class BackdropService
                     if (item.type == BaseItemKind.GENRE) {
                         item.imageUrlOverride
                     } else {
-                        imageUrlService.getItemImageUrl(item, ImageType.BACKDROP)
+                        // Sized for where it is drawn, the originals are often 4K
+                        imageUrlService.getItemImageUrl(item, ImageType.BACKDROP, fillWidth = backdropWidth)
                     }
                 submit(item.id.toString(), imageUrl)
             }
@@ -77,7 +81,10 @@ class BackdropService
             itemId: String,
             imageUrl: String?,
         ) = withContext(WholphinDispatchers.IO) {
-            if (backdropFlow.firstOrNull()?.imageUrl != imageUrl || imageUrl == null) {
+            val current = _backdropFlow.value
+            // Not already showing it, or waiting to show it
+            val isCurrent = current.imageUrl == imageUrl || (current.itemId == itemId && current.imageUrl == null)
+            if (!isCurrent || imageUrl == null) {
                 _backdropFlow.update {
                     it.copy(
                         itemId = itemId,
@@ -102,6 +109,10 @@ class BackdropService
             imageUrl: String?,
         ) {
             delay(500)
+            if (_backdropFlow.value.itemId != itemId) {
+                // Focus already moved on, skip loading an image no one will see
+                return
+            }
             val backdropStyle =
                 preferences.data
                     .firstOrNull()
@@ -146,6 +157,8 @@ class BackdropService
                         ImageRequest
                             .Builder(context)
                             .data(imageUrl)
+                            // Palette scales the image down to about 112x112 anyway
+                            .size(PALETTE_IMAGE_SIZE)
                             .allowHardware(false)
                             .bitmapConfig(Bitmap.Config.ARGB_8888)
                             .build()
@@ -238,6 +251,10 @@ class BackdropService
 
         fun clearColorCache() {
             extractedColorCache.evictAll()
+        }
+
+        companion object {
+            private const val PALETTE_IMAGE_SIZE = 256
         }
     }
 
