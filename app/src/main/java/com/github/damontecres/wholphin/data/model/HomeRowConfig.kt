@@ -253,7 +253,7 @@ data class HomeRowViewOptions(
     val contentScale: PrefContentScale = PrefContentScale.FILL,
     val aspectRatio: AspectRatio = AspectRatio.TALL,
     val imageType: ViewOptionImageType = ViewOptionImageType.PRIMARY,
-    val showTitles: Boolean = false,
+    val showTitles: Boolean = true,
     val useSeries: Boolean = true,
     val episodeContentScale: PrefContentScale = PrefContentScale.FILL,
     val episodeAspectRatio: AspectRatio = AspectRatio.TALL,

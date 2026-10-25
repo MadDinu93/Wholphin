@@ -9,6 +9,7 @@ import com.github.damontecres.wholphin.data.model.HomeRowConfig
 import com.github.damontecres.wholphin.data.model.ServerUserConfig
 import com.github.damontecres.wholphin.preferences.AppPreferences
 import com.github.damontecres.wholphin.services.BackdropService
+import com.github.damontecres.wholphin.services.HeroTrailerService
 import com.github.damontecres.wholphin.services.DatePlayedService
 import com.github.damontecres.wholphin.services.FavoriteWatchManager
 import com.github.damontecres.wholphin.services.HomeDataService
@@ -67,6 +68,7 @@ class HomeViewModel
         private val favoriteWatchManager: FavoriteWatchManager,
         private val datePlayedService: DatePlayedService,
         private val backdropService: BackdropService,
+        val heroTrailerService: HeroTrailerService,
         private val userPreferencesService: UserPreferencesService,
         private val mediaManagementService: MediaManagementService,
         private val latestNextUpService: LatestNextUpService,
@@ -307,6 +309,12 @@ class HomeViewModel
         fun updateBackdrop(item: BaseItem) {
             viewModelScope.launchIO {
                 backdropService.submit(item)
+            }
+        }
+
+        fun clearBackdrop() {
+            viewModelScope.launchIO {
+                backdropService.clearBackdrop()
             }
         }
 

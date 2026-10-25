@@ -108,6 +108,8 @@ fun BannerCard(
         onClick = { currentOnClick() },
         onLongClick = { currentOnLongClick() },
         interactionSource = interactionSource,
+        shape = CardDefaults.shape(PosterCardShape),
+        border = posterCardBorder(),
         colors =
             CardDefaults.colors(
 //                containerColor = Color.Transparent,
@@ -127,6 +129,9 @@ fun BannerCard(
                     onError = remember { { imageError = true } },
                     modifier = Modifier.fillMaxSize(),
                 )
+                if (aspectRatio < 1f) {
+                    PosterInfoOverlay(item)
+                }
             } else {
                 Text(
                     text = name ?: "",
@@ -248,7 +253,7 @@ fun BannerCardWithTitle(
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.SemiBold,
                 maxLines = 1,
-                textAlign = TextAlign.Center,
+                textAlign = TextAlign.Start,
                 modifier =
                     Modifier
                         .fillMaxWidth()
@@ -259,8 +264,9 @@ fun BannerCardWithTitle(
                 text = subtitle ?: "",
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Normal,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = .7f),
                 maxLines = 1,
-                textAlign = TextAlign.Center,
+                textAlign = TextAlign.Start,
                 modifier =
                     Modifier
                         .fillMaxWidth()

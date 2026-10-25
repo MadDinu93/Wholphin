@@ -71,6 +71,7 @@ import com.github.damontecres.wholphin.R
 import com.github.damontecres.wholphin.data.model.JellyfinServer
 import com.github.damontecres.wholphin.data.model.JellyfinUser
 import com.github.damontecres.wholphin.preferences.AppThemeColors
+import com.github.damontecres.wholphin.preferences.NavigationStyle
 import com.github.damontecres.wholphin.preferences.UserPreferences
 import com.github.damontecres.wholphin.services.BackdropService
 import com.github.damontecres.wholphin.services.MusicService
@@ -281,6 +282,44 @@ data class ServerNavDrawerItem(
     }
 }
 
+/** Whether [iconRes] is a FontAwesome string rather than a drawable */
+val NavDrawerItem.iconIsFont: Boolean
+    get() = this !is ServerNavDrawerItem || type != CollectionType.LIVETV
+
+/** The icon for this item, either a FontAwesome string or a drawable, see [iconIsFont] */
+val NavDrawerItem.iconRes: Int
+    get() =
+        when (this) {
+            NavDrawerItem.Favorites -> {
+                R.string.fa_heart
+            }
+
+            NavDrawerItem.More -> {
+                R.string.fa_ellipsis
+            }
+
+            NavDrawerItem.Discover -> {
+                R.string.fa_magnifying_glass_plus
+            }
+
+            NavDrawerItem.Libraries -> {
+                R.string.fa_layer_group
+            }
+
+            is ServerNavDrawerItem -> {
+                when (type) {
+                    CollectionType.MOVIES -> R.string.fa_film
+                    CollectionType.TVSHOWS -> R.string.fa_tv
+                    CollectionType.HOMEVIDEOS -> R.string.fa_video
+                    CollectionType.LIVETV -> R.drawable.gf_dvr
+                    CollectionType.MUSIC -> R.string.fa_music
+                    CollectionType.BOXSETS -> R.string.fa_open_folder
+                    CollectionType.PLAYLISTS -> R.string.fa_list_ul
+                    else -> R.string.fa_film
+                }
+            }
+        }
+
 private fun Destination.libraryId(): UUID? =
     when (this) {
         is Destination.MediaItem -> itemId
@@ -288,9 +327,9 @@ private fun Destination.libraryId(): UUID? =
         else -> null
     }
 
-private const val HOME_INDEX = -1
-private const val SEARCH_INDEX = -2
-private const val NOW_PLAYING_INDEX = -3
+internal const val HOME_INDEX = -1
+internal const val SEARCH_INDEX = -2
+internal const val NOW_PLAYING_INDEX = -3
 
 /**
  * Display the left side navigation drawer with [DestinationContent] on the right
@@ -311,6 +350,18 @@ fun NavDrawer(
             key = "${server.id}_${user.id}", // Keyed to the server & user to ensure its reset when switching either
         ),
 ) {
+    if (preferences.appPreferences.interfacePreferences.navigationStyle != NavigationStyle.NAVIGATION_SIDE_DRAWER) {
+        TopNavigation(
+            destination = destination,
+            preferences = preferences,
+            user = user,
+            server = server,
+            onClearBackdrop = onClearBackdrop,
+            viewModel = viewModel,
+            modifier = modifier,
+        )
+        return
+    }
     LaunchedEffect(Unit) { viewModel.updateSelectedIndex() }
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -629,40 +680,8 @@ fun NavigationDrawerScope.NavItem(
     containerColor: Color = Color.Unspecified,
 ) {
     val context = LocalContext.current
-    val useFont = library !is ServerNavDrawerItem || library.type != CollectionType.LIVETV
-    val icon =
-        remember(library) {
-            when (library) {
-                NavDrawerItem.Favorites -> {
-                    R.string.fa_heart
-                }
-
-                NavDrawerItem.More -> {
-                    R.string.fa_ellipsis
-                }
-
-                NavDrawerItem.Discover -> {
-                    R.string.fa_magnifying_glass_plus
-                }
-
-                NavDrawerItem.Libraries -> {
-                    R.string.fa_layer_group
-                }
-
-                is ServerNavDrawerItem -> {
-                    when (library.type) {
-                        CollectionType.MOVIES -> R.string.fa_film
-                        CollectionType.TVSHOWS -> R.string.fa_tv
-                        CollectionType.HOMEVIDEOS -> R.string.fa_video
-                        CollectionType.LIVETV -> R.drawable.gf_dvr
-                        CollectionType.MUSIC -> R.string.fa_music
-                        CollectionType.BOXSETS -> R.string.fa_open_folder
-                        CollectionType.PLAYLISTS -> R.string.fa_list_ul
-                        else -> R.string.fa_film
-                    }
-                }
-            }
-        }
+    val useFont = library.iconIsFont
+    val icon = remember(library) { library.iconRes }
     val focused by interactionSource.collectIsFocusedAsState()
     NavigationDrawerItem(
         modifier = modifier,

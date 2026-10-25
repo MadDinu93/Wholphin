@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
@@ -18,6 +20,7 @@ import com.github.damontecres.wholphin.data.model.JellyfinServer
 import com.github.damontecres.wholphin.data.model.JellyfinUser
 import com.github.damontecres.wholphin.preferences.UserPreferences
 import com.github.damontecres.wholphin.services.BackdropService
+import com.github.damontecres.wholphin.services.HeroTrailerService
 import com.github.damontecres.wholphin.services.NavigationManager
 import com.github.damontecres.wholphin.ui.components.ErrorMessage
 import com.github.damontecres.wholphin.ui.launchIO
@@ -33,6 +36,7 @@ class ApplicationContentViewModel
     @Inject
     constructor(
         val backdropService: BackdropService,
+        val heroTrailerService: HeroTrailerService,
     ) : ViewModel() {
         fun clearBackdrop() {
             viewModelScope.launchIO { backdropService.clearBackdrop() }
@@ -59,11 +63,17 @@ fun ApplicationContent(
         modifier = modifier,
     ) {
         val backdropStyle = preferences.appPreferences.interfacePreferences.backdropStyle
+        val heroTrailerPlaying by viewModel.heroTrailerService.playing.collectAsStateWithLifecycle()
         Backdrop(
             drawerIsOpen = drawerState.isOpen,
             backdropStyle = backdropStyle,
             enableTopScrim = enableTopScrim,
             viewModel = viewModel,
+            hideImage = heroTrailerPlaying,
+        )
+        HeroTrailerBackdrop(
+            heroTrailerService = viewModel.heroTrailerService,
+            muted = preferences.appPreferences.interfacePreferences.muteHeroTrailer,
         )
         val navDrawerListState = rememberLazyListState()
         NavDisplay(

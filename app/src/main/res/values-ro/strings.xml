@@ -389,4 +389,13 @@
     <string name="disable_if_crash">Dezactivează această opțiune dacă aplicația se blochează</string>
     <string name="background_opacity">Opacitatea fundalului</string>
     <string name="profile">Profil</string>
+    <string name="navigation_style">Stil de navigare</string>
+    <string name="navigation_style_top_bar">Bară sus</string>
+    <string name="navigation_style_side_drawer">Meniu lateral</string>
+    <string name="show_home_hero">Card Hero</string>
+    <string name="show_home_hero_summary_on">Detaliile elementului selectat apar deasupra rândurilor</string>
+    <string name="show_home_hero_summary_off">Rândurile încep din partea de sus a paginii</string>
+    <string name="hero_trailer">Trailer în Hero</string>
+    <string name="hero_trailer_summary_on">După 5 secunde trailerul rulează în spatele hero-ului, întâi cel local, apoi de pe YouTube</string>
+    <string name="hero_trailer_sound">Sunet pentru trailerul din Hero</string>
 </resources>

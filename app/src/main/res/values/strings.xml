@@ -767,6 +767,11 @@
     <string name="in_app_screensaver">Use in-app screensaver</string>
     <string name="delete_item">Are you sure you want to delete this item?</string>
     <string name="show_media_management">Show media management options</string>
+    <string-array name="navigation_style_options">
+        <item>@string/navigation_style_top_bar</item>
+        <item>@string/navigation_style_side_drawer</item>
+    </string-array>
+
     <string-array name="backdrop_style_options">
         <item>@string/backdrop_style_dynamic</item>
         <item>@string/backdrop_style_image</item>
@@ -823,6 +828,15 @@
     <string name="select_all">Select all</string>
     <string name="separate_types">Separate types</string>
     <string name="prefer_logos">Prefer showing logos for titles</string>
+    <string name="navigation_style">Navigation style</string>
+    <string name="navigation_style_top_bar">Top bar</string>
+    <string name="navigation_style_side_drawer">Side drawer</string>
+    <string name="show_home_hero">Hero card</string>
+    <string name="show_home_hero_summary_on">Details of the focused item are shown above the rows</string>
+    <string name="show_home_hero_summary_off">Rows start at the top of the page</string>
+    <string name="hero_trailer">Hero trailer</string>
+    <string name="hero_trailer_summary_on">After 5 seconds the trailer plays behind the hero, local trailers first, then YouTube</string>
+    <string name="hero_trailer_sound">Hero trailer sound</string>
     <string name="updated_toast">Thorphin updated to %s</string>
     <string name="remove_continue_watching">Remove from continue watching</string>
     <string name="remove_next_up">Remove series from next up</string>

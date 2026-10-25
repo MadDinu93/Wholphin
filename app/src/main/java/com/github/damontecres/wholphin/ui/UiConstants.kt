@@ -68,6 +68,7 @@ val SlimItemFields =
         ItemFields.SORT_NAME,
         ItemFields.MEDIA_SOURCE_COUNT,
         ItemFields.CAN_DELETE,
+        ItemFields.GENRES,
     )
 
 /**
@@ -79,6 +80,7 @@ val HomeItemFields =
     listOf(
         ItemFields.OVERVIEW,
         ItemFields.CAN_DELETE,
+        ItemFields.GENRES,
     )
 
 val PhotoItemFields =

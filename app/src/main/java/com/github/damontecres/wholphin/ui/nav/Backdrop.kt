@@ -3,6 +3,7 @@
 package com.github.damontecres.wholphin.ui.nav
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -51,6 +52,7 @@ fun Backdrop(
     enableTopScrim: Boolean = true,
     useExistingImageAsPlaceholder: Boolean = false,
     crossfadeDuration: Duration = 800.milliseconds,
+    hideImage: Boolean = false,
 ) {
     val backdrop by viewModel.backdropService.backdropFlow.collectAsStateWithLifecycle()
     Backdrop(
@@ -59,6 +61,7 @@ fun Backdrop(
         backdropStyle = backdropStyle,
         modifier = modifier,
         enableTopScrim = enableTopScrim,
+        hideImage = hideImage,
         useExistingImageAsPlaceholder = useExistingImageAsPlaceholder,
         crossfadeDuration = crossfadeDuration,
     )
@@ -76,7 +79,10 @@ fun Backdrop(
     enableTopScrim: Boolean = true,
     useExistingImageAsPlaceholder: Boolean = false,
     crossfadeDuration: Duration = 800.milliseconds,
+    hideImage: Boolean = false,
 ) {
+    // e.g. while a hero trailer plays in its place, otherwise it shows through the trailer's faded edges
+    val imageAlpha by animateFloatAsState(if (hideImage) 0f else 1f, tween(800), label = "backdrop_image_alpha")
     val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     val baseBackgroundColor = MaterialTheme.colorScheme.background
     if (backdrop.hasColors &&
@@ -168,8 +174,10 @@ fun Backdrop(
                         .align(Alignment.TopEnd)
                         .fillMaxHeight(.7f)
                         .fillMaxWidth(.7f)
-                        .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
-                        .drawWithContent {
+                        .graphicsLayer {
+                            compositingStrategy = CompositingStrategy.Offscreen
+                            alpha = imageAlpha
+                        }.drawWithContent {
                             val start = if (isRtl) size.width else 0f
                             drawContent()
                             if (drawerIsOpen) {

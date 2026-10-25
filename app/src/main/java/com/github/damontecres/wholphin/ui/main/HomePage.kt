@@ -20,6 +20,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -27,6 +28,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -67,6 +69,7 @@ import com.github.damontecres.wholphin.ui.components.ContextMenuDialog
 import com.github.damontecres.wholphin.ui.components.EpisodeName
 import com.github.damontecres.wholphin.ui.components.ErrorMessage
 import com.github.damontecres.wholphin.ui.components.FocusableItemRow
+import com.github.damontecres.wholphin.ui.components.GenreText
 import com.github.damontecres.wholphin.ui.components.HeaderUtils
 import com.github.damontecres.wholphin.ui.components.LoadingPage
 import com.github.damontecres.wholphin.ui.components.QuickDetails
@@ -80,6 +83,7 @@ import com.github.damontecres.wholphin.ui.detail.PlaylistDialog
 import com.github.damontecres.wholphin.ui.indexOfFirstOrNull
 import com.github.damontecres.wholphin.ui.isNotNullOrBlank
 import com.github.damontecres.wholphin.ui.nav.Destination
+import com.github.damontecres.wholphin.ui.nav.LocalTopNavBarState
 import com.github.damontecres.wholphin.ui.playback.isPlayKeyUp
 import com.github.damontecres.wholphin.ui.playback.playable
 import com.github.damontecres.wholphin.ui.playback.scale
@@ -213,6 +217,11 @@ fun HomePage(
                     }
                 }
 
+            val showHero = preferences.appPreferences.interfacePreferences.showHomeHero
+            LaunchedEffect(showHero) {
+                // Without the hero there is nothing to tie the backdrop to
+                if (!showHero) viewModel.clearBackdrop()
+            }
             HomePageContent(
                 homeRows = homeRows,
                 position = position,
@@ -226,6 +235,11 @@ fun HomePage(
                 showLogo = preferences.appPreferences.interfacePreferences.showLogos,
                 showViewMore = true,
                 onClickViewMore = onClickViewMore,
+                showHero = showHero,
+                onHeroItemChanged =
+                    viewModel.heroTrailerService::focus.takeIf {
+                        !preferences.appPreferences.interfacePreferences.disableHeroTrailer
+                    },
                 modifier = modifier,
             )
             overviewDialog?.let { info ->
@@ -291,11 +305,21 @@ fun HomePageContent(
     listState: LazyListState = rememberLazyListState(),
     takeFocus: Boolean = true,
     showEmptyRows: Boolean = false,
+    showHero: Boolean = true,
+    onHeroItemChanged: ((BaseItem?) -> Unit)? = null,
     headerComposable: @Composable (focusedItem: BaseItem?) -> Unit = { focusedItem ->
         HomePageHeader(
             item = focusedItem,
             showLogo = showLogo,
-            modifier = HeaderUtils.modifier,
+            modifier =
+                if (LocalTopNavBarState.current != null) {
+                    // The top bar already leaves room above, so the hero can be taller instead
+                    Modifier
+                        .padding(start = HeaderUtils.startPadding, top = 8.dp, bottom = 20.dp)
+                        .height(HeroHeight)
+                } else {
+                    HeaderUtils.modifier
+                },
         )
     },
     onClickViewMore: (RowColumn, HomeRowLoadingState.Success) -> Unit = { _, _ -> },
@@ -335,8 +359,21 @@ fun HomePageContent(
             }
         }
     }
-    LaunchedEffect(onUpdateBackdrop, focusedItem) {
-        focusedItem?.let { onUpdateBackdrop.invoke(it) }
+    if (showHero) {
+        LaunchedEffect(onUpdateBackdrop, focusedItem) {
+            focusedItem?.let { onUpdateBackdrop.invoke(it) }
+        }
+    }
+    if (showHero && onHeroItemChanged != null) {
+        val currentOnHeroItemChanged by rememberUpdatedState(onHeroItemChanged)
+        LaunchedEffect(focusedItem?.id) { currentOnHeroItemChanged(focusedItem) }
+        DisposableEffect(Unit) { onDispose { currentOnHeroItemChanged(null) } }
+    }
+    LocalTopNavBarState.current?.let { topNavBarState ->
+        LaunchedEffect(listState) {
+            snapshotFlow { listState.firstVisibleItemIndex == 0 }
+                .collect { topNavBarState.contentAtTop = it }
+        }
     }
     Box(modifier = modifier) {
         Column(
@@ -348,7 +385,9 @@ fun HomePageContent(
                         }
                     }.fillMaxSize(),
         ) {
-            headerComposable.invoke(focusedItem)
+            if (showHero) {
+                headerComposable.invoke(focusedItem)
+            }
 
             val density = LocalDensity.current
             val spaceAbovePx =
@@ -568,6 +607,7 @@ fun HomePageHeader(
     HomePageHeader(
         title = title,
         subtitle = subtitle,
+        genres = item?.data?.genres,
         overview = item?.data?.overview,
         overviewTwoLines = isEpisode,
         quickDetails = item?.ui?.quickDetails,
@@ -591,6 +631,7 @@ fun HomePageHeader(
     showLogo: Boolean,
     logoImageUrl: String?,
     modifier: Modifier = Modifier,
+    genres: List<String>? = null,
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(4.dp),
@@ -612,6 +653,13 @@ fun HomePageHeader(
                 EpisodeName(subtitle)
             }
             QuickDetails(quickDetails, timeRemaining, endsAt = endsAt)
+            if (!genres.isNullOrEmpty()) {
+                GenreText(
+                    genres = genres,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = .75f),
+                    modifier = Modifier,
+                )
+            }
             val overviewModifier =
                 Modifier
                     .padding(0.dp)
@@ -632,6 +680,9 @@ fun HomePageHeader(
         }
     }
 }
+
+/** Height of the [HomePageHeader] when shown below the top navigation bar */
+private val HeroHeight = 200.dp
 
 @Composable
 fun HomePageCardContent(

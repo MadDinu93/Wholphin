@@ -582,6 +582,55 @@ sealed interface AppPreference<Pref, T> {
                 summaryOff = R.string.disabled,
             )
 
+        val NavigationStylePref =
+            AppChoicePreference<AppPreferences, NavigationStyle>(
+                title = R.string.navigation_style,
+                defaultValue = NavigationStyle.NAVIGATION_TOP_BAR,
+                getter = { it.interfacePreferences.navigationStyle },
+                setter = { prefs, value ->
+                    prefs.updateInterfacePreferences { navigationStyle = value }
+                },
+                displayValues = R.array.navigation_style_options,
+                indexToValue = { NavigationStyle.forNumber(it) },
+                valueToIndex = { if (it != NavigationStyle.UNRECOGNIZED) it.number else 0 },
+            )
+
+        val ShowHomeHero =
+            AppSwitchPreference<AppPreferences>(
+                title = R.string.show_home_hero,
+                defaultValue = false,
+                getter = { it.interfacePreferences.showHomeHero },
+                setter = { prefs, value ->
+                    prefs.updateInterfacePreferences { showHomeHero = value }
+                },
+                summaryOn = R.string.show_home_hero_summary_on,
+                summaryOff = R.string.show_home_hero_summary_off,
+            )
+
+        val HeroTrailer =
+            AppSwitchPreference<AppPreferences>(
+                title = R.string.hero_trailer,
+                defaultValue = true,
+                getter = { !it.interfacePreferences.disableHeroTrailer },
+                setter = { prefs, value ->
+                    prefs.updateInterfacePreferences { disableHeroTrailer = !value }
+                },
+                summaryOn = R.string.hero_trailer_summary_on,
+                summaryOff = R.string.disabled,
+            )
+
+        val HeroTrailerSound =
+            AppSwitchPreference<AppPreferences>(
+                title = R.string.hero_trailer_sound,
+                defaultValue = true,
+                getter = { !it.interfacePreferences.muteHeroTrailer },
+                setter = { prefs, value ->
+                    prefs.updateInterfacePreferences { muteHeroTrailer = !value }
+                },
+                summaryOn = R.string.enabled,
+                summaryOff = R.string.disabled,
+            )
+
         val DisplayTogglesPref =
             AppMultiChoicePreference<AppPreferences, DisplayToggle>(
                 title = R.string.display_toggles_title,
@@ -1181,6 +1230,10 @@ val basicPreferences =
                     AppPreference.PlayThemeMusic,
                     AppPreference.SubtitleStyle,
                     AppPreference.ThemeColors,
+                    AppPreference.NavigationStylePref,
+                    AppPreference.ShowHomeHero,
+                    AppPreference.HeroTrailer,
+                    AppPreference.HeroTrailerSound,
                     AppPreference.ScreensaverSettings,
                 ),
         ),

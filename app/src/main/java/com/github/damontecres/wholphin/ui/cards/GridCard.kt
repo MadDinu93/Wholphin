@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -77,39 +78,48 @@ fun GridCard(
             onClick = onClick,
             onLongClick = onLongClick,
             interactionSource = interactionSource,
+            shape = CardDefaults.shape(PosterCardShape),
+            border = posterCardBorder(),
             colors =
                 CardDefaults.colors(
                     containerColor = Color.Transparent,
                 ),
         ) {
-            ItemCardImage(
-                item = item,
-                imageType = imageType.imageType,
-                name = item?.name,
+            Box {
+                ItemCardImage(
+                    item = item,
+                    imageType = imageType.imageType,
+                    name = item?.name,
 //                        showOverlay = !focusedAfterDelay,
-                showOverlay = true,
-                favorite = dto?.userData?.isFavorite ?: false,
-                watched = dto?.userData?.played ?: false,
-                unwatchedCount = dto?.userData?.unplayedItemCount ?: -1,
-                watchedPercent = dto?.userData?.playedPercentage,
-                numberOfVersions = dto?.mediaSourceCount ?: 0,
-                useFallbackText = false,
-                contentScale = imageContentScale,
-                fillWidth = fillWidth,
-                fillHeight = fillHeight,
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(imageAspectRatio.coerceAtLeast(AspectRatios.MIN))
-                        .background(MaterialTheme.colorScheme.surfaceVariant),
-            )
+                    showOverlay = true,
+                    favorite = dto?.userData?.isFavorite ?: false,
+                    watched = dto?.userData?.played ?: false,
+                    unwatchedCount = dto?.userData?.unplayedItemCount ?: -1,
+                    watchedPercent = dto?.userData?.playedPercentage,
+                    numberOfVersions = dto?.mediaSourceCount ?: 0,
+                    useFallbackText = false,
+                    contentScale = imageContentScale,
+                    fillWidth = fillWidth,
+                    fillHeight = fillHeight,
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(imageAspectRatio.coerceAtLeast(AspectRatios.MIN))
+                            .background(MaterialTheme.colorScheme.surfaceVariant),
+                )
+                val playedPercent = dto?.userData?.playedPercentage ?: 0.0
+                // Would cover the progress bar
+                if (imageAspectRatio < 1f && (playedPercent <= 0.0 || playedPercent >= 100.0)) {
+                    PosterInfoOverlay(item)
+                }
+            }
         }
         AnimatedVisibility(showTitle) {
             SlidingCardText(focused) {
                 Text(
                     text = item?.title ?: "",
                     maxLines = 1,
-                    textAlign = TextAlign.Center,
+                    textAlign = TextAlign.Start,
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.SemiBold,
                     overflow = TextOverflow.Ellipsis,
@@ -122,7 +132,7 @@ fun GridCard(
                 Text(
                     text = item?.subtitle ?: "",
                     maxLines = 1,
-                    textAlign = TextAlign.Center,
+                    textAlign = TextAlign.Start,
                     style = MaterialTheme.typography.bodySmall,
                     fontWeight = FontWeight.Normal,
                     modifier =
