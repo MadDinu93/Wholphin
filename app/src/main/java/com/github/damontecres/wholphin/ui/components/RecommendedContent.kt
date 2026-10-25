@@ -42,6 +42,7 @@ import com.github.damontecres.wholphin.ui.launchDefault
 import com.github.damontecres.wholphin.ui.launchIO
 import com.github.damontecres.wholphin.ui.main.HomePageContent
 import com.github.damontecres.wholphin.ui.nav.Destination
+import com.github.damontecres.wholphin.ui.nav.rememberCardTrailers
 import com.github.damontecres.wholphin.ui.rememberPosition
 import com.github.damontecres.wholphin.ui.toBaseItems
 import com.github.damontecres.wholphin.ui.util.ResStringProvider
@@ -414,10 +415,12 @@ fun RecommendedContent(
                     )
                 }
 
-            val showHero = preferences.appPreferences.interfacePreferences.showHomeHero
+            val interfacePreferences = preferences.appPreferences.interfacePreferences
+            val showHero = interfacePreferences.showHomeHero
             LaunchedEffect(showHero) {
                 if (!showHero) viewModel.clearBackdrop()
             }
+            val cardTrailers = rememberCardTrailers(viewModel.heroTrailerService, interfacePreferences.muteHeroTrailer)
             HomePageContent(
                 homeRows = state.rows,
                 position = position,
@@ -462,10 +465,11 @@ fun RecommendedContent(
                 showViewMore = true,
                 onClickViewMore = viewModel::onClickViewMore,
                 showHero = showHero,
-                onHeroItemChanged =
+                onTrailerItemChanged =
                     viewModel.heroTrailerService::focus.takeIf {
-                        !preferences.appPreferences.interfacePreferences.disableHeroTrailer
+                        interfacePreferences.cardTrailers || !interfacePreferences.disableHeroTrailer
                     },
+                cardTrailers = cardTrailers.takeIf { interfacePreferences.cardTrailers },
                 modifier = modifier,
             )
         }

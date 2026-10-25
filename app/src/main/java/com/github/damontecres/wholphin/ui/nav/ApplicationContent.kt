@@ -65,20 +65,24 @@ fun ApplicationContent(
         modifier = modifier,
     ) {
         val backdropStyle = preferences.appPreferences.interfacePreferences.backdropStyle
+        // Otherwise the trailers play inside the cards, see CardTrailers
+        val trailerInBackdrop = !preferences.appPreferences.interfacePreferences.cardTrailers
         val heroTrailerPlaying by viewModel.heroTrailerService.playing.collectAsStateWithLifecycle()
         Backdrop(
             drawerIsOpen = drawerState.isOpen,
             backdropStyle = backdropStyle,
             enableTopScrim = enableTopScrim,
             viewModel = viewModel,
-            hideImage = heroTrailerPlaying,
+            hideImage = trailerInBackdrop && heroTrailerPlaying,
         )
         val heroTrailerArea = remember { HeroTrailerArea() }
-        HeroTrailerBackdrop(
-            heroTrailerService = viewModel.heroTrailerService,
-            area = heroTrailerArea,
-            muted = preferences.appPreferences.interfacePreferences.muteHeroTrailer,
-        )
+        if (trailerInBackdrop) {
+            HeroTrailerBackdrop(
+                heroTrailerService = viewModel.heroTrailerService,
+                area = heroTrailerArea,
+                muted = preferences.appPreferences.interfacePreferences.muteHeroTrailer,
+            )
+        }
         val navDrawerListState = rememberLazyListState()
         CompositionLocalProvider(LocalHeroTrailerArea provides heroTrailerArea) {
             NavDisplay(

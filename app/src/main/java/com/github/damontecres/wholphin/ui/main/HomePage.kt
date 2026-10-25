@@ -1,10 +1,13 @@
 package com.github.damontecres.wholphin.ui.main
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.gestures.LocalBringIntoViewSpec
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -38,6 +41,7 @@ import androidx.compose.ui.focus.focusRestorer
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
@@ -58,11 +62,14 @@ import com.github.damontecres.wholphin.data.model.HomeRowConfig
 import com.github.damontecres.wholphin.data.model.HomeRowViewOptions
 import com.github.damontecres.wholphin.data.model.QuickDetailsData
 import com.github.damontecres.wholphin.preferences.UserPreferences
+import com.github.damontecres.wholphin.ui.AspectRatios
 import com.github.damontecres.wholphin.ui.Cards
 import com.github.damontecres.wholphin.ui.cards.BannerCard
 import com.github.damontecres.wholphin.ui.cards.BannerCardWithTitle
 import com.github.damontecres.wholphin.ui.cards.GenreCard
 import com.github.damontecres.wholphin.ui.cards.ItemRow
+import com.github.damontecres.wholphin.ui.cards.KeepGrowingCardInView
+import com.github.damontecres.wholphin.ui.cards.LocalItemRowListState
 import com.github.damontecres.wholphin.ui.cards.StudioCard
 import com.github.damontecres.wholphin.ui.cards.ViewMoreCard
 import com.github.damontecres.wholphin.ui.components.CircularProgress
@@ -85,9 +92,14 @@ import com.github.damontecres.wholphin.ui.data.RowColumn
 import com.github.damontecres.wholphin.ui.detail.PlaylistDialog
 import com.github.damontecres.wholphin.ui.indexOfFirstOrNull
 import com.github.damontecres.wholphin.ui.isNotNullOrBlank
+import com.github.damontecres.wholphin.ui.nav.CardTrailers
 import com.github.damontecres.wholphin.ui.nav.Destination
+import com.github.damontecres.wholphin.ui.nav.LocalCardTrailers
 import com.github.damontecres.wholphin.ui.nav.LocalHeroTrailerArea
 import com.github.damontecres.wholphin.ui.nav.LocalTopNavBarState
+import com.github.damontecres.wholphin.ui.nav.TrailerPlayer
+import com.github.damontecres.wholphin.ui.nav.rememberCardTrailer
+import com.github.damontecres.wholphin.ui.nav.rememberCardTrailers
 import com.github.damontecres.wholphin.ui.playback.isPlayKeyUp
 import com.github.damontecres.wholphin.ui.playback.playable
 import com.github.damontecres.wholphin.ui.playback.scale
@@ -101,6 +113,7 @@ import org.jellyfin.sdk.model.DateTime
 import org.jellyfin.sdk.model.api.BaseItemKind
 import timber.log.Timber
 import java.util.UUID
+import kotlin.math.max
 import kotlin.time.Duration
 
 @Composable
@@ -221,11 +234,13 @@ fun HomePage(
                     }
                 }
 
-            val showHero = preferences.appPreferences.interfacePreferences.showHomeHero
+            val interfacePreferences = preferences.appPreferences.interfacePreferences
+            val showHero = interfacePreferences.showHomeHero
             LaunchedEffect(showHero) {
                 // Without the hero there is nothing to tie the backdrop to
                 if (!showHero) viewModel.clearBackdrop()
             }
+            val cardTrailers = rememberCardTrailers(viewModel.heroTrailerService, interfacePreferences.muteHeroTrailer)
             HomePageContent(
                 homeRows = homeRows,
                 position = position,
@@ -240,10 +255,11 @@ fun HomePage(
                 showViewMore = true,
                 onClickViewMore = onClickViewMore,
                 showHero = showHero,
-                onHeroItemChanged =
+                onTrailerItemChanged =
                     viewModel.heroTrailerService::focus.takeIf {
-                        !preferences.appPreferences.interfacePreferences.disableHeroTrailer
+                        interfacePreferences.cardTrailers || !interfacePreferences.disableHeroTrailer
                     },
+                cardTrailers = cardTrailers.takeIf { interfacePreferences.cardTrailers },
                 modifier = modifier,
             )
             overviewDialog?.let { info ->
@@ -310,7 +326,8 @@ fun HomePageContent(
     takeFocus: Boolean = true,
     showEmptyRows: Boolean = false,
     showHero: Boolean = true,
-    onHeroItemChanged: ((BaseItem?) -> Unit)? = null,
+    onTrailerItemChanged: ((BaseItem?) -> Unit)? = null,
+    cardTrailers: CardTrailers? = null,
     headerComposable: @Composable (focusedItem: BaseItem?) -> Unit = { focusedItem ->
         HomePageHeader(
             item = focusedItem,
@@ -368,10 +385,11 @@ fun HomePageContent(
             focusedItem?.let { onUpdateBackdrop.invoke(it) }
         }
     }
-    if (showHero && onHeroItemChanged != null) {
-        val currentOnHeroItemChanged by rememberUpdatedState(onHeroItemChanged)
-        LaunchedEffect(focusedItem?.id) { currentOnHeroItemChanged(focusedItem) }
-        DisposableEffect(Unit) { onDispose { currentOnHeroItemChanged(null) } }
+    // The trailer plays behind the hero or in the focused card
+    if (onTrailerItemChanged != null && (showHero || cardTrailers != null)) {
+        val currentOnTrailerItemChanged by rememberUpdatedState(onTrailerItemChanged)
+        LaunchedEffect(focusedItem?.id) { currentOnTrailerItemChanged(focusedItem) }
+        DisposableEffect(Unit) { onDispose { currentOnTrailerItemChanged(null) } }
     }
     LocalTopNavBarState.current?.let { topNavBarState ->
         LaunchedEffect(listState) {
@@ -427,6 +445,7 @@ fun HomePageContent(
             val defaultBringIntoViewSpec = LocalBringIntoViewSpec.current
             CompositionLocalProvider(
                 LocalBringIntoViewSpec provides ScrollToTopBringIntoViewSpec(spaceAbovePx),
+                LocalCardTrailers provides cardTrailers,
             ) {
                 LazyColumn(
                     state = listState,
@@ -752,7 +771,7 @@ fun HomePageCardContent(
                         viewOptions.imageType.imageType
                     }
                 }
-            val ratio =
+            val coverRatio =
                 remember(item, viewOptions) {
                     if (item?.type == BaseItemKind.EPISODE) {
                         viewOptions.episodeAspectRatio.ratio
@@ -760,12 +779,38 @@ fun HomePageCardContent(
                         viewOptions.aspectRatio.ratio
                     }
                 }
-            val scale =
+            val coverScale =
                 remember(item, viewOptions) {
                     if (item?.type == BaseItemKind.EPISODE) {
                         viewOptions.episodeContentScale.scale
                     } else {
                         viewOptions.contentScale.scale
+                    }
+                }
+
+            val cardTrailers = LocalCardTrailers.current
+            val cardTrailer by rememberCardTrailer(item?.id)
+            // Widens to 16:9 only once the trailer plays, so one that fails to start leaves the card alone
+            val trailerPlaying = cardTrailer != null && cardTrailers?.playing?.value == true
+            val ratio by animateFloatAsState(
+                if (trailerPlaying) max(coverRatio, AspectRatios.WIDE) else coverRatio,
+                tween(350),
+                label = "card_trailer_ratio",
+            )
+            if (trailerPlaying) {
+                LocalItemRowListState.current?.let { KeepGrowingCardInView(it, index) }
+            }
+            // The cover is cropped rather than stretched while the card widens under the trailer
+            val scale = if (cardTrailer != null) ContentScale.Crop else coverScale
+            val trailer: (@Composable BoxScope.() -> Unit)? =
+                cardTrailer?.let { source ->
+                    {
+                        TrailerPlayer(
+                            trailer = source,
+                            heroTrailerService = cardTrailers!!.heroTrailerService,
+                            muted = cardTrailers.muted,
+                            modifier = Modifier.fillMaxSize(),
+                        )
                     }
                 }
             if (viewOptions.showTitles) {
@@ -787,6 +832,7 @@ fun HomePageCardContent(
                     modifier = modifier,
                     cardHeight = viewOptions.heightDp.dp,
                     useSeriesForPrimary = viewOptions.useSeries,
+                    trailer = trailer,
                 )
             } else {
                 BannerCard(
@@ -807,6 +853,7 @@ fun HomePageCardContent(
                     interactionSource = null,
                     cardHeight = viewOptions.heightDp.dp,
                     useSeriesForPrimary = viewOptions.useSeries,
+                    trailer = trailer,
                 )
             }
         }

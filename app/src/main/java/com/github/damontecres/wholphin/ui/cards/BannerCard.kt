@@ -5,6 +5,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -69,6 +70,7 @@ fun BannerCard(
     imageType: ImageType = ImageType.PRIMARY,
     imageContentScale: ContentScale = ContentScale.FillBounds,
     useSeriesForPrimary: Boolean = true,
+    trailer: (@Composable BoxScope.() -> Unit)? = null,
 ) {
     val imageUrlService = LocalImageUrlService.current
     val density = LocalDensity.current
@@ -133,7 +135,7 @@ fun BannerCard(
                     onError = remember { { imageError = true } },
                     modifier = Modifier.fillMaxSize(),
                 )
-                if (aspectRatio < 1f) {
+                if (aspectRatio < 1f && trailer == null) {
                     PosterInfoOverlay(item)
                 }
             } else {
@@ -203,6 +205,8 @@ fun BannerCard(
                             .fillMaxWidth((playPercent / 100).toFloat()),
                 )
             }
+            // Over the cover and its badges, it fades in once it plays
+            trailer?.invoke(this)
         }
     }
 }
@@ -225,6 +229,7 @@ fun BannerCardWithTitle(
     imageType: ImageType = ImageType.PRIMARY,
     imageContentScale: ContentScale = ContentScale.FillBounds,
     useSeriesForPrimary: Boolean = item?.useSeriesForPrimary ?: true,
+    trailer: (@Composable BoxScope.() -> Unit)? = null,
 ) {
     val focused by interactionSource.collectIsFocusedAsState()
     val focusedAfterDelay by rememberFocusedAfterDelay(interactionSource)
@@ -250,6 +255,7 @@ fun BannerCardWithTitle(
             imageType = imageType,
             imageContentScale = imageContentScale,
             useSeriesForPrimary = useSeriesForPrimary,
+            trailer = trailer,
         )
         SlidingCardText(focused) {
             Text(

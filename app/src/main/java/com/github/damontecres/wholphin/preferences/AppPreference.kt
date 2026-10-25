@@ -619,6 +619,18 @@ sealed interface AppPreference<Pref, T> {
                 summaryOff = R.string.disabled,
             )
 
+        val CardTrailers =
+            AppSwitchPreference<AppPreferences>(
+                title = R.string.card_trailers,
+                defaultValue = false,
+                getter = { it.interfacePreferences.cardTrailers },
+                setter = { prefs, value ->
+                    prefs.updateInterfacePreferences { cardTrailers = value }
+                },
+                summaryOn = R.string.card_trailers_summary_on,
+                summaryOff = R.string.disabled,
+            )
+
         val HeroTrailerSound =
             AppSwitchPreference<AppPreferences>(
                 title = R.string.hero_trailer_sound,
@@ -1233,6 +1245,7 @@ val basicPreferences =
                     AppPreference.NavigationStylePref,
                     AppPreference.ShowHomeHero,
                     AppPreference.HeroTrailer,
+                    AppPreference.CardTrailers,
                     AppPreference.HeroTrailerSound,
                     AppPreference.ScreensaverSettings,
                 ),

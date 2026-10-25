@@ -18,6 +18,9 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -51,6 +54,7 @@ import com.github.damontecres.wholphin.services.HeroTrailerService
 import com.github.damontecres.wholphin.services.HeroTrailerSource
 import com.github.damontecres.wholphin.ui.AspectRatios
 import kotlinx.coroutines.delay
+import java.util.UUID
 import kotlin.math.min
 import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.seconds
@@ -139,42 +143,104 @@ fun HeroTrailerBackdrop(
                     },
         ) { trailer ->
             if (trailer != null) {
-                var playing by remember(trailer) { mutableStateOf(false) }
-                val alpha by animateFloatAsState(if (playing) 1f else 0f, tween(800), label = "hero_trailer_alpha")
-                val onEnded = { heroTrailerService.finished(trailer.itemId) }
-                val onPlaying = {
-                    playing = true
-                    heroTrailerService.onPlaying(trailer.itemId)
-                }
-                LaunchedEffect(trailer) {
-                    // Give up if it never starts, e.g. no network or an embed that is not allowed
-                    delay(15.seconds)
-                    if (!playing) onEnded()
-                }
-                val playerModifier = Modifier.fillMaxSize().graphicsLayer { this.alpha = alpha }
-                when (trailer) {
-                    is HeroTrailerSource.Local -> {
-                        LocalTrailerPlayer(
-                            heroTrailerService = heroTrailerService,
-                            url = trailer.url,
-                            muted = muted,
-                            onPlaying = onPlaying,
-                            onEnded = onEnded,
-                            modifier = playerModifier,
-                        )
-                    }
-
-                    is HeroTrailerSource.YouTube -> {
-                        YouTubeTrailerPlayer(
-                            videoId = trailer.videoId,
-                            muted = muted,
-                            onPlaying = onPlaying,
-                            onEnded = onEnded,
-                            modifier = playerModifier,
-                        )
-                    }
-                }
+                TrailerPlayer(
+                    trailer = trailer,
+                    heroTrailerService = heroTrailerService,
+                    muted = muted,
+                    modifier = Modifier.fillMaxSize(),
+                )
             }
+        }
+    }
+}
+
+/**
+ * Trailers play inside the focused card, which grows to 16:9 for it, instead of behind the hero
+ *
+ * Provided by the pages with rows of cards when that is enabled, see [rememberCardTrailer]
+ */
+@Stable
+class CardTrailers(
+    val heroTrailerService: HeroTrailerService,
+    val current: State<HeroTrailerSource?>,
+    val playing: State<Boolean>,
+    val muted: Boolean,
+)
+
+val LocalCardTrailers = staticCompositionLocalOf<CardTrailers?> { null }
+
+@Composable
+fun rememberCardTrailers(
+    heroTrailerService: HeroTrailerService,
+    muted: Boolean,
+): CardTrailers {
+    val current = heroTrailerService.current.collectAsStateWithLifecycle()
+    val playing = heroTrailerService.playing.collectAsStateWithLifecycle()
+    return remember(heroTrailerService, current, playing, muted) {
+        CardTrailers(heroTrailerService, current, playing, muted)
+    }
+}
+
+/**
+ * The trailer to play in the card for [itemId], null unless it is that card's turn
+ *
+ * Only the card whose trailer it is recomposes when the trailer changes
+ */
+@Composable
+fun rememberCardTrailer(itemId: UUID?): State<HeroTrailerSource?> {
+    val cardTrailers = LocalCardTrailers.current
+    return remember(cardTrailers, itemId) {
+        derivedStateOf { cardTrailers?.current?.value?.takeIf { it.itemId == itemId } }
+    }
+}
+
+/**
+ * Plays [trailer], fading in once the video is playing, and tells the [heroTrailerService] when it plays or ends
+ */
+@Composable
+fun TrailerPlayer(
+    trailer: HeroTrailerSource,
+    heroTrailerService: HeroTrailerService,
+    muted: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    var playing by remember(trailer) { mutableStateOf(false) }
+    val alpha by animateFloatAsState(if (playing) 1f else 0f, tween(800), label = "trailer_alpha")
+    val onEnded = { heroTrailerService.finished(trailer.itemId) }
+    val onPlaying = {
+        playing = true
+        heroTrailerService.onPlaying(trailer.itemId)
+    }
+    LaunchedEffect(trailer) {
+        // Give up if it never starts, e.g. no network or an embed that is not allowed
+        delay(15.seconds)
+        if (!playing) onEnded()
+    }
+    LifecycleEventEffect(Lifecycle.Event.ON_STOP) {
+        // Not in the background
+        heroTrailerService.focus(null)
+    }
+    val playerModifier = modifier.graphicsLayer { this.alpha = alpha }
+    when (trailer) {
+        is HeroTrailerSource.Local -> {
+            LocalTrailerPlayer(
+                heroTrailerService = heroTrailerService,
+                url = trailer.url,
+                muted = muted,
+                onPlaying = onPlaying,
+                onEnded = onEnded,
+                modifier = playerModifier,
+            )
+        }
+
+        is HeroTrailerSource.YouTube -> {
+            YouTubeTrailerPlayer(
+                videoId = trailer.videoId,
+                muted = muted,
+                onPlaying = onPlaying,
+                onEnded = onEnded,
+                modifier = playerModifier,
+            )
         }
     }
 }

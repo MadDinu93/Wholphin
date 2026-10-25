@@ -836,7 +836,9 @@
     <string name="show_home_hero_summary_off">Rows start at the top of the page</string>
     <string name="hero_trailer">Hero trailer</string>
     <string name="hero_trailer_summary_on">After 5 seconds the trailer plays behind the hero, local trailers first, then YouTube</string>
-    <string name="hero_trailer_sound">Hero trailer sound</string>
+    <string name="hero_trailer_sound">Trailer sound</string>
+    <string name="card_trailers">Trailers in cards</string>
+    <string name="card_trailers_summary_on">After 5 seconds the trailer plays inside the focused card, which widens for it, instead of behind the hero</string>
     <string name="updated_toast">Thorphin updated to %s</string>
     <string name="remove_continue_watching">Remove from continue watching</string>
     <string name="remove_next_up">Remove series from next up</string>

@@ -397,5 +397,7 @@
     <string name="show_home_hero_summary_off">Rândurile încep din partea de sus a paginii</string>
     <string name="hero_trailer">Trailer în Hero</string>
     <string name="hero_trailer_summary_on">După 5 secunde trailerul rulează în spatele hero-ului, întâi cel local, apoi de pe YouTube</string>
-    <string name="hero_trailer_sound">Sunet pentru trailerul din Hero</string>
+    <string name="hero_trailer_sound">Sunet pentru trailere</string>
+    <string name="card_trailers">Trailere în carduri</string>
+    <string name="card_trailers_summary_on">După 5 secunde trailerul rulează în cardul selectat, care se lărgește pentru el, în locul celui din spatele hero-ului</string>
 </resources>

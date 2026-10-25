@@ -221,6 +221,8 @@ message InterfacePreferences {
   // Inverted so that trailers and their sound are on without a migration
   bool disable_hero_trailer = 18;
   bool mute_hero_trailer = 19;
+  // Trailers play inside the focused card instead of behind the hero
+  bool card_trailers = 20;
 }
 
 message AdvancedPreferences {
