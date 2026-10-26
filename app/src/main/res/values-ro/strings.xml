@@ -45,6 +45,19 @@
         <item quantity="other">Filme</item>
     </plurals>
     <string name="library">Librărie</string>
+    <string name="server_catalogs">Cataloage server</string>
+    <string name="movies_title">Filme</string>
+    <string name="tv_shows_title">Seriale</string>
+    <plurals name="library_catalog_count">
+        <item quantity="one">%d catalog</item>
+        <item quantity="few">%d cataloage</item>
+        <item quantity="other">%d de cataloage</item>
+    </plurals>
+    <plurals name="library_title_count">
+        <item quantity="one">%d titlu</item>
+        <item quantity="few">%d titluri</item>
+        <item quantity="other">%d de titluri</item>
+    </plurals>
     <string name="go_to">Mergi la</string>
     <string name="go_to_series">Mergi la seria</string>
     <string name="loading">Se încarcă…</string>

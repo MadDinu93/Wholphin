@@ -63,6 +63,15 @@
     <string name="intro">Intro</string>
     <string name="jump_letters">#ABCDEFGHIJKLMNOPQRSTUVWXYZ</string>
     <string name="library">Library</string>
+    <string name="server_catalogs">Server catalogs</string>
+    <plurals name="library_catalog_count">
+        <item quantity="one">%d catalog</item>
+        <item quantity="other">%d catalogs</item>
+    </plurals>
+    <plurals name="library_title_count">
+        <item quantity="one">%d title</item>
+        <item quantity="other">%d titles</item>
+    </plurals>
     <string name="license_info">License information</string>
     <string name="live_tv">Live TV</string>
     <string name="loading">Loading…</string>

@@ -196,7 +196,9 @@ class NavDrawerViewModel
                             val idx = asDestinations.indexOf(key)
                             if (idx >= 0) {
                                 idx
-                            } else if (librariesIndex >= 0 && key.libraryId() in libraryIds) {
+                            } else if (librariesIndex >= 0 &&
+                                (key.isLibrarySection() || key.libraryId() in libraryIds)
+                            ) {
                                 // A library which is reached through the Library page, not its own drawer row
                                 librariesIndex
                             } else {
@@ -327,6 +329,10 @@ private fun Destination.libraryId(): UUID? =
         is Destination.Recordings -> itemId
         else -> null
     }
+
+/** A page reached from the cards of the Library page */
+private fun Destination.isLibrarySection(): Boolean =
+    this == Destination.ServerCatalogs || this == Destination.AllMovies || this == Destination.AllSeries
 
 internal const val HOME_INDEX = -1
 internal const val SEARCH_INDEX = -2

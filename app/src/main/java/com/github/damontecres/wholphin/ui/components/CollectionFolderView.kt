@@ -60,6 +60,7 @@ import com.github.damontecres.wholphin.ui.equalsNotNull
 import com.github.damontecres.wholphin.ui.launchDefault
 import com.github.damontecres.wholphin.ui.launchIO
 import com.github.damontecres.wholphin.ui.nav.Destination
+import com.github.damontecres.wholphin.ui.nav.LocalTopNavBarState
 import com.github.damontecres.wholphin.ui.rememberInt
 import com.github.damontecres.wholphin.ui.showToast
 import com.github.damontecres.wholphin.ui.toServerString
@@ -99,7 +100,6 @@ import org.jellyfin.sdk.model.api.SortOrder
 import org.jellyfin.sdk.model.api.request.GetArtistsRequest
 import org.jellyfin.sdk.model.api.request.GetItemsRequest
 import org.jellyfin.sdk.model.api.request.GetPersonsRequest
-import org.jellyfin.sdk.model.serializer.toUUID
 import org.jellyfin.sdk.model.serializer.toUUIDOrNull
 import timber.log.Timber
 import java.util.UUID
@@ -512,7 +512,8 @@ class CollectionFolderViewModel
 
         override suspend fun getFilterOptionValues(filterOption: ItemFilterBy<*>): List<FilterValueOption> =
             filterOptionCache.getFilterOptionValues(
-                itemId.toUUID(),
+                // Not an item ID for the grids across the whole server
+                itemId.toUUIDOrNull(),
                 filterOption,
             )
 
@@ -938,6 +939,10 @@ fun CollectionFolderViewContent(
                         ?: stringResource(R.string.collection)
                 Column(modifier = Modifier.fillMaxSize()) {
                     var showHeader by rememberSaveable { mutableStateOf(true) }
+                    // The top bar gets out of the way together with the header while browsing down the grid
+                    LocalTopNavBarState.current?.let { topNavBarState ->
+                        LaunchedEffect(showHeader) { topNavBarState.contentAtTop = showHeader }
+                    }
                     val gridFocusRequester = remember { FocusRequester() }
                     val pager = remember(state.items) { state.items.successValue }
 

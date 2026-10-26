@@ -148,6 +148,18 @@ sealed class Destination(
     @Serializable
     data object Libraries : Destination(false)
 
+    /** Every library on the server, reached from [Libraries] */
+    @Serializable
+    data object ServerCatalogs : Destination(false)
+
+    /** The movies of all the libraries together, reached from [Libraries] */
+    @Serializable
+    data object AllMovies : Destination(false)
+
+    /** The series of all the libraries together, reached from [Libraries] */
+    @Serializable
+    data object AllSeries : Destination(false)
+
     @Serializable
     data object Discover : Destination(false)
 

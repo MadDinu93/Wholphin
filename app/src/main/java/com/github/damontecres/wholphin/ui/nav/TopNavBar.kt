@@ -115,20 +115,30 @@ fun TopNavigation(
     val selectedIndex = state.selectedIndex
 
     val showBar =
-        remember(destination, serviceState.items) {
+        remember(destination, serviceState.items, serviceState.allLibraries) {
             when (destination) {
                 is Destination.Home,
                 is Destination.Search,
                 Destination.Libraries,
+                Destination.ServerCatalogs,
+                Destination.AllMovies,
+                Destination.AllSeries,
                 Destination.Favorites,
                 Destination.Discover,
                 -> true
+
+                // A catalog opened from the Library page
+                is Destination.MediaItem -> {
+                    serviceState.allLibraries.any { it.itemId == destination.itemId }
+                }
 
                 else -> serviceState.items.any { it is ServerNavDrawerItem && it.destination == destination }
             }
         }
 
     val barState = remember { TopNavBarState() }
+    // A page that hid the bar while scrolled down must not keep it hidden on the next page
+    LaunchedEffect(destination) { barState.contentAtTop = true }
     var barFocused by remember { mutableStateOf(false) }
     val barVisible = showBar && (barFocused || barState.contentAtTop)
     val topPadding = animateDpAsState(if (barVisible) TopNavBarHeight else 0.dp, label = "top_nav_padding")

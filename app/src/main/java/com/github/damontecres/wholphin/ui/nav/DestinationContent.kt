@@ -14,8 +14,11 @@ import com.github.damontecres.wholphin.ui.components.ItemGrid
 import com.github.damontecres.wholphin.ui.components.LicenseInfo
 import com.github.damontecres.wholphin.ui.data.MovieSortOptions
 import com.github.damontecres.wholphin.ui.data.rememberSortOptions
+import com.github.damontecres.wholphin.ui.detail.AllMoviesPage
+import com.github.damontecres.wholphin.ui.detail.AllSeriesPage
 import com.github.damontecres.wholphin.ui.detail.CollectionFolderGeneric
 import com.github.damontecres.wholphin.ui.detail.LibrariesPage
+import com.github.damontecres.wholphin.ui.detail.ServerCatalogsPage
 import com.github.damontecres.wholphin.ui.detail.CollectionFolderLiveTv
 import com.github.damontecres.wholphin.ui.detail.CollectionFolderMovie
 import com.github.damontecres.wholphin.ui.detail.CollectionFolderMusic
@@ -347,6 +350,21 @@ fun DestinationContent(
         Destination.Libraries -> {
             LaunchedEffect(Unit) { onClearBackdrop.invoke() }
             LibrariesPage(modifier = modifier)
+        }
+
+        Destination.ServerCatalogs -> {
+            LaunchedEffect(Unit) { onClearBackdrop.invoke() }
+            ServerCatalogsPage(modifier = modifier)
+        }
+
+        Destination.AllMovies -> {
+            LaunchedEffect(Unit) { onClearBackdrop.invoke() }
+            AllMoviesPage(preferences = preferences, modifier = modifier)
+        }
+
+        Destination.AllSeries -> {
+            LaunchedEffect(Unit) { onClearBackdrop.invoke() }
+            AllSeriesPage(preferences = preferences, modifier = modifier)
         }
 
         Destination.Favorites -> {
