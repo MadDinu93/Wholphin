@@ -422,6 +422,9 @@ fun RecommendedContent(
             }
             val cardTrailers = rememberCardTrailers(viewModel.heroTrailerService, interfacePreferences.muteHeroTrailer)
             val trailerOwner = remember { Any() }
+            // The hero's trailer only plays while it is shown
+            val trailers = interfacePreferences.cardTrailers || (showHero && !interfacePreferences.disableHeroTrailer)
+            val cardThemeMusic = interfacePreferences.cardThemeMusic
             HomePageContent(
                 homeRows = state.rows,
                 position = position,
@@ -468,10 +471,14 @@ fun RecommendedContent(
                 showHero = showHero,
                 onTrailerItemChanged =
                     { item: BaseItem? ->
-                        viewModel.heroTrailerService.focus(item, trailerOwner, inCard = interfacePreferences.cardTrailers)
-                    }.takeIf {
-                        interfacePreferences.cardTrailers || !interfacePreferences.disableHeroTrailer
-                    },
+                        viewModel.heroTrailerService.focus(
+                            item,
+                            trailerOwner,
+                            inCard = interfacePreferences.cardTrailers,
+                            trailers = trailers,
+                            themeMusic = cardThemeMusic,
+                        )
+                    }.takeIf { trailers || cardThemeMusic },
                 cardTrailers = cardTrailers.takeIf { interfacePreferences.cardTrailers },
                 modifier = modifier,
             )

@@ -28,7 +28,8 @@ class TrailerService
         fun getRemoteTrailers(item: BaseItem): List<Trailer> =
             item.data.remoteTrailers
                 ?.mapNotNull { t ->
-                    t.url?.unwrapTrailerUrl()?.let { url ->
+                    // Theme music that came with the trailers is not one, see ThemeMusicAddonService
+                    t.url?.unwrapTrailerUrl()?.takeUnless { it.isAudioUrl() }?.let { url ->
                         val name =
                             t.name
                                 // TODO would be nice to clean up the trailer name

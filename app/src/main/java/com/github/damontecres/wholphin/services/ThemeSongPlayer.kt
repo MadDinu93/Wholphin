@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.annotation.OptIn
 import androidx.datastore.core.DataStore
 import androidx.media3.common.MediaItem
-import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.okhttp.OkHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
@@ -13,6 +12,7 @@ import com.github.damontecres.wholphin.preferences.AppPreferences
 import com.github.damontecres.wholphin.preferences.ThemeSongVolume
 import com.github.damontecres.wholphin.services.hilt.AuthOkHttpClient
 import com.github.damontecres.wholphin.services.hilt.IoCoroutineScope
+import com.github.damontecres.wholphin.services.hilt.StandardOkHttpClient
 import com.github.damontecres.wholphin.ui.launchIO
 import com.github.damontecres.wholphin.util.WholphinDispatchers
 import com.github.damontecres.wholphin.util.profile.Codec
@@ -37,7 +37,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Simple service to play theme song music
+ * Simple service to play theme song music: from the Jellyfin server, or else from the theme music add-on
  */
 @OptIn(UnstableApi::class)
 @Singleton
@@ -46,27 +46,52 @@ class ThemeSongPlayer
     constructor(
         @param:ApplicationContext private val context: Context,
         @param:AuthOkHttpClient private val authOkHttpClient: OkHttpClient,
+        @param:StandardOkHttpClient private val standardOkHttpClient: OkHttpClient,
         private val api: ApiClient,
+        private val themeMusicAddonService: ThemeMusicAddonService,
         @param:IoCoroutineScope private val scope: CoroutineScope,
         private val preferences: DataStore<AppPreferences>,
     ) {
         private val mutex = Mutex()
         private val state = MutableStateFlow(ThemeSongState())
 
-        private val player: Player by lazy {
-            ExoPlayer
-                .Builder(context)
-                .setMediaSourceFactory(
-                    DefaultMediaSourceFactory(
-                        OkHttpDataSource.Factory(authOkHttpClient),
-                    ),
-                ).build()
-        }
+        private val player: ExoPlayer by lazy { ExoPlayer.Builder(context).build() }
 
-        fun playThemeFor(itemId: UUID) {
+        // Only music on the server gets the user's credentials, not links to elsewhere from the add-on
+        private val serverSourceFactory by lazy { DefaultMediaSourceFactory(OkHttpDataSource.Factory(authOkHttpClient)) }
+        private val addonSourceFactory by lazy { DefaultMediaSourceFactory(OkHttpDataSource.Factory(standardOkHttpClient)) }
+
+        /**
+         * @param owner who asked for it, such as a page, so that [stop] with the same owner stops only their music
+         */
+        fun playThemeFor(
+            itemId: UUID,
+            owner: Any? = null,
+        ) = load(itemId, owner, play = true)
+
+        /**
+         * Gets the theme music of [itemId] ready without playing it, such as while a trailer plays, so that
+         * [playThemeFor] with the same item and [owner] starts it at once
+         */
+        fun prepareThemeFor(
+            itemId: UUID,
+            owner: Any,
+        ) = load(itemId, owner, play = false)
+
+        private fun load(
+            itemId: UUID,
+            owner: Any?,
+            play: Boolean,
+        ) {
             scope.launch {
                 mutex.withLock {
                     state.value.job?.join()
+                    val current = state.value
+                    if (play && current.prepared && current.itemId == itemId && current.owner === owner) {
+                        withContext(WholphinDispatchers.Main) { player.play() }
+                        state.update { it.copy(prepared = false) }
+                        return@withLock
+                    }
                     val volumeLevel =
                         when (
                             preferences.data
@@ -85,13 +110,13 @@ class ThemeSongPlayer
 
                             ThemeSongVolume.HIGH -> .5f
 
-                            ThemeSongVolume.HIGHEST -> 75f
+                            ThemeSongVolume.HIGHEST -> .75f
                         }
                     val job =
                         scope.launchIO {
                             val themeSongs by api.libraryApi.getThemeSongs(itemId)
-                            themeSongs.items.randomOrNull()?.let { theme ->
-                                val url =
+                            val serverUrl =
+                                themeSongs.items.randomOrNull()?.let { theme ->
                                     api.universalAudioApi.getUniversalAudioStreamUrl(
                                         theme.id,
                                         container =
@@ -102,30 +127,42 @@ class ThemeSongPlayer
                                                 Codec.Audio.FLAC,
                                             ),
                                     )
-                                withContext(WholphinDispatchers.Main) {
-                                    player.apply {
-                                        stop()
-                                        volume = volumeLevel
-                                        setMediaItem(MediaItem.fromUri(url))
-                                        prepare()
-                                        play()
-                                    }
+                                }
+                            val url = serverUrl ?: themeMusicAddonService.getThemeUrls(itemId).randomOrNull()
+                            if (url == null) {
+                                Timber.v("No theme song for %s", itemId)
+                                return@launchIO
+                            }
+                            val sourceFactory = if (serverUrl != null) serverSourceFactory else addonSourceFactory
+                            withContext(WholphinDispatchers.Main) {
+                                player.apply {
+                                    stop()
+                                    volume = volumeLevel
+                                    setMediaSource(sourceFactory.createMediaSource(MediaItem.fromUri(url)))
+                                    prepare()
+                                    playWhenReady = play
                                 }
                             }
                         }
                     state.update {
                         it.copy(
                             itemId = itemId,
+                            owner = owner,
                             job = job,
+                            prepared = !play,
                         )
                     }
                 }
             }
         }
 
-        fun stop() {
+        /**
+         * @param owner if given, only stops the music if it is what they asked [playThemeFor]
+         */
+        fun stop(owner: Any? = null) {
             scope.launch {
                 mutex.withLock {
+                    if (owner != null && state.value.owner !== owner) return@withLock
                     state.value.job?.cancelAndJoin()
                     withContext(WholphinDispatchers.Main) {
                         Timber.v("Stopping theme song")
@@ -134,7 +171,9 @@ class ThemeSongPlayer
                     state.update {
                         it.copy(
                             itemId = null,
+                            owner = null,
                             job = null,
+                            prepared = false,
                         )
                     }
                 }
@@ -144,5 +183,8 @@ class ThemeSongPlayer
 
 data class ThemeSongState(
     val itemId: UUID? = null,
+    val owner: Any? = null,
     val job: Job? = null,
+    // Loaded by prepareThemeFor and not playing yet
+    val prepared: Boolean = false,
 )

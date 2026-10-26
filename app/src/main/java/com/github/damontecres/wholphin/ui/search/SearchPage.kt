@@ -72,6 +72,7 @@ import com.github.damontecres.wholphin.ui.detail.CardGridItem
 import com.github.damontecres.wholphin.ui.detail.GridItemDetails
 import com.github.damontecres.wholphin.ui.detail.livetv.ProgramDialog
 import com.github.damontecres.wholphin.ui.nav.Destination
+import com.github.damontecres.wholphin.ui.nav.FocusedCardThemeMusic
 import com.github.damontecres.wholphin.ui.onMain
 import com.github.damontecres.wholphin.ui.titleStringRes
 import com.github.damontecres.wholphin.ui.tryRequestFocus
@@ -129,6 +130,17 @@ fun SearchPage(
     }
 
     val contextMenu = rememberContextMenu(userPreferences, viewModel)
+
+    // The card with focus, for its theme music
+    var focusedItem by remember { mutableStateOf<BaseItem?>(null) }
+    FocusedCardThemeMusic(focusedItem, userPreferences)
+    val onFocusItem = { item: BaseItem?, focused: Boolean ->
+        if (focused) {
+            focusedItem = item
+        } else if (focusedItem?.id == item?.id) {
+            focusedItem = null
+        }
+    }
 
     LifecycleResumeEffect(Unit) {
         onPauseOrDispose {
@@ -385,6 +397,7 @@ fun SearchPage(
                         onClickPosition = { setPosition(it) },
                         onClickDiscover = onClickDiscover,
                         positionCallback = positionCallback,
+                        onFocusItem = onFocusItem,
                         modifier = Modifier.fillMaxSize(),
                     )
                 }
@@ -399,6 +412,7 @@ fun SearchPage(
                         onClickPosition = { setPosition(it) },
                         onClickDiscover = onClickDiscover,
                         positionCallback = positionCallback,
+                        onFocusItem = onFocusItem,
                         modifier = Modifier.fillMaxSize(),
                     )
                 }
@@ -443,7 +457,7 @@ fun SearchPage(
                                             onClick.invoke()
                                         },
                                         onLongClick = onLongClick,
-                                        modifier = mod,
+                                        modifier = mod.onFocusChanged { onFocusItem(item, it.hasFocus) },
                                     )
                                 },
                             )
@@ -546,6 +560,7 @@ fun SearchCombinedResults(
     onClickDiscover: (Int, DiscoverItem) -> Unit,
     positionCallback: (columns: Int, position: Int) -> Unit,
     modifier: Modifier = Modifier,
+    onFocusItem: (BaseItem?, Boolean) -> Unit = { _, _ -> },
 ) {
     when (result) {
         SearchResult.NoQuery -> {}
@@ -588,7 +603,7 @@ fun SearchCombinedResults(
                             item = details.item,
                             onClick = details.onClick,
                             onLongClick = details.onLongClick,
-                            modifier = details.mod,
+                            modifier = details.mod.onFocusChanged { onFocusItem(details.item, it.hasFocus) },
                             fillWidth = details.widthPx,
                         )
                     },

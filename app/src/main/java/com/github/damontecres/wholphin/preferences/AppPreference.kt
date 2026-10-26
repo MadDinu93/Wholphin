@@ -244,6 +244,29 @@ sealed interface AppPreference<Pref, T> {
                 valueToIndex = { if (it != ThemeSongVolume.UNRECOGNIZED) it.number else 0 },
             )
 
+        val CardThemeMusic =
+            AppSwitchPreference<AppPreferences>(
+                title = R.string.card_theme_music,
+                defaultValue = false,
+                getter = { it.interfacePreferences.cardThemeMusic },
+                setter = { prefs, value ->
+                    prefs.updateInterfacePreferences { cardThemeMusic = value }
+                },
+                summaryOn = R.string.card_theme_music_summary_on,
+                summaryOff = R.string.disabled,
+            )
+
+        val ThemeMusicAddonUrl =
+            AppStringPreference<AppPreferences>(
+                title = R.string.theme_music_addon_url,
+                defaultValue = "",
+                getter = { it.interfacePreferences.themeMusicAddonUrl },
+                setter = { prefs, value ->
+                    prefs.updateInterfacePreferences { themeMusicAddonUrl = value.trim() }
+                },
+                summary = R.string.theme_music_addon_url_summary,
+            )
+
         val PlaybackDebugInfo =
             AppSwitchPreference<AppPreferences>(
                 title = R.string.playback_debug_info,
@@ -1370,6 +1393,8 @@ val basicPreferences =
                         AppPreference.CardTrailers,
                         AppPreference.HeroTrailerSound,
                         AppPreference.PlayThemeMusic,
+                        AppPreference.CardThemeMusic,
+                        AppPreference.ThemeMusicAddonUrl,
                     ),
             ),
         )

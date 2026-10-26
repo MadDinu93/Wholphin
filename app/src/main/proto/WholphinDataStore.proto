@@ -236,6 +236,10 @@ message InterfacePreferences {
   CardProgressStyle card_progress_style = 21;
   // Inverted so that the genre and rating show on cards without a migration
   bool hide_card_info = 22;
+  // Theme music plays for the focused card once its trailer is over
+  bool card_theme_music = 23;
+  // Address of an add-on giving links to theme music the server has none of, see ThemeMusicAddonService
+  string theme_music_addon_url = 24;
 }
 
 message AdvancedPreferences {

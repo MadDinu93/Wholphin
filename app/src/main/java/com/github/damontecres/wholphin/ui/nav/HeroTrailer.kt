@@ -227,6 +227,25 @@ fun DetailsTrailer(
 }
 
 /**
+ * Plays the theme music of the focused card [item] on pages whose cards have no trailers, such as search, shortly
+ * after it is focused, if theme music in cards is on
+ */
+@Composable
+fun FocusedCardThemeMusic(
+    item: BaseItem?,
+    preferences: UserPreferences,
+    viewModel: ApplicationContentViewModel = hiltViewModel(),
+) {
+    if (!preferences.appPreferences.interfacePreferences.cardThemeMusic) return
+    val heroTrailerService = viewModel.heroTrailerService
+    val owner = remember { Any() }
+    LaunchedEffect(item?.id) {
+        heroTrailerService.focus(item, owner, trailers = false, themeMusic = true)
+    }
+    DisposableEffect(Unit) { onDispose { heroTrailerService.focus(null, owner) } }
+}
+
+/**
  * Plays [trailer], fading in once the video is playing, and tells the [heroTrailerService] when it plays or ends
  */
 @Composable

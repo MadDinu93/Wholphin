@@ -242,6 +242,9 @@ fun HomePage(
             }
             val cardTrailers = rememberCardTrailers(viewModel.heroTrailerService, interfacePreferences.muteHeroTrailer)
             val trailerOwner = remember { Any() }
+            // The hero's trailer only plays while it is shown
+            val trailers = interfacePreferences.cardTrailers || (showHero && !interfacePreferences.disableHeroTrailer)
+            val cardThemeMusic = interfacePreferences.cardThemeMusic
             HomePageContent(
                 homeRows = homeRows,
                 position = position,
@@ -258,10 +261,14 @@ fun HomePage(
                 showHero = showHero,
                 onTrailerItemChanged =
                     { item: BaseItem? ->
-                        viewModel.heroTrailerService.focus(item, trailerOwner, inCard = interfacePreferences.cardTrailers)
-                    }.takeIf {
-                        interfacePreferences.cardTrailers || !interfacePreferences.disableHeroTrailer
-                    },
+                        viewModel.heroTrailerService.focus(
+                            item,
+                            trailerOwner,
+                            inCard = interfacePreferences.cardTrailers,
+                            trailers = trailers,
+                            themeMusic = cardThemeMusic,
+                        )
+                    }.takeIf { trailers || cardThemeMusic },
                 cardTrailers = cardTrailers.takeIf { interfacePreferences.cardTrailers },
                 modifier = modifier,
             )
@@ -388,8 +395,8 @@ fun HomePageContent(
             focusedItem?.let { onUpdateBackdrop.invoke(it) }
         }
     }
-    // The trailer plays behind the hero or in the focused card
-    if (onTrailerItemChanged != null && (showHero || cardTrailers != null)) {
+    // The trailer plays behind the hero or in the focused card, then the theme music
+    if (onTrailerItemChanged != null) {
         val currentOnTrailerItemChanged by rememberUpdatedState(onTrailerItemChanged)
         LaunchedEffect(focusedItem?.id) { currentOnTrailerItemChanged(focusedItem) }
         DisposableEffect(Unit) { onDispose { currentOnTrailerItemChanged(null) } }
