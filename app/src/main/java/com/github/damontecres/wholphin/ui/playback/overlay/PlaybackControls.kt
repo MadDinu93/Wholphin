@@ -7,6 +7,7 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.OptIn
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
@@ -48,6 +50,7 @@ import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -362,10 +365,9 @@ fun RightPlaybackButtons(
         modifier = modifier.focusGroup(),
         horizontalArrangement = Arrangement.spacedBy(buttonSpacing),
     ) {
-        // Captions
-        PlaybackButton(
+        // Subtitles
+        PlaybackSubtitleButton(
             enabled = true,
-            iconRes = R.drawable.captions_svgrepo_com,
             onClick = {
                 onControllerInteraction.invoke()
                 onClickPlaybackDialogType.invoke(PlaybackDialogType.CAPTIONS)
@@ -498,6 +500,62 @@ fun PlaybackButton(
                     MaterialTheme.colorScheme.onSurface
                 },
         )
+    }
+}
+
+/**
+ * The subtitles button: "SUB" in an outlined box, drawn like the CC icon it replaced
+ */
+@Composable
+fun PlaybackSubtitleButton(
+    onClick: () -> Unit,
+    onControllerInteraction: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    interactionSource: MutableInteractionSource? = null,
+) {
+    val selectedColor = MaterialTheme.colorScheme.border
+    Button(
+        enabled = enabled,
+        onClick = onClick,
+        colors =
+            ClickableSurfaceDefaults.colors(
+                containerColor = AppColors.TransparentBlack25,
+                focusedContainerColor = selectedColor,
+            ),
+        contentPadding = PaddingValues(4.dp),
+        interactionSource = interactionSource,
+        modifier =
+            modifier
+                .size(36.dp, 36.dp)
+                .onFocusChanged { onControllerInteraction.invoke() },
+    ) {
+        val color =
+            if (LocalTheme.current.isMonochrome) {
+                LocalContentColor.current
+            } else {
+                MaterialTheme.colorScheme.onSurface
+            }
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier =
+                Modifier
+                    .align(Alignment.CenterVertically)
+                    .fillMaxWidth()
+                    .padding(horizontal = 1.dp)
+                    .height(19.dp)
+                    .border(2.dp, color, RoundedCornerShape(3.dp)),
+        ) {
+            Text(
+                text = stringResource(R.string.subtitle_button),
+                color = color,
+                fontSize = 9.sp,
+                lineHeight = 9.sp,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                textAlign = TextAlign.Center,
+            )
+        }
     }
 }
 

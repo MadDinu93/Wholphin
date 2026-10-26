@@ -115,6 +115,7 @@ fun FilterableLanguagePreference(
                             val text =
                                 when (option) {
                                     PreferredLanguageType.AnyLanguage -> option.displayString.getString()
+                                    PreferredLanguageType.NoLanguage -> option.displayString.getString()
                                     is PreferredLanguageType.Language -> option.displayString.getString()
                                     is PreferredLanguageType.ServerProfile -> stringResource(R.string.use_user_profile)
                                 }
@@ -123,6 +124,7 @@ fun FilterableLanguagePreference(
                         supportingContent =
                             when (option) {
                                 PreferredLanguageType.AnyLanguage,
+                                PreferredLanguageType.NoLanguage,
                                 is PreferredLanguageType.Language,
                                 -> {
                                     null

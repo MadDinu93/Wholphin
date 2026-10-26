@@ -4,9 +4,12 @@ import androidx.core.net.toUri
 import androidx.media3.common.MediaMetadata
 import com.github.damontecres.wholphin.data.model.BaseItem
 import com.github.damontecres.wholphin.data.model.Chapter
-import com.github.damontecres.wholphin.ui.isNotNullOrBlank
+import com.github.damontecres.wholphin.services.getFallbackSubtitleLanguage
+import com.github.damontecres.wholphin.services.getPreferredLanguage
+import com.github.damontecres.wholphin.services.isSameLanguage
 import org.jellyfin.sdk.model.api.BaseItemKind
 import org.jellyfin.sdk.model.api.MediaSourceInfo
+import org.jellyfin.sdk.model.api.MediaStream
 import org.jellyfin.sdk.model.api.MediaStreamType
 import org.jellyfin.sdk.model.api.TrickplayInfo
 import org.jellyfin.sdk.model.extensions.ticks
@@ -31,23 +34,35 @@ data class CurrentMediaInfo(
 
 /**
  * Gets a sorted list of subtitle streams in a [MediaSourceInfo]
+ *
+ * The preferred language comes first, the subtitles inside the file before the external ones, then the fallback language
+ * the same way, then the rest. Within each, the server's order is kept since it may rank them by how well they match.
+ * When only the preferred subtitles are shown, the rest are marked as hidden.
  */
 internal fun PlaybackViewModel.getSubtitleStreams(mediaSource: MediaSourceInfo): List<SimpleMediaStream> {
-    val subtitleLanguagePreference =
-        serverRepository.currentUserDto
-            ?.configuration
-            ?.subtitleLanguagePreference
+    val prefs = preferences
+    val preferredLanguage =
+        getPreferredLanguage(MediaStreamType.SUBTITLE, prefs, serverRepository.currentUserDto?.configuration)
+    val fallbackLanguage = getFallbackSubtitleLanguage(prefs)
+    val onlyPreferred =
+        prefs.appPreferences.playbackPreferences.onlyPreferredSubtitles &&
+            (preferredLanguage != null || fallbackLanguage != null)
+
+    fun MediaStream.rank(): Int =
+        when {
+            language.isSameLanguage(preferredLanguage) -> if (isExternal) 1 else 0
+            language.isSameLanguage(fallbackLanguage) -> if (isExternal) 3 else 2
+            else -> 4
+        }
     return mediaSource.mediaStreams
         ?.filter { it.type == MediaStreamType.SUBTITLE }
-        .let {
-            if (subtitleLanguagePreference.isNotNullOrBlank()) {
-                it?.sortedByDescending { it.language != null && subtitleLanguagePreference == it.language }
-            } else {
-                it
-            }
-        }?.map {
+        // sortedBy is stable, so the server's order is kept within each rank
+        ?.sortedBy { it.rank() }
+        ?.map {
             // TODO should use a string provider instead
-            SimpleMediaStream.from(context.resources, it, true)
+            SimpleMediaStream
+                .from(context.resources, it, true)
+                .copy(hidden = onlyPreferred && it.rank() == 4)
         }.orEmpty()
 }
 

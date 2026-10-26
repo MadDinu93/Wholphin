@@ -35,6 +35,14 @@ sealed interface PreferredLanguageType {
             get() = ResStringProvider(R.string.any_language)
     }
 
+    /**
+     * No fallback language, only offered for the fallback subtitle language
+     */
+    data object NoLanguage : PreferredLanguageType {
+        override val displayString: StringProvider
+            get() = ResStringProvider(R.string.none)
+    }
+
     data class Language(
         val iso: String,
         val name: String,

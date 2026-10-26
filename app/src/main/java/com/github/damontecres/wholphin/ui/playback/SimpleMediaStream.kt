@@ -14,6 +14,8 @@ data class SimpleMediaStream(
     val index: Int,
     val streamTitle: String?,
     val displayTitle: String,
+    // Left out of the subtitle list when only the preferred subtitles are shown
+    val hidden: Boolean = false,
 ) {
     companion object {
         fun from(

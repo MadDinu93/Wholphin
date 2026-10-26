@@ -47,6 +47,7 @@ import org.jellyfin.sdk.model.api.HardwareAccelerationType
 import org.jellyfin.sdk.model.api.MediaProtocol
 import org.jellyfin.sdk.model.api.MediaSourceInfo
 import org.jellyfin.sdk.model.api.MediaSourceType
+import org.jellyfin.sdk.model.api.MediaStreamType
 import org.jellyfin.sdk.model.api.MediaStreamProtocol
 import org.jellyfin.sdk.model.api.PlayMethod
 import org.jellyfin.sdk.model.api.TranscodeReason
@@ -163,6 +164,19 @@ fun PlaybackDebugOverlay(
                 }
             }
         }
+        ProvideTextStyle(textStyle) {
+            SimpleTable(
+                remember(currentPlayback?.mediaSourceInfo) {
+                    val source = currentPlayback?.mediaSourceInfo
+                    listOf(
+                        "File:" to source?.fileName,
+                        "Dolby Vision:" to source?.dolbyVisionDescription,
+                    )
+                },
+                modifier = Modifier.padding(start = 8.dp),
+                keyWidth = 80.dp,
+            )
+        }
         currentPlayback?.tracks?.letNotEmpty {
             PlaybackTrackInfo(
                 trackSupport = it,
@@ -171,6 +185,38 @@ fun PlaybackDebugOverlay(
         }
     }
 }
+
+/**
+ * The name of the file being played, without its folders
+ */
+private val MediaSourceInfo.fileName: String?
+    get() =
+        path
+            ?.substringAfterLast('/')
+            ?.substringAfterLast('\\')
+            ?.takeIf { it.isNotBlank() }
+            ?: name
+
+/**
+ * The Dolby Vision profile of the video, such as "Profile 8.1, level 6, RPU", or "None" with the video's range
+ */
+private val MediaSourceInfo.dolbyVisionDescription: String
+    get() {
+        val video = mediaStreams?.firstOrNull { it.type == MediaStreamType.VIDEO }
+        val profile = video?.dvProfile
+        if (profile == null) {
+            return listOfNotNull("None", video?.videoRangeType?.serialName).joinToString(" - ")
+        }
+        // Profiles 8.1, 8.4, 7.6 and so on are the profile and the base layer's compatibility id
+        val compatibility = video.dvBlSignalCompatibilityId?.takeIf { it != 0 }
+        return buildList {
+            add("Profile " + if (compatibility != null) "$profile.$compatibility" else "$profile")
+            video.dvLevel?.let { add("level $it") }
+            if (video.rpuPresentFlag == 1) add("RPU")
+            if (video.elPresentFlag == 1) add("EL")
+            if (video.blPresentFlag == 1) add("BL")
+        }.joinToString(", ")
+    }
 
 @Composable
 fun SimpleTable(

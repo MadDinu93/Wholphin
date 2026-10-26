@@ -106,7 +106,11 @@ fun PlaybackDialog(
 
         PlaybackDialogType.CAPTIONS -> {
             SubtitleChoiceBottomDialog(
-                choices = settings.subtitleStreams,
+                // The current subtitle stays listed even when it would be hidden
+                choices =
+                    remember(settings.subtitleStreams, settings.subtitleIndex) {
+                        settings.subtitleStreams.filter { !it.hidden || it.index == settings.subtitleIndex }
+                    },
                 currentChoice = settings.subtitleIndex,
                 hasDownloadPermission = settings.hasSubtitleDownloadPermission,
                 onDismissRequest = {

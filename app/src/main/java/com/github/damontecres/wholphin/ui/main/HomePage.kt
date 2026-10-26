@@ -402,9 +402,15 @@ fun HomePageContent(
         DisposableEffect(Unit) { onDispose { currentOnTrailerItemChanged(null) } }
     }
     LocalTopNavBarState.current?.let { topNavBarState ->
+        val currentHomeRows by rememberUpdatedState(homeRows)
         LaunchedEffect(listState) {
-            snapshotFlow { listState.firstVisibleItemIndex == 0 }
-                .collect { topNavBarState.contentAtTop = it }
+            // The bar hides as soon as focus moves down from the first row, rows without items take no space
+            snapshotFlow {
+                val firstRow =
+                    currentHomeRows.indexOfFirstOrNull { it !is HomeRowLoadingState.Success || it.items.isNotEmpty() }
+                        ?: 0
+                currentPosition.row <= firstRow
+            }.collect { topNavBarState.contentAtTop = it }
         }
     }
     Box(modifier = modifier) {

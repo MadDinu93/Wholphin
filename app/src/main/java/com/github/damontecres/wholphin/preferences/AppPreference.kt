@@ -1004,6 +1004,18 @@ sealed interface AppPreference<Pref, T> {
                 summaryOff = R.string.disabled,
             )
 
+        val OnlyPreferredSubtitles =
+            AppSwitchPreference<AppPreferences>(
+                title = R.string.only_preferred_subtitles,
+                defaultValue = false,
+                getter = { it.playbackPreferences.onlyPreferredSubtitles },
+                setter = { prefs, value ->
+                    prefs.updatePlaybackPreferences { onlyPreferredSubtitles = value }
+                },
+                summaryOn = R.string.only_preferred_subtitles_summary_on,
+                summaryOff = R.string.disabled,
+            )
+
         val SubtitleStyle =
             AppDestinationPreference<AppPreferences>(
                 title = R.string.subtitle_style,
@@ -1419,7 +1431,7 @@ val basicPreferences =
             PreferenceGroup(
                 title = R.string.audio_and_subtitles,
                 // Shown under the audio and subtitle settings of the user's profile
-                preferences = listOf(AppPreference.SubtitleStyle),
+                preferences = listOf(AppPreference.OnlyPreferredSubtitles, AppPreference.SubtitleStyle),
                 inlinePage = InlinePreferencePage.USER_PROFILE,
             ),
         )

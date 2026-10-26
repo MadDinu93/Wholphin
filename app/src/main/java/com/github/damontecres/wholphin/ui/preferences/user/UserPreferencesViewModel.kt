@@ -21,6 +21,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
@@ -132,6 +133,31 @@ class UserPreferencesViewModel
 
         val audioLanguage: StateFlow<PreferredLanguage> = createLanguageFlow(true)
         val subtitleLanguage: StateFlow<PreferredLanguage> = createLanguageFlow(false)
+
+        @OptIn(ExperimentalCoroutinesApi::class)
+        val fallbackSubtitleLanguage: StateFlow<PreferredLanguage> =
+            currentUser
+                .combine(serverLanguages) { user, serverLanguages -> user to serverLanguages }
+                .mapLatest { (user, serverLanguages) ->
+                    val languages =
+                        serverLanguages
+                            .filter { it.threeLetterIsoLanguageName.isNotNullOrBlank() }
+                            .map { PreferredLanguageType.Language(it.threeLetterIsoLanguageName!!, it.displayName) }
+                    val fallbackLang = user?.appPreferences?.fallbackSubtitleLanguage
+                    val selected =
+                        languages.firstOrNull { it.iso == fallbackLang } ?: PreferredLanguageType.NoLanguage
+                    val options =
+                        buildList {
+                            add(PreferredLanguageType.NoLanguage)
+                            add(PreferredLanguageType.Divider)
+                            addAll(languages)
+                        }
+                    PreferredLanguage(selected, options)
+                }.stateIn(
+                    viewModelScope,
+                    SharingStarted.Eagerly,
+                    PreferredLanguage(PreferredLanguageType.NoLanguage),
+                )
 
         init {
             viewModelScope.launchIO {

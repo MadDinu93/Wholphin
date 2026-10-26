@@ -98,7 +98,9 @@ fun UserProfilePreferencesContent(
     val preferences by viewModel.userAppPreferences.collectAsState()
     val audioLanguagePref by viewModel.audioLanguage.collectAsState()
     val subtitleLanguagePref by viewModel.subtitleLanguage.collectAsState()
+    val fallbackSubtitleLanguagePref by viewModel.fallbackSubtitleLanguage.collectAsState()
     var showPreferredLanguageDialog by remember { mutableStateOf<Boolean?>(null) }
+    var showFallbackLanguageDialog by remember { mutableStateOf(false) }
 
     var visible by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
@@ -204,6 +206,16 @@ fun UserProfilePreferencesContent(
                                     )
                                 }
 
+                                UserProfileSettings.FallbackSubtitleLang -> {
+                                    ClickPreference(
+                                        title = stringResource(pref.title),
+                                        onClick = { showFallbackLanguageDialog = true },
+                                        summary = fallbackSubtitleLanguagePref.selected.displayString.getString(),
+                                        interactionSource = interactionSource,
+                                        modifier = modifier,
+                                    )
+                                }
+
                                 UserProfileSettings.SubtitleModePref -> {
                                     pref as AppChoicePreference<JellyfinUserPreferences, SubtitleModePreference>
                                     val value = preferences.subtitleMode
@@ -304,6 +316,7 @@ fun UserProfilePreferencesContent(
                             PreferredLanguageType.AnyLanguage -> UserProfileSettings.PREFER_ANY_LANGUAGE
                             is PreferredLanguageType.Language -> option.iso
                             is PreferredLanguageType.ServerProfile -> UserProfileSettings.USE_USER_PROFILE
+                            PreferredLanguageType.NoLanguage -> throw IllegalStateException("Not an option for the preferred language")
                             PreferredLanguageType.Divider -> throw IllegalStateException("Cannot click on a divider")
                         }
                     Timber.v("Updating language pref to %s", option)
@@ -315,6 +328,30 @@ fun UserProfilePreferencesContent(
                         }
                     }
                     showPreferredLanguageDialog = null
+                },
+                modifier =
+                    Modifier
+                        .padding(16.dp)
+                        .fillMaxSize(),
+            )
+        }
+    }
+    if (showFallbackLanguageDialog) {
+        BasicDialog(
+            onDismissRequest = { showFallbackLanguageDialog = false },
+            elevation = 3.dp,
+        ) {
+            FilterableLanguagePreference(
+                title = R.string.fallback_subtitle_language,
+                selectedOption = fallbackSubtitleLanguagePref.selected,
+                options = fallbackSubtitleLanguagePref.options,
+                onClickOption = { option ->
+                    val value =
+                        (option as? PreferredLanguageType.Language)?.iso
+                            ?: UserProfileSettings.NO_FALLBACK_LANGUAGE
+                    Timber.v("Updating fallback subtitle language to %s", option)
+                    viewModel.updatePreferences { it.copy(fallbackSubtitleLanguage = value) }
+                    showFallbackLanguageDialog = false
                 },
                 modifier =
                     Modifier

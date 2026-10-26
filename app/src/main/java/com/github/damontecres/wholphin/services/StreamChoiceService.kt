@@ -325,6 +325,9 @@ class StreamChoiceService
             } else {
                 val subtitleLanguage =
                     getPreferredLanguage(MediaStreamType.SUBTITLE, prefs, userConfig)
+                // Only used when nothing is in the preferred language
+                val fallbackLanguage =
+                    getFallbackSubtitleLanguage(prefs)?.takeIf { subtitleLanguage.isNotNullOrBlank() }
                 val subtitleMode =
                     when (prefs.userPreferences?.subtitleMode) {
                         SubtitleModePreference.USE_USER_PROFILE -> userConfig?.subtitleMode
@@ -352,6 +355,10 @@ class StreamChoiceService
                         SubtitlePlaybackMode.ALWAYS -> {
                             if (subtitleLanguage.isNotNullOrBlank()) {
                                 candidates.firstOrNull {
+                                    !it.isForced && it.language.equals(subtitleLanguage, true)
+                                } ?: fallbackLanguage?.let { fallback ->
+                                    candidates.firstOrNull { !it.isForced && it.language.isSameLanguage(fallback) }
+                                } ?: candidates.firstOrNull {
                                     // Prefer non-forced first
                                     !it.isForced && it.language.equalsLangOrUnknown(subtitleLanguage)
                                 } ?: candidates.firstOrNull {
@@ -381,6 +388,9 @@ class StreamChoiceService
                                     (audioLanguage.isNullOrBlank() && subtitleLanguage != audioStreamLang)
                                 ) {
                                     candidates.firstOrNull { it.language == subtitleLanguage }
+                                        ?: fallbackLanguage?.let { fallback ->
+                                            candidates.firstOrNull { it.language.isSameLanguage(fallback) }
+                                        }
                                         ?: candidates.firstOrNull { it.language.isUnknown }
                                 } else {
                                     // Otherwise, show forced subtitles in preferred lang
@@ -395,7 +405,9 @@ class StreamChoiceService
                         SubtitlePlaybackMode.DEFAULT -> {
                             if (subtitleLanguage.isNotNullOrBlank()) {
                                 candidates.firstOrNull { it.language == subtitleLanguage && (it.isDefault || it.isForced) }
-                                    ?: candidates.firstOrNull { it.isDefault || it.isForced }
+                                    ?: fallbackLanguage?.let { fallback ->
+                                        candidates.firstOrNull { it.language.isSameLanguage(fallback) && (it.isDefault || it.isForced) }
+                                    } ?: candidates.firstOrNull { it.isDefault || it.isForced }
                             } else {
                                 candidates.firstOrNull { it.isDefault || it.isForced }
                             }
@@ -586,6 +598,51 @@ fun getPreferredLanguage(
         else -> pref
     }?.takeIf { it.isNotNullOrBlank() }
 }
+
+/**
+ * ISO 639-2 languages with two codes, the bibliographic one mapped to the terminology one. Files and servers use either.
+ */
+private val bibliographicLanguageCodes =
+    mapOf(
+        "alb" to "sqi",
+        "arm" to "hye",
+        "baq" to "eus",
+        "bur" to "mya",
+        "chi" to "zho",
+        "cze" to "ces",
+        "dut" to "nld",
+        "fre" to "fra",
+        "geo" to "kat",
+        "ger" to "deu",
+        "gre" to "ell",
+        "ice" to "isl",
+        "mac" to "mkd",
+        "mao" to "mri",
+        "may" to "msa",
+        "per" to "fas",
+        "rum" to "ron",
+        "slo" to "slk",
+        "tib" to "bod",
+        "wel" to "cym",
+    )
+
+/**
+ * Whether two language codes are the same known language, such as "rum" and "ron"
+ */
+fun String?.isSameLanguage(other: String?): Boolean {
+    if (this.isUnknown || other.isUnknown) return false
+    val a = this!!.lowercase()
+    val b = other!!.lowercase()
+    return a == b || (bibliographicLanguageCodes[a] ?: a) == (bibliographicLanguageCodes[b] ?: b)
+}
+
+/**
+ * The user's fallback subtitle language, used when no subtitle is in the preferred language
+ */
+fun getFallbackSubtitleLanguage(prefs: UserPreferences): String? =
+    prefs.userPreferences
+        ?.fallbackSubtitleLanguage
+        ?.takeIf { it.isNotNullOrBlank() }
 
 /**
  * Scores streams based the user's explicit [SeriesTrackChoice]

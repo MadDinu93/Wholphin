@@ -94,6 +94,8 @@ message PlaybackPreferences {
   string external_player = 24;
   bool cinema_mode = 25;
   DpadSeekMode dpad_seek_mode = 26;
+  // The player's subtitle list shows only the preferred and fallback languages
+  bool only_preferred_subtitles = 27;
 }
 
 enum DpadSeekMode {

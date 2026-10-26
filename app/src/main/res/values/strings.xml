@@ -960,6 +960,10 @@
     </string-array>
 
     <string name="preferred_subtitle_language">Preferred subtitle language</string>
+    <string name="fallback_subtitle_language">Fallback subtitle language</string>
+    <string name="only_preferred_subtitles">Only preferred subtitles</string>
+    <string name="only_preferred_subtitles_summary_on">The subtitle list shows only the preferred and fallback languages</string>
+    <string name="subtitle_button" translatable="false">SUB</string>
     <string name="preferred_audio_language">Preferred audio language</string>
     <string name="override_user_profile_settings">More user profile settings</string>
     <string name="override_user_profile_settings_summary">Override your user profile settings from the server</string>

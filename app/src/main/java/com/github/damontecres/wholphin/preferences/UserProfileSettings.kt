@@ -18,6 +18,11 @@ object UserProfileSettings {
      */
     const val PREFER_ANY_LANGUAGE = "_any-language"
 
+    /**
+     * Special value that means the user has no fallback subtitle language
+     */
+    const val NO_FALLBACK_LANGUAGE = ""
+
     val PreferredAudioLang =
         AppClickablePreference<JellyfinUserPreferences>(
             title = R.string.preferred_audio_language,
@@ -28,6 +33,14 @@ object UserProfileSettings {
     val PreferredSubtitleLang =
         AppClickablePreference<JellyfinUserPreferences>(
             title = R.string.preferred_subtitle_language,
+            summary = null,
+            getter = { },
+            setter = { prefs, _ -> prefs },
+        )
+
+    val FallbackSubtitleLang =
+        AppClickablePreference<JellyfinUserPreferences>(
+            title = R.string.fallback_subtitle_language,
             summary = null,
             getter = { },
             setter = { prefs, _ -> prefs },
@@ -54,6 +67,7 @@ object UserProfileSettings {
                     listOf(
                         PreferredAudioLang,
                         PreferredSubtitleLang,
+                        FallbackSubtitleLang,
                         SubtitleModePref,
                     ),
             ),
