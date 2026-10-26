@@ -170,6 +170,11 @@ class ServerRepository
         }
 
         /**
+         * The most recently used server & user, as saved, without checking anything
+         */
+        suspend fun mostRecent(): MostRecentServer = mostRecentServerProvider.get()
+
+        /**
          * Get the most recently used server, if any
          */
         suspend fun getMostRecentServer(): RestoredSession = getMostRecentServerInternal(mostRecentServerProvider.get())

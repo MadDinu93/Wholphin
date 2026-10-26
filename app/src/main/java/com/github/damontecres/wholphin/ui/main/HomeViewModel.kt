@@ -13,6 +13,7 @@ import com.github.damontecres.wholphin.services.HeroTrailerService
 import com.github.damontecres.wholphin.services.DatePlayedService
 import com.github.damontecres.wholphin.services.FavoriteWatchManager
 import com.github.damontecres.wholphin.services.HomeDataService
+import com.github.damontecres.wholphin.services.HomeRowsCache
 import com.github.damontecres.wholphin.services.HomePageResolvedSettings
 import com.github.damontecres.wholphin.services.HomeSettingsService
 import com.github.damontecres.wholphin.services.LatestNextUpService
@@ -71,6 +72,7 @@ class HomeViewModel
         private val userPreferencesService: UserPreferencesService,
         private val mediaManagementService: MediaManagementService,
         private val latestNextUpService: LatestNextUpService,
+        private val homeRowsCache: HomeRowsCache,
     ) : ViewModel() {
         private val _state = MutableStateFlow(HomeState.EMPTY)
         val state: StateFlow<HomeState> = _state
@@ -79,6 +81,7 @@ class HomeViewModel
 
         init {
             datePlayedService.invalidateAll()
+            showCachedRows()
             serverRepository.currentUserDtoFlow
                 .combinePair(homeSettingsService.currentSettings)
                 .collectLatestIn(viewModelScope) { (userDto, settings) ->
@@ -94,24 +97,54 @@ class HomeViewModel
                         _state.update { HomeState.EMPTY }
                         return@collectLatestIn
                     }
+                    // The cached rows stay up while waiting for the settings
+                    val keepCached = { it: HomeState -> if (it.cachedFor == userDto.id) it else HomeState.EMPTY }
                     if (settings == HomePageResolvedSettings.EMPTY) {
                         Timber.d("Home settings are empty")
-                        _state.update { HomeState.EMPTY }
+                        _state.update(keepCached)
                         return@collectLatestIn
                     }
                     if (userDto.id != settings.userId) {
                         Timber.d("User IDs don't match: %s vs %s", userDto?.id, settings.userId)
-                        _state.update { HomeState.EMPTY }
+                        _state.update(keepCached)
                         return@collectLatestIn
                     }
                     if (state.value.settings.userId != settings.userId) {
                         Timber.d("User changed")
-                        _state.update { HomeState.EMPTY }
+                        _state.update(keepCached)
                     }
                     dataLoadingJob =
                         viewModelScope.launchIO {
                             loadHomeRows(userDto, settings)
                         }
+                }
+        }
+
+        private var cacheJob: Job? = null
+
+        /**
+         * Shows the rows from the last time right away, [loadHomeRows] replaces them as fresh ones arrive
+         */
+        private fun showCachedRows() {
+            val current = serverRepository.current.value ?: return
+            cacheJob =
+                viewModelScope.launchIO {
+                    val rows = homeRowsCache.load(current.server.id, current.user.id)
+                    if (rows != null && rows.any { it is HomeRowLoadingState.Success && it.items.isNotEmpty() }) {
+                        Timber.i("Showing %s cached home rows", rows.size)
+                        _state.update {
+                            if (it.loadingState == LoadingState.Success) {
+                                it
+                            } else {
+                                it.copy(
+                                    loadingState = LoadingState.Success,
+                                    refreshState = LoadingState.Loading,
+                                    homeRows = rows,
+                                    cachedFor = current.user.id,
+                                )
+                            }
+                        }
+                    }
                 }
         }
 
@@ -147,6 +180,7 @@ class HomeViewModel
         ) {
             Timber.i("Starting loadHomeRows")
             try {
+                cacheJob?.join()
                 val preferences = userPreferencesService.getCurrent()
                 val prefs = preferences.appPreferences.homePagePreferences
 
@@ -158,23 +192,35 @@ class HomeViewModel
                 // Refreshing if a load has already occurred and the rows haven't significantly changed
                 val refresh =
                     state.loadingState == LoadingState.Success && state.settings == settings
+                // Otherwise the cached rows stay up until their fresh ones arrive
+                val fromCache =
+                    !refresh && state.loadingState == LoadingState.Success && state.cachedFor == settings.userId
                 Timber.v(
-                    "refresh=%s, state.loadingState=%s, %s rows",
+                    "refresh=%s, fromCache=%s, state.loadingState=%s, %s rows",
                     refresh,
+                    fromCache,
                     state.loadingState,
                     settings.rows.size,
                 )
                 _state.update {
                     it.copy(
-                        loadingState = if (refresh) LoadingState.Success else LoadingState.Loading,
+                        loadingState = if (refresh || fromCache) LoadingState.Success else LoadingState.Loading,
                         refreshState = LoadingState.Loading,
                         settings = settings,
                         homeRows =
-                            if (refresh) {
-                                it.homeRows
-                            } else {
-                                List(settings.rows.size) {
-                                    HomeRowLoadingState.Pending(EmptyStringProvider)
+                            when {
+                                refresh -> {
+                                    it.homeRows
+                                }
+
+                                fromCache -> {
+                                    matchCachedRows(it.homeRows, settings)
+                                }
+
+                                else -> {
+                                    List(settings.rows.size) {
+                                        HomeRowLoadingState.Pending(EmptyStringProvider)
+                                    }
                                 }
                             },
                     )
@@ -250,7 +296,7 @@ class HomeViewModel
                         state.copy(
                             homeRows = newRows,
                             loadingState =
-                                if (refresh || isFirstRowReady(newRows)) {
+                                if (refresh || fromCache || isFirstRowReady(newRows)) {
                                     LoadingState.Success
                                 } else {
                                     state.loadingState
@@ -262,9 +308,13 @@ class HomeViewModel
                     it.copy(
                         loadingState = LoadingState.Success,
                         refreshState = LoadingState.Success,
+                        cachedFor = null,
                     )
                 }
                 Timber.d("Home page load complete")
+                serverRepository.currentServer?.let { server ->
+                    homeRowsCache.save(server.id, userDto.id, this.state.value.homeRows)
+                }
             } catch (ex: CancellationException) {
                 throw ex
             } catch (ex: Exception) {
@@ -356,11 +406,15 @@ class HomeViewModel
         }
     }
 
+/**
+ * @param cachedFor the user ID while [homeRows] are still the ones from [HomeRowsCache]
+ */
 data class HomeState(
     val loadingState: LoadingState,
     val refreshState: LoadingState,
     val homeRows: List<HomeRowLoadingState>,
     val settings: HomePageResolvedSettings,
+    val cachedFor: UUID? = null,
 ) {
     companion object {
         val EMPTY =
@@ -370,6 +424,29 @@ data class HomeState(
                 emptyList(),
                 HomePageResolvedSettings.EMPTY,
             )
+    }
+}
+
+/**
+ * Lines the cached rows up with the current settings by their row config, rows without a cached match
+ * wait as [HomeRowLoadingState.Pending]
+ */
+private fun matchCachedRows(
+    cached: List<HomeRowLoadingState>,
+    settings: HomePageResolvedSettings,
+): List<HomeRowLoadingState> {
+    val remaining =
+        cached
+            .filterIsInstance<HomeRowLoadingState.Success>()
+            .toMutableList()
+    return settings.rows.map { row ->
+        val match = remaining.firstOrNull { it.rowType == row.config }
+        if (match != null) {
+            remaining.remove(match)
+            match
+        } else {
+            HomeRowLoadingState.Pending(row.title)
+        }
     }
 }
 

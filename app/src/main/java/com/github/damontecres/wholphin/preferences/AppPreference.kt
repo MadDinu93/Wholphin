@@ -647,7 +647,7 @@ sealed interface AppPreference<Pref, T> {
         val ShowHomeHero =
             AppSwitchPreference<AppPreferences>(
                 title = R.string.show_home_hero,
-                defaultValue = false,
+                defaultValue = true,
                 getter = { it.interfacePreferences.showHomeHero },
                 setter = { prefs, value ->
                     prefs.updateInterfacePreferences { showHomeHero = value }

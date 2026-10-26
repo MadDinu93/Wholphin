@@ -66,6 +66,7 @@
     <string name="license_info">License information</string>
     <string name="live_tv">Live TV</string>
     <string name="loading">Loading…</string>
+    <string name="updating">Updating…</string>
     <string name="mark_entire_series_as_played">Mark entire series as played?</string>
     <string name="mark_entire_series_as_unplayed">Mark entire series as unplayed?</string>
     <string name="mark_unwatched">Mark as unwatched</string>

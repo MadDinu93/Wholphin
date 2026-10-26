@@ -15,11 +15,12 @@ import com.github.damontecres.wholphin.ui.launchIO
 import com.github.damontecres.wholphin.util.WholphinDispatchers
 import dagger.hilt.android.qualifiers.ActivityContext
 import dagger.hilt.android.scopes.ActivityScoped
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
-import kotlinx.coroutines.withContext
 import timber.log.Timber
 import javax.inject.Inject
 import kotlin.coroutines.cancellation.CancellationException
@@ -62,27 +63,33 @@ class UserSwitchListener
                 val localeList =
                     user.uiLanguage?.let { LocaleListCompat.forLanguageTags(it) }
                         ?: LocaleListCompat.getEmptyLocaleList()
-                Timber.i("Switching locale to %s", localeList)
-                withContext(WholphinDispatchers.Main) {
-                    AppCompatDelegate.setApplicationLocales(localeList)
+                // Only when it changes, the main thread is busy drawing the home page at startup
+                if (AppCompatDelegate.getApplicationLocales() != localeList) {
+                    Timber.i("Switching locale to %s", localeList)
+                    launch(WholphinDispatchers.Main) {
+                        AppCompatDelegate.setApplicationLocales(localeList)
+                    }
                 }
 
-                // Check if plugin is installed, then for home settings
+                // Check if plugin is installed and for home settings at the same time, the settings only
+                // wait for the plugin check if they have to come from the plugin
+                val serverPluginInstalled =
+                    async(WholphinDispatchers.IO) {
+                        val installed =
+                            try {
+                                serverPluginApi.checkInstalled()
+                            } catch (ex: CancellationException) {
+                                throw ex
+                            } catch (ex: Exception) {
+                                Timber.e(ex, "Error checking for server plugin")
+                                false
+                            }
+                        Timber.i("Server plugin installed: %s", installed)
+                        serverRepository.serverPluginInstalled.value = installed
+                        installed
+                    }
                 launchIO {
-                    val serverPluginInstalled =
-                        try {
-                            serverPluginApi.checkInstalled()
-                        } catch (ex: CancellationException) {
-                            throw ex
-                        } catch (ex: Exception) {
-                            Timber.e(ex, "Error checking for server plugin")
-                            false
-                        }
-                    Timber.i("Server plugin installed: %s", serverPluginInstalled)
-                    serverRepository.serverPluginInstalled.value = serverPluginInstalled
-
-                    // Check for home settings
-                    homeSettingsService.loadCurrentSettings(user)
+                    homeSettingsService.loadCurrentSettings(user) { serverPluginInstalled.await() }
                 }
                 if (BuildConfig.DISCOVER_ENABLED) {
                     // Check for seerr server

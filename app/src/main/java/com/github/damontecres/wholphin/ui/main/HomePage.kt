@@ -5,7 +5,10 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.gestures.LocalBringIntoViewSpec
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
@@ -131,6 +134,7 @@ fun HomePage(
     val state by viewModel.state.collectAsState()
     val loading = state.loadingState
     val refreshing = state.refreshState
+    val showingCached = state.cachedFor != null
     val homeRows = state.homeRows
 
     when (val state = loading) {
@@ -253,6 +257,7 @@ fun HomePage(
                 onLongClickItem = onLongClickItem,
                 onClickPlay = onClickPlay,
                 loadingState = refreshing,
+                showingCached = showingCached,
                 showClock = preferences.appPreferences.interfacePreferences.showClock,
                 onUpdateBackdrop = viewModel::updateBackdrop,
                 showLogo = preferences.appPreferences.interfacePreferences.showLogos,
@@ -332,6 +337,7 @@ fun HomePageContent(
     showViewMore: Boolean,
     modifier: Modifier = Modifier,
     loadingState: LoadingState? = null,
+    showingCached: Boolean = false,
     listState: LazyListState = rememberLazyListState(),
     takeFocus: Boolean = true,
     showEmptyRows: Boolean = false,
@@ -623,19 +629,53 @@ fun HomePageContent(
             LoadingState.Pending,
             LoadingState.Loading,
             -> {
-                Box(
-                    modifier =
+                if (showingCached) {
+                    // The rows are still the ones from last time, say so until the fresh ones are in. With the top bar
+                    // the clock is up there, so this sits level with the first row's title, clear of the cards
+                    val end = if (showClock) 40.dp else 20.dp
+                    UpdatingIndicator(
                         Modifier
-                            .padding(if (showClock) 40.dp else 20.dp)
-                            .size(40.dp)
-                            .align(Alignment.TopEnd),
-                ) {
-                    CircularProgress(Modifier.fillMaxSize())
+                            .padding(
+                                top = if (LocalTopNavBarState.current != null) 0.dp else end,
+                                end = end,
+                            ).align(Alignment.TopEnd),
+                    )
+                } else {
+                    Box(
+                        modifier =
+                            Modifier
+                                .padding(if (showClock) 40.dp else 20.dp)
+                                .size(40.dp)
+                                .align(Alignment.TopEnd),
+                    ) {
+                        CircularProgress(Modifier.fillMaxSize())
+                    }
                 }
             }
 
             else -> {}
         }
+    }
+}
+
+@Composable
+private fun UpdatingIndicator(modifier: Modifier = Modifier) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        modifier =
+            modifier
+                .background(
+                    MaterialTheme.colorScheme.surface.copy(alpha = .6f),
+                    RoundedCornerShape(50),
+                ).padding(horizontal = 14.dp, vertical = 8.dp),
+    ) {
+        CircularProgress(Modifier.size(18.dp))
+        Text(
+            text = stringResource(R.string.updating),
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = .85f),
+        )
     }
 }
 

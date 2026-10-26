@@ -22,6 +22,9 @@ import com.github.damontecres.wholphin.ui.util.ResStringProvider
 import com.github.damontecres.wholphin.ui.util.StringProvider
 import com.github.damontecres.wholphin.ui.util.StringStringProvider
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -173,10 +176,11 @@ class HomeSettingsService
         suspend fun fetchSettingsFor(
             userId: UUID,
             source: HomePageSettingsSource,
+            pluginInstalled: suspend () -> Boolean = { serverRepository.serverPluginInstalled.value },
         ): HomePageResolvedSettings? {
             val (resolvedSource, settings) =
                 when (source) {
-                    HomePageSettingsSource.UNSET -> loadInOrder(userId)
+                    HomePageSettingsSource.UNSET -> loadInOrder(userId, pluginInstalled)
                     HomePageSettingsSource.LOCAL -> source to loadFromLocal(userId)
                     HomePageSettingsSource.SERVER_PROFILE -> source to loadFromServer(userId)
                     HomePageSettingsSource.PLUGIN -> source to serverPluginApi.fetchHomePageSettings()
@@ -190,11 +194,7 @@ class HomeSettingsService
                 settings != null,
             )
             return settings?.let {
-                val resolvedRows =
-                    settings.rows.mapIndexed { index, config ->
-                        resolve(index, config)
-                    }
-                HomePageResolvedSettings(userId, resolvedSource, resolvedRows)
+                HomePageResolvedSettings(userId, resolvedSource, resolveAll(settings.rows))
             }
         }
 
@@ -204,14 +204,20 @@ class HomeSettingsService
          * First checks locally, then on the server, and finally creates a default if needed
          *
          * Does not persist either the server nor default
+         *
+         * @param pluginInstalled only asked when neither local nor server settings exist, so the plugin
+         * check does not hold up the home page at startup
          */
-        suspend fun loadCurrentSettings(user: JellyfinUser) {
+        suspend fun loadCurrentSettings(
+            user: JellyfinUser,
+            pluginInstalled: suspend () -> Boolean = { serverRepository.serverPluginInstalled.value },
+        ) {
             currentSettings.update { HomePageResolvedSettings.EMPTY }
 
             Timber.v("Getting setting for %s", user.id)
             val settings =
                 try {
-                    fetchSettingsFor(user.id, user.config.homeSettingsSource)
+                    fetchSettingsFor(user.id, user.config.homeSettingsSource, pluginInstalled)
                 } catch (ex: CancellationException) {
                     throw ex
                 } catch (ex: Exception) {
@@ -226,7 +232,10 @@ class HomeSettingsService
         /**
          * Tries to load settings from local->server->plugin
          */
-        private suspend fun loadInOrder(userId: UUID): Pair<HomePageSettingsSource, HomePageSettings?> {
+        private suspend fun loadInOrder(
+            userId: UUID,
+            pluginInstalled: suspend () -> Boolean,
+        ): Pair<HomePageSettingsSource, HomePageSettings?> {
             Timber.v("loadInOrder: local")
             var settings =
                 HomePageSettingsSource.LOCAL to
@@ -243,7 +252,7 @@ class HomeSettingsService
                     }
             }
 
-            if (settings.second == null && serverRepository.serverPluginInstalled.value) {
+            if (settings.second == null && pluginInstalled()) {
                 Timber.v("loadInOrder: plugin")
                 settings = HomePageSettingsSource.PLUGIN to
                     tryLoad {
@@ -260,10 +269,7 @@ class HomeSettingsService
             source: HomePageSettingsSource,
             settings: HomePageSettings,
         ) {
-            val resolvedRows =
-                settings.rows.mapIndexed { index, config ->
-                    resolve(index, config)
-                }
+            val resolvedRows = resolveAll(settings.rows)
             currentSettings.update { it.copy(rows = resolvedRows) }
             serverRepository.currentUser?.let { user ->
                 val toSave = user.updateConfig { it.copy(homeSettingsSource = source) }
@@ -436,6 +442,16 @@ class HomeSettingsService
                 null
             }
         }
+
+        /**
+         * [resolve] every row at once, since most rows ask the server for their library's name
+         */
+        private suspend fun resolveAll(rows: List<HomeRowConfig>): List<HomeRowConfigDisplay> =
+            coroutineScope {
+                rows
+                    .mapIndexed { index, config -> async { resolve(index, config) } }
+                    .awaitAll()
+            }
 
         /**
          * Converts a [HomeRowConfig] into [HomeRowConfigDisplay] for UI purposes

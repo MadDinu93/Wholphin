@@ -19,12 +19,16 @@ import com.github.damontecres.wholphin.util.supportedCollectionTypes
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import org.jellyfin.sdk.api.client.ApiClient
 import org.jellyfin.sdk.api.client.exception.InvalidStatusException
@@ -37,6 +41,18 @@ import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.TimeSource
+
+private val LIBRARIES_CACHE_DURATION = 30.seconds
+
+private class CachedLibraries(
+    val userId: UUID,
+    val tvAccess: Boolean,
+    val baseUrl: String?,
+    val libraries: List<Library>,
+    val fetchedAt: TimeSource.Monotonic.ValueTimeMark,
+)
 
 /**
  * Gets the items to show in the nav drawer
@@ -122,37 +138,48 @@ class NavDrawerService
             }
         }
 
+        private val librariesMutex = Mutex()
+        private var cachedLibraries: CachedLibraries? = null
+
         /**
          * Get all the libraries the user has access to
+         *
+         * The result is kept for a short while, at startup the nav drawer, the default home settings and
+         * the home page all ask for it at about the same time
          */
         suspend fun getAllUserLibraries(
             userId: UUID,
             tvAccess: Boolean,
-        ): List<Library> {
-            val userViews =
-                api.userViewsApi
-                    .getUserViews(userId = userId)
-                    .content.items
-            val recordingFolders =
-                if (tvAccess) {
-                    try {
-                        api.liveTvApi
-                            .getRecordingFolders(userId = userId)
+        ): List<Library> =
+            librariesMutex.withLock {
+                val baseUrl = api.baseUrl
+                cachedLibraries
+                    ?.takeIf {
+                        it.userId == userId &&
+                            it.tvAccess == tvAccess &&
+                            it.baseUrl == baseUrl &&
+                            it.fetchedAt.elapsedNow() < LIBRARIES_CACHE_DURATION
+                    }?.let { return@withLock it.libraries }
+                val libraries = fetchAllUserLibraries(userId, tvAccess)
+                cachedLibraries =
+                    CachedLibraries(userId, tvAccess, baseUrl, libraries, TimeSource.Monotonic.markNow())
+                libraries
+            }
+
+        private suspend fun fetchAllUserLibraries(
+            userId: UUID,
+            tvAccess: Boolean,
+        ): List<Library> =
+            coroutineScope {
+                // Both at once, this is on the way to the home page at startup
+                val userViewsAsync =
+                    async {
+                        api.userViewsApi
+                            .getUserViews(userId = userId)
                             .content.items
-                            .map { it.id }
-                            .toSet()
-                    } catch (ex: InvalidStatusException) {
-                        if (ex.status == 401 || ex.status == 403) {
-                            Timber.w("Got HTTP %s querying for recording folders", ex.status)
-                            emptySet()
-                        } else {
-                            throw ex
-                        }
                     }
-                } else {
-                    emptySet()
-                }
-            val libraries =
+                val recordingFolders = getRecordingFolders(userId, tvAccess)
+                val userViews = userViewsAsync.await()
                 userViews
                     .filter { it.collectionType in supportedCollectionTypes || it.id in recordingFolders }
                     .map {
@@ -164,8 +191,30 @@ class NavDrawerService
                             isRecordingFolder = it.id in recordingFolders,
                         )
                     }
-            return libraries
-        }
+            }
+
+        private suspend fun getRecordingFolders(
+            userId: UUID,
+            tvAccess: Boolean,
+        ): Set<UUID> =
+            if (tvAccess) {
+                try {
+                    api.liveTvApi
+                        .getRecordingFolders(userId = userId)
+                        .content.items
+                        .map { it.id }
+                        .toSet()
+                } catch (ex: InvalidStatusException) {
+                    if (ex.status == 401 || ex.status == 403) {
+                        Timber.w("Got HTTP %s querying for recording folders", ex.status)
+                        emptySet()
+                    } else {
+                        throw ex
+                    }
+                }
+            } else {
+                emptySet()
+            }
 
         /**
          * Get the libraries that the user has not "pinned". These will show in the More section.

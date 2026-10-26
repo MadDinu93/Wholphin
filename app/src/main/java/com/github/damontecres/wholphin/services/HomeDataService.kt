@@ -33,6 +33,8 @@ import com.github.damontecres.wholphin.util.GetStudiosRequestHandler
 import com.github.damontecres.wholphin.util.HomeRowLoadingState
 import com.github.damontecres.wholphin.util.HomeRowLoadingState.Success
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
@@ -131,22 +133,29 @@ class HomeDataService
                 }
 
                 is HomeRowConfig.ContinueWatchingCombined -> {
-                    val resume =
-                        latestNextUpService.getResume(
-                            userDto.id,
-                            limit,
-                            true,
-                            row.viewOptions.useSeries,
-                        )
-                    val nextUp =
-                        latestNextUpService.getNextUp(
-                            userDto.id,
-                            limit,
-                            prefs.enableRewatchingNextUp,
-                            false,
-                            prefs.maxDaysNextUp,
-                            row.viewOptions.useSeries,
-                        )
+                    // Both at once, this is usually the first row so the home page waits for it
+                    val (resume, nextUp) =
+                        coroutineScope {
+                            val resume =
+                                async {
+                                    latestNextUpService.getResume(
+                                        userDto.id,
+                                        limit,
+                                        true,
+                                        row.viewOptions.useSeries,
+                                    )
+                                }
+                            val nextUp =
+                                latestNextUpService.getNextUp(
+                                    userDto.id,
+                                    limit,
+                                    prefs.enableRewatchingNextUp,
+                                    false,
+                                    prefs.maxDaysNextUp,
+                                    row.viewOptions.useSeries,
+                                )
+                            resume.await() to nextUp
+                        }
                     val combined = latestNextUpService.buildCombined(resume, nextUp)
 
                     Success(

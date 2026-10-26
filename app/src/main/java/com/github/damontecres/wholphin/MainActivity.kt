@@ -31,6 +31,7 @@ import androidx.navigation3.runtime.NavBackStack
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Surface
+import com.github.damontecres.wholphin.data.MostRecentServer
 import com.github.damontecres.wholphin.data.ServerRepository
 import com.github.damontecres.wholphin.preferences.AppPreferences
 import com.github.damontecres.wholphin.preferences.PlayerBackend
@@ -38,6 +39,7 @@ import com.github.damontecres.wholphin.services.AppUpgradeHandler
 import com.github.damontecres.wholphin.services.BackdropService
 import com.github.damontecres.wholphin.services.DatePlayedInvalidationService
 import com.github.damontecres.wholphin.services.DeviceProfileService
+import com.github.damontecres.wholphin.services.HomeRowsCache
 import com.github.damontecres.wholphin.services.ImageUrlService
 import com.github.damontecres.wholphin.services.IntentResult
 import com.github.damontecres.wholphin.services.IntentService
@@ -428,10 +430,19 @@ class MainActivityViewModel
         private val backdropService: BackdropService,
         private val appUpgradeHandler: AppUpgradeHandler,
         private val intentService: IntentService,
+        private val homeRowsCache: HomeRowsCache,
     ) : ViewModel() {
         private val mutex = Mutex()
 
         fun appStart(intent: Intent?) {
+            if (serverRepository.current.value == null) {
+                viewModelScope.launchDefault {
+                    // Read the cached home page while signing in
+                    (serverRepository.mostRecent() as? MostRecentServer.ServerAndUser)?.let {
+                        homeRowsCache.preload(it.serverId, it.userId)
+                    }
+                }
+            }
             viewModelScope.launchDefault {
                 mutex.withLock {
                     try {

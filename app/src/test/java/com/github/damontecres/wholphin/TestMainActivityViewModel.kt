@@ -12,6 +12,7 @@ import com.github.damontecres.wholphin.preferences.update
 import com.github.damontecres.wholphin.services.AppUpgradeHandler
 import com.github.damontecres.wholphin.services.BackdropService
 import com.github.damontecres.wholphin.services.DeviceProfileService
+import com.github.damontecres.wholphin.services.HomeRowsCache
 import com.github.damontecres.wholphin.services.IntentResult
 import com.github.damontecres.wholphin.services.IntentService
 import com.github.damontecres.wholphin.services.NavigationManager
@@ -58,6 +59,7 @@ class TestMainActivityViewModel {
     private val backdropService: BackdropService = mockk(relaxed = true)
     private val appUpgradeHandler: AppUpgradeHandler = mockk()
     private val intentService: IntentService = mockk()
+    private val homeRowsCache: HomeRowsCache = mockk(relaxed = true)
 
     val viewModel =
         MainActivityViewModel(
@@ -70,6 +72,7 @@ class TestMainActivityViewModel {
             backdropService,
             appUpgradeHandler,
             intentService,
+            homeRowsCache,
         )
 
     private val serverId = UUID.randomUUID()
