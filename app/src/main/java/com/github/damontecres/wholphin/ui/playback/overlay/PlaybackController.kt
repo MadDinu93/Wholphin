@@ -61,6 +61,7 @@ fun PlaybackController(
     onClickPlaybackDialogType: (PlaybackDialogType) -> Unit,
     onSeekBarChange: (Long) -> Unit,
     currentSegment: MediaSegmentDto?,
+    showVersionButton: Boolean,
     onChangeState: (OverlayViewState) -> Unit,
     modifier: Modifier = Modifier,
     seekBarInteractionSource: MutableInteractionSource = remember { MutableInteractionSource() },
@@ -86,6 +87,7 @@ fun PlaybackController(
             onSeekProgress = onSeekBarChange,
             seekBarInteractionSource = seekBarInteractionSource,
             currentSegment = currentSegment,
+            showVersionButton = showVersionButton,
             modifier = Modifier,
         )
         when (nextState) {
@@ -146,6 +148,7 @@ fun Controller(
     onClickPlaybackDialogType: (PlaybackDialogType) -> Unit,
     onSeekProgress: (Long) -> Unit,
     currentSegment: MediaSegmentDto?,
+    showVersionButton: Boolean,
     modifier: Modifier = Modifier,
     subtitle: String? = null,
     seekBarInteractionSource: MutableInteractionSource = remember { MutableInteractionSource() },
@@ -242,6 +245,7 @@ fun Controller(
             seekForward = seekForward,
             skipBackOnResume = skipBackOnResume,
             currentSegment = currentSegment,
+            showVersionButton = showVersionButton,
             onClickPlaybackDialogType = onClickPlaybackDialogType,
         )
     }

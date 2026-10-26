@@ -115,6 +115,10 @@ sealed interface PlaybackAction {
         val index: Int,
     ) : PlaybackAction
 
+    data class ChangeVersion(
+        val sourceId: String,
+    ) : PlaybackAction
+
     data class PlaybackSpeed(
         val value: Float,
     ) : PlaybackAction
@@ -148,6 +152,7 @@ fun PlaybackControls(
     skipBackOnResume: Duration?,
     seekForward: Duration,
     currentSegment: MediaSegmentDto?,
+    showVersionButton: Boolean,
     modifier: Modifier = Modifier,
     initialFocusRequester: FocusRequester = remember { FocusRequester() },
     seekBarInteractionSource: MutableInteractionSource = remember { MutableInteractionSource() },
@@ -192,6 +197,7 @@ fun PlaybackControls(
                     .fillMaxWidth(),
         ) {
             LeftPlaybackButtons(
+                showVersionButton = showVersionButton,
                 onControllerInteraction = onControllerInteraction,
                 onClickPlaybackDialogType = onClickPlaybackDialogType,
                 modifier = Modifier.align(Alignment.CenterStart),
@@ -334,6 +340,7 @@ val buttonSpacing = 12.dp
 
 @Composable
 fun LeftPlaybackButtons(
+    showVersionButton: Boolean,
     onControllerInteraction: () -> Unit,
     onClickPlaybackDialogType: (PlaybackDialogType) -> Unit,
     modifier: Modifier = Modifier,
@@ -352,6 +359,19 @@ fun LeftPlaybackButtons(
             onControllerInteraction = onControllerInteraction,
             modifier = Modifier,
         )
+        // Versions, only when there is more than one
+        if (showVersionButton) {
+            PlaybackFaButton(
+                enabled = true,
+                iconRes = R.string.fa_layer_group,
+                onClick = {
+                    onControllerInteraction.invoke()
+                    onClickPlaybackDialogType.invoke(PlaybackDialogType.VERSION)
+                },
+                onControllerInteraction = onControllerInteraction,
+                modifier = Modifier,
+            )
+        }
     }
 }
 

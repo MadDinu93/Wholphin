@@ -296,6 +296,10 @@ fun PlaybackPageContent(
                 TODO()
             }
 
+            is PlaybackAction.ChangeVersion -> {
+                viewModel.changeMediaSource(it.sourceId)
+            }
+
             is PlaybackAction.ToggleAudio -> {
                 viewModel.changeAudioStream(it.index)
             }
@@ -740,6 +744,13 @@ fun PlaybackPageContent(
             settings =
                 PlaybackSettings(
                     showDebugInfo = showDebugInfo,
+                    mediaSourceId = state.currentPlayback?.mediaSourceInfo?.id,
+                    mediaSources =
+                        state.currentPlayback
+                            ?.item
+                            ?.data
+                            ?.mediaSources
+                            .orEmpty(),
                     audioIndex = state.currentPlayback?.audioIndex,
                     audioStreams = state.currentMediaInfo.audioStreams,
                     subtitleIndex = state.currentPlayback?.subtitleIndex,

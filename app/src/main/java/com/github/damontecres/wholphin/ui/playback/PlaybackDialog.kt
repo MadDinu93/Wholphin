@@ -44,12 +44,15 @@ import com.github.damontecres.wholphin.R
 import com.github.damontecres.wholphin.data.model.TrackIndex
 import com.github.damontecres.wholphin.ui.AppColors
 import com.github.damontecres.wholphin.ui.components.SelectedLeadingContent
+import com.github.damontecres.wholphin.ui.formatBitrate
 import com.github.damontecres.wholphin.ui.indexOfFirstOrNull
 import com.github.damontecres.wholphin.ui.playback.overlay.BottomDialog
 import com.github.damontecres.wholphin.ui.playback.overlay.BottomDialogItem
 import com.github.damontecres.wholphin.ui.playback.overlay.PlaybackAction
 import com.github.damontecres.wholphin.ui.tryRequestFocus
 import kotlinx.coroutines.launch
+import org.jellyfin.sdk.model.api.MediaSourceInfo
+import org.jellyfin.sdk.model.api.MediaStreamType
 import kotlin.time.Duration
 
 enum class PlaybackDialogType {
@@ -60,10 +63,13 @@ enum class PlaybackDialogType {
     PLAYBACK_SPEED,
     VIDEO_SCALE,
     SUBTITLE_DELAY,
+    VERSION,
 }
 
 data class PlaybackSettings(
     val showDebugInfo: Boolean,
+    val mediaSourceId: String?,
+    val mediaSources: List<MediaSourceInfo>,
     val audioIndex: Int?,
     val audioStreams: List<SimpleMediaStream>,
     val subtitleIndex: Int?,
@@ -250,6 +256,41 @@ fun PlaybackDialog(
             )
         }
 
+        PlaybackDialogType.VERSION -> {
+            val choices =
+                remember(settings.mediaSources) {
+                    settings.mediaSources.mapNotNull { source ->
+                        source.id?.let { id ->
+                            BottomDialogItem(
+                                data = id,
+                                headline = source.versionTitle,
+                                supporting =
+                                    buildList {
+                                        source.mediaStreams
+                                            ?.firstOrNull { it.type == MediaStreamType.VIDEO }
+                                            ?.displayTitle
+                                            ?.let(::add)
+                                        source.bitrate?.let(::formatBitrate)?.let(::add)
+                                    }.joinToString(", ")
+                                        .ifBlank { null },
+                            )
+                        }
+                    }
+                }
+            BottomDialog(
+                choices = choices,
+                currentChoice = choices.firstOrNull { it.data == settings.mediaSourceId },
+                onDismissRequest = {
+                    onControllerInteraction.invoke()
+                    onDismissRequest.invoke()
+                },
+                onSelectChoice = { _, choice ->
+                    onPlaybackActionClick.invoke(PlaybackAction.ChangeVersion(choice.data))
+                },
+                gravity = leftGravity,
+            )
+        }
+
         PlaybackDialogType.SUBTITLE_DELAY -> {
             Dialog(
                 onDismissRequest = onDismissRequest,
@@ -277,6 +318,9 @@ fun PlaybackDialog(
         }
     }
 }
+
+private val MediaSourceInfo.versionTitle: String
+    get() = name ?: path ?: id ?: ""
 
 @Composable
 fun SubtitleChoiceBottomDialog(

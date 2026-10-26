@@ -205,6 +205,7 @@ fun PlaybackOverlay(
                             seekProgressMs = it
                         },
                         currentSegment = currentSegment,
+                        showVersionButton = (currentPlayback?.item?.data?.mediaSources?.size ?: 0) > 1,
                         onChangeState = onChangeState,
                         modifier =
                             Modifier

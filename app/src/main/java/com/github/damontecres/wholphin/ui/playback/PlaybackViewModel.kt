@@ -1047,6 +1047,24 @@ class PlaybackViewModel
                 }
             }
 
+        /**
+         * Switch to another version of the item playing, keeping the position
+         *
+         * The choice is saved for the item like choosing a version on its page. The tracks are chosen again since
+         * their indexes differ between versions.
+         */
+        fun changeMediaSource(sourceId: String) {
+            viewModelScope.launchIO {
+                val currentPlayback = state.value.currentPlayback
+                if (currentPlayback == null || currentPlayback.mediaSourceInfo.id == sourceId) return@launchIO
+                val uuid = sourceId.toUUIDOrNull() ?: return@launchIO
+                Timber.d("Changing media source to %s", sourceId)
+                itemPlaybackRepository.savePlayVersion(currentPlayback.item.id, uuid)
+                val positionMs = onMain { player.currentPosition }
+                play(currentItem, positionMs)
+            }
+        }
+
         internal suspend fun saveTrackSelection(
             trackIndex: Int,
             type: MediaStreamType,
