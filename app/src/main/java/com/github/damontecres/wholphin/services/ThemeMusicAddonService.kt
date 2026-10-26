@@ -25,11 +25,11 @@ import javax.inject.Singleton
  *
  * First from the theme music add-on set in the settings: any add-on works that answers
  * `GET {address}/themes/{type}/{id}.json`, with `movie` or `series` as the type and `tmdb:603` or an IMDb id such as
- * `tt0133093` as the id, with `{"themes": [{"url": "https://..."}]}`, each url a link to an audio file. Thorphin Trailers
- * is one, its themes come from ThemerrDB.
+ * `tt0133093` as the id, with `{"themes": [{"url": "https://..."}]}`, each url a link to an audio file. Thorphin
+ * Trailers & Themes is one, its themes come from ThemerrDB.
  *
  * Otherwise from links to audio files among the item's remote trailers, the same way trailers come from add-ons, since
- * Remux has nowhere else for them. Thorphin Trailers puts its theme music there too.
+ * Remux has nowhere else for them. Thorphin Trailers & Themes puts its theme music there too.
  */
 @Singleton
 class ThemeMusicAddonService
@@ -45,7 +45,7 @@ class ThemeMusicAddonService
         private val cache = ConcurrentHashMap<String, List<String>>()
 
         /**
-         * Links to the theme music of the movie, series or collection [itemId], empty if there is no add-on or it has none
+         * Links to the theme music of the movie, series or collection [itemId], empty if no add-on has any
          */
         suspend fun getThemeUrls(itemId: UUID): List<String> {
             val address =

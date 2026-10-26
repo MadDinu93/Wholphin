@@ -148,7 +148,7 @@ class HeroTrailerService
 
         /**
          * Lets the server of [url] know it is about to be played with a HEAD request, which any server answers. The
-         * Thorphin Trailers add-on gets the video ready then.
+         * Thorphin Trailers & Themes add-on gets the video ready then.
          */
         private fun prepare(url: String) {
             standardOkHttpClient
@@ -237,8 +237,9 @@ class HeroTrailerService
                             trailerService
                                 .getRemoteTrailers(full)
                                 .mapNotNull { (it as? RemoteTrailer)?.url?.unwrapTrailerUrl() }
-                        // Only links to the video itself, such as from the Thorphin Trailers add-on. YouTube pages are
-                        // not played, a link that turns out to be another web page fails to play and the image comes back.
+                        // Only links to the video itself, such as from the Thorphin Trailers & Themes add-on. YouTube
+                        // pages are not played, a link that turns out to be another web page fails to play and the
+                        // image comes back.
                         remoteUrls
                             .firstOrNull { it.isVideoUrl() }
                             ?.let { HeroTrailerSource.Direct(itemId = item.id, url = it) }

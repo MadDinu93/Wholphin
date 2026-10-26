@@ -81,7 +81,7 @@ Answer the questionnaire as a media player that shows content from the user's ow
 
 ## Privacy policy
 
-Published at **https://trailers.mad-homelab.app/privacy**, served by the Thorphin Trailers add-on. The text is in `privacy-policy.md` here and in `privacy.html` of the add-on; change both, then redeploy the add-on.
+Published at **https://trailers.mad-homelab.app/privacy**, served by the Thorphin Trailers & Themes add-on. The text is in `privacy-policy.md` here and in `privacy.html` of the add-on; change both, then redeploy the add-on.
 
 ## Closed testing
 

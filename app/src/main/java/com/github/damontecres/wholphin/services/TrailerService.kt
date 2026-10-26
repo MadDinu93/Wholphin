@@ -99,7 +99,7 @@ class TrailerService
 
                     is RemoteTrailer -> {
                         if (trailer.url.isVideoUrl()) {
-                            // A video file, such as from the Thorphin Trailers add-on, plays in the app
+                            // A video file, such as from the Thorphin Trailers & Themes add-on, plays in the app
                             navigateTo.invoke(Destination.TrailerVideo(trailer.url))
                         } else {
                             // A web page, such as YouTube, opens in the app that handles it

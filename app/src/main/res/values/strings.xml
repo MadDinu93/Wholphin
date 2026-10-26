@@ -862,7 +862,7 @@
     <string name="card_theme_music">Theme music in cards</string>
     <string name="card_theme_music_summary_on">The theme music of the focused card plays once its trailer is over, or after a second when trailers are off</string>
     <string name="theme_music_addon_url">Theme music add-on</string>
-    <string name="theme_music_addon_url_summary">Address of an add-on with theme music for titles that have none on the server. When empty, theme music comes with the trailers from Remux add-ons, such as Thorphin Trailers</string>
+    <string name="theme_music_addon_url_summary">Address of an add-on with theme music for titles that have none on the server. When empty, theme music comes with the trailers from Remux add-ons, such as Thorphin Trailers &amp; Themes</string>
     <string name="updated_toast">Thorphin updated to %s</string>
     <string name="remove_continue_watching">Remove from continue watching</string>
     <string name="remove_next_up">Remove series from next up</string>
