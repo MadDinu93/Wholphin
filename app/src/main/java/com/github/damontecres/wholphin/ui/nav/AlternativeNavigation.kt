@@ -63,6 +63,8 @@ import com.github.damontecres.wholphin.ui.ifElse
 import com.github.damontecres.wholphin.ui.preferences.PreferenceScreenOption
 import com.github.damontecres.wholphin.ui.setup.UserIconCardImage
 import com.github.damontecres.wholphin.ui.theme.LiquidColors
+import com.github.damontecres.wholphin.ui.theme.LocalHomeScreenStyle
+import com.github.damontecres.wholphin.ui.theme.isMinimalist
 import com.github.damontecres.wholphin.ui.tryRequestFocus
 import com.github.damontecres.wholphin.ui.util.LocalClock
 import org.jellyfin.sdk.model.api.CollectionType
@@ -287,7 +289,12 @@ fun AlternativeNavigation(
                     modifier =
                         Modifier
                             .fillMaxSize()
-                            .padding(start = if (showRail) 8.dp else 0.dp, end = 8.dp, top = if (showRail) 12.dp else 0.dp),
+                            // Thorphin: the Minimalist designs have the same 8 dp margin at the top as at the sides
+                            .padding(
+                                start = if (showRail) 8.dp else 0.dp,
+                                end = 8.dp,
+                                top = if (showRail) (if (LocalHomeScreenStyle.current.isMinimalist) 8.dp else 12.dp) else 0.dp,
+                            ),
                 )
             }
             if (showRail && preferences.appPreferences.interfacePreferences.showClock) {

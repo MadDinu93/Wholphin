@@ -27,6 +27,14 @@ val LocalHomeScreenStyle = compositionLocalOf { HomeScreenStyle.STYLE_CLASSIC }
  */
 val LocalLiquidStyle = compositionLocalOf<HomeScreenStyle?> { null }
 
+/** Both Alternative UI designs share the side rail, the amber palette and the settings page */
+val HomeScreenStyle.isAlternative: Boolean
+    get() = this == HomeScreenStyle.STYLE_ALTERNATIVE || isMinimalist
+
+/** The two Minimalist designs: the list of titles and the cards */
+val HomeScreenStyle.isMinimalist: Boolean
+    get() = this == HomeScreenStyle.STYLE_ALTERNATIVE_MINIMALIST || this == HomeScreenStyle.STYLE_ALTERNATIVE_MINIMALIST_CARDS
+
 val HomeScreenStyle.isLiquid: Boolean
     get() = this != HomeScreenStyle.STYLE_CLASSIC
 
@@ -59,7 +67,10 @@ val HomeScreenStyle.cardShape: Shape
         when (this) {
             HomeScreenStyle.STYLE_MODERN -> RoundedCornerShape(16.dp)
             HomeScreenStyle.STYLE_SQUARED -> RoundedCornerShape(4.dp)
-            HomeScreenStyle.STYLE_ALTERNATIVE -> RoundedCornerShape(8.dp)
+            HomeScreenStyle.STYLE_ALTERNATIVE,
+            HomeScreenStyle.STYLE_ALTERNATIVE_MINIMALIST,
+            HomeScreenStyle.STYLE_ALTERNATIVE_MINIMALIST_CARDS,
+            -> RoundedCornerShape(8.dp)
             else -> PosterCardShape
         }
 

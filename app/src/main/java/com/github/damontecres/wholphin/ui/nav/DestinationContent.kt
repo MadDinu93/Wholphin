@@ -23,6 +23,7 @@ import com.github.damontecres.wholphin.preferences.HomeScreenStyle
 import com.github.damontecres.wholphin.ui.detail.AlternativeBrowsePage
 import com.github.damontecres.wholphin.ui.detail.BrowseKind
 import com.github.damontecres.wholphin.ui.theme.LiquidStyleScope
+import com.github.damontecres.wholphin.ui.theme.isAlternative
 import com.github.damontecres.wholphin.ui.theme.LocalHomeScreenStyle
 import com.github.damontecres.wholphin.ui.detail.CollectionFolderLiveTv
 import com.github.damontecres.wholphin.ui.detail.CollectionFolderMovie
@@ -367,7 +368,7 @@ fun DestinationContent(
         Destination.AllMovies -> {
             LaunchedEffect(Unit) { onClearBackdrop.invoke() }
             LiquidStyleScope {
-                if (LocalHomeScreenStyle.current == HomeScreenStyle.STYLE_ALTERNATIVE) {
+                if (LocalHomeScreenStyle.current.isAlternative) {
                     AlternativeBrowsePage(BrowseKind.MOVIES, preferences, modifier)
                 } else {
                     AllMoviesPage(preferences = preferences, modifier = modifier)
@@ -378,7 +379,7 @@ fun DestinationContent(
         Destination.AllSeries -> {
             LaunchedEffect(Unit) { onClearBackdrop.invoke() }
             LiquidStyleScope {
-                if (LocalHomeScreenStyle.current == HomeScreenStyle.STYLE_ALTERNATIVE) {
+                if (LocalHomeScreenStyle.current.isAlternative) {
                     AlternativeBrowsePage(BrowseKind.SERIES, preferences, modifier)
                 } else {
                     AllSeriesPage(preferences = preferences, modifier = modifier)

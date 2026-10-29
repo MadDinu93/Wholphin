@@ -55,5 +55,6 @@ fun AlternativeHomeContent(
         onPlay = onClickPlay,
         preferences = preferences,
         modifier = modifier,
+        showType = true,
     )
 }

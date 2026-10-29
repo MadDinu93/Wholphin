@@ -71,7 +71,6 @@ import com.github.damontecres.wholphin.R
 import com.github.damontecres.wholphin.data.model.JellyfinServer
 import com.github.damontecres.wholphin.data.model.JellyfinUser
 import com.github.damontecres.wholphin.preferences.AppThemeColors
-import com.github.damontecres.wholphin.preferences.HomeScreenStyle
 import com.github.damontecres.wholphin.preferences.NavigationStyle
 import com.github.damontecres.wholphin.preferences.UserPreferences
 import com.github.damontecres.wholphin.services.BackdropService
@@ -87,6 +86,7 @@ import com.github.damontecres.wholphin.ui.launchDefault
 import com.github.damontecres.wholphin.ui.preferences.PreferenceScreenOption
 import com.github.damontecres.wholphin.ui.setup.UserIconCardImage
 import com.github.damontecres.wholphin.ui.spacedByWithFooter
+import com.github.damontecres.wholphin.ui.theme.isAlternative
 import com.github.damontecres.wholphin.ui.theme.LocalTheme
 import com.github.damontecres.wholphin.ui.theme.isMonochrome
 import com.github.damontecres.wholphin.ui.toServerString
@@ -359,7 +359,7 @@ fun NavDrawer(
         ),
 ) {
     // Thorphin: the Alternative UI always uses its own side rail, whatever the navigation style says
-    if (preferences.appPreferences.interfacePreferences.homeScreenStyle == HomeScreenStyle.STYLE_ALTERNATIVE) {
+    if (preferences.appPreferences.interfacePreferences.homeScreenStyle.isAlternative) {
         AlternativeNavigation(
             destination = destination,
             preferences = preferences,

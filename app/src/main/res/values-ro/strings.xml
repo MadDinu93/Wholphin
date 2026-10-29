@@ -408,6 +408,8 @@
     <string name="home_screen_style_modern">Modern</string>
     <string name="home_screen_style_squared">Pătrat</string>
     <string name="home_screen_style_alternative">Interfață alternativă</string>
+    <string name="home_screen_style_alternative_minimalist">Interfață alternativă minimalistă - listă</string>
+    <string name="home_screen_style_alternative_minimalist_cards">Interfață alternativă minimalistă - carduri</string>
     <string name="top_bar_style_disabled_alternative">Nu se folosește în Interfața alternativă, care are o bară laterală în loc de bara de sus</string>
     <string name="browse_all_movies">Toate filmele</string>
     <string name="browse_all_series">Toate serialele</string>
@@ -426,6 +428,8 @@
     <string name="nav_catalog">Cataloage</string>
     <string name="nav_movies">Filme</string>
     <string name="nav_series">Seriale</string>
+    <string name="type_movie">Film</string>
+    <string name="type_series">Serial</string>
     <string name="nav_sets">Colecții</string>
     <string name="nav_lists">Liste</string>
     <string name="navigation_style">Stil de navigare</string>

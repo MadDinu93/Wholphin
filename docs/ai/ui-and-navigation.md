@@ -124,6 +124,13 @@ theme (`AppThemeColors`); changing it writes only that field. `ApplicationConten
   - Not done from the designs: the sort dropdown of the grid, the static
     4K/HDR/ATMOS chips and "Jellyfin Direct" pill of the header (the server name is shown instead), the metric tiles
     of the server settings (latency etc., no data behind them).
+  - **Alternative UI Minimalist List / Cards** (`STYLE_ALTERNATIVE_MINIMALIST` = 4 "List", `STYLE_ALTERNATIVE_MINIMALIST_CARDS` = 5 "Cards", `isMinimalist`; Cards shows the titles as a row of 88 dp posters (`BrowsePoster`) instead of the text list, 50/50 split; the rest of this paragraph applies to both) (design in `Theme Designs/Alternative UI Minimalist`) are a
+    second, selectable look of the same UI: everything above (rail, amber palette, settings page, Home/Movies/Series data,
+    filters, trailers) applies through `HomeScreenStyle.isAlternative`; only the page layout differs.
+    `AlternativeBrowseLayout` hands over to `MinimalistBrowseLayout` (`W/ui/detail/AlternativeMinimalistBrowse.kt`) when
+    `LocalHomeScreenStyle` is Minimalist: fixed 190 dp catalogues, then a hero card for the focused title (the trailer or
+    backdrop fills the section, 16:9 covering it, with the text over a left scrim and Play fixed bottom left) over a compact list of titles (title, year, badges, rating). Not done: match %, the
+    Trailer/Watchlist/Audio buttons, the remote hints and the "Jellyfin Direct" pill (no data behind them).
 - Library: `DestinationContent` wraps `LibrariesPage`, `ServerCatalogsPage`, `AllMoviesPage` and `AllSeriesPage`. They
   use `LibraryTitle` (`W/ui/detail/LiquidLibrary.kt`), which is the plain title for Classic and a large title with real
   counts in a pill otherwise (`GridTitle` of the folder pages is large and start-aligned in these styles); the

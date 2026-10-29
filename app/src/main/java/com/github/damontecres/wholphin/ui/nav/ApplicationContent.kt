@@ -31,6 +31,7 @@ import com.github.damontecres.wholphin.services.ThemeSongPlayer
 import com.github.damontecres.wholphin.ui.cards.LocalCardProgressStyle
 import com.github.damontecres.wholphin.ui.cards.LocalShowCardInfo
 import com.github.damontecres.wholphin.ui.preferences.PreferenceScreenOption
+import com.github.damontecres.wholphin.ui.theme.isAlternative
 import com.github.damontecres.wholphin.ui.theme.LiquidColors
 import com.github.damontecres.wholphin.ui.theme.LocalHomeScreenStyle
 import com.github.damontecres.wholphin.ui.components.ErrorMessage
@@ -73,7 +74,7 @@ fun ApplicationContent(
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     // Thorphin: the Alternative UI has its own amber palette, written before any page reads it
     val homeScreenStyle = preferences.appPreferences.interfacePreferences.homeScreenStyle
-    (homeScreenStyle == HomeScreenStyle.STYLE_ALTERNATIVE).let {
+    homeScreenStyle.isAlternative.let {
         if (LiquidColors.alternative != it) LiquidColors.alternative = it
     }
     Box(
@@ -129,7 +130,7 @@ fun ApplicationContent(
                         val fullScreen =
                             key.fullScreen &&
                                 !(
-                                    homeScreenStyle == HomeScreenStyle.STYLE_ALTERNATIVE &&
+                                    homeScreenStyle.isAlternative &&
                                         key is Destination.Settings &&
                                         key.screen == PreferenceScreenOption.BASIC
                                 )

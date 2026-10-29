@@ -141,6 +141,8 @@ enum HomeScreenStyle{
   STYLE_MODERN = 1;
   STYLE_SQUARED = 2;
   STYLE_ALTERNATIVE = 3;
+  STYLE_ALTERNATIVE_MINIMALIST = 4;
+  STYLE_ALTERNATIVE_MINIMALIST_CARDS = 5;
 }
 
 // The look of the top navigation bar, independent of the home screen style

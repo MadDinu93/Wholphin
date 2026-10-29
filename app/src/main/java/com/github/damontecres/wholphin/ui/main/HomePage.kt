@@ -109,6 +109,7 @@ import com.github.damontecres.wholphin.ui.playback.playable
 import com.github.damontecres.wholphin.ui.playback.scale
 import com.github.damontecres.wholphin.ui.rememberPosition
 import com.github.damontecres.wholphin.ui.theme.LiquidStyleScope
+import com.github.damontecres.wholphin.ui.theme.isAlternative
 import com.github.damontecres.wholphin.ui.theme.LocalHomeScreenStyle
 import com.github.damontecres.wholphin.ui.theme.LocalLiquidStyle
 import com.github.damontecres.wholphin.ui.tryRequestFocus
@@ -255,7 +256,7 @@ fun HomePage(
             val cardThemeMusic = interfacePreferences.cardThemeMusic
             // Thorphin: only does something for the Modern and Squared styles
             LiquidStyleScope {
-                if (LocalHomeScreenStyle.current == HomeScreenStyle.STYLE_ALTERNATIVE) {
+                if (LocalHomeScreenStyle.current.isAlternative) {
                     // Thorphin: Alternative UI, the rows are the catalogues of a Movies-like page
                     LaunchedEffect(Unit) { viewModel.clearBackdrop() }
                     AlternativeHomeContent(

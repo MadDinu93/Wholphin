@@ -57,6 +57,7 @@ import com.github.damontecres.wholphin.data.model.SeerrUser
 import com.github.damontecres.wholphin.preferences.AppPreference
 import com.github.damontecres.wholphin.preferences.AppPreferences
 import com.github.damontecres.wholphin.preferences.HomeScreenStyle
+import com.github.damontecres.wholphin.ui.theme.isAlternative
 import com.github.damontecres.wholphin.ui.theme.LiquidColors
 import com.github.damontecres.wholphin.ui.theme.LocalHomeScreenStyle
 import com.github.damontecres.wholphin.preferences.AppSwitchPreference
@@ -215,7 +216,7 @@ fun PreferencesContent(
             updateAvailable
 
     // Thorphin: the Alternative UI draws the categories as amber rows
-    val alternativeUi = LocalHomeScreenStyle.current == HomeScreenStyle.STYLE_ALTERNATIVE
+    val alternativeUi = LocalHomeScreenStyle.current.isAlternative
     val selectedGroup = focusedIndex.first.coerceIn(0, prefList.lastIndex)
     // Each category starts at its top
     val state = remember(selectedGroup) { LazyListState() }
@@ -790,8 +791,7 @@ fun PreferencesContent(
                                         enabled =
                                             !(
                                                 pref == AppPreference.TopBarStylePref &&
-                                                    preferences.interfacePreferences.homeScreenStyle ==
-                                                    HomeScreenStyle.STYLE_ALTERNATIVE
+                                                    preferences.interfacePreferences.homeScreenStyle.isAlternative
                                             ),
                                         disabledSummary = stringResource(R.string.top_bar_style_disabled_alternative),
                                     )

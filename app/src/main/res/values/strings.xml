@@ -340,6 +340,8 @@
     <string name="home_screen_style_modern">Modern</string>
     <string name="home_screen_style_squared">Squared</string>
     <string name="home_screen_style_alternative">Alternative UI</string>
+    <string name="home_screen_style_alternative_minimalist">Alternative UI Minimalist List</string>
+    <string name="home_screen_style_alternative_minimalist_cards">Alternative UI Minimalist Cards</string>
     <string name="top_bar_style_disabled_alternative">Not used by Alternative UI, which has a side rail instead of the top bar</string>
     <string name="browse_all_movies">All movies</string>
     <string name="browse_all_series">All TV shows</string>
@@ -358,6 +360,8 @@
     <string name="nav_catalog">Catalog</string>
     <string name="nav_movies">Movies</string>
     <string name="nav_series">Series</string>
+    <string name="type_movie">Movie</string>
+    <string name="type_series">Series</string>
     <string name="nav_sets">Sets</string>
     <string name="nav_lists">Lists</string>
     <string name="auto_check_for_updates">Automatically check for updates</string>
@@ -820,6 +824,8 @@
         <item>@string/home_screen_style_modern</item>
         <item>@string/home_screen_style_squared</item>
         <item>@string/home_screen_style_alternative</item>
+        <item>@string/home_screen_style_alternative_minimalist</item>
+        <item>@string/home_screen_style_alternative_minimalist_cards</item>
     </string-array>
 
     <string-array name="navigation_style_options">

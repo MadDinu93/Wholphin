@@ -109,6 +109,9 @@ import com.github.damontecres.wholphin.ui.launchIO
 import com.github.damontecres.wholphin.ui.main.streamBadges
 import com.github.damontecres.wholphin.ui.nav.Destination
 import com.github.damontecres.wholphin.ui.theme.LiquidColors
+import com.github.damontecres.wholphin.ui.theme.LocalHomeScreenStyle
+import com.github.damontecres.wholphin.ui.theme.isMinimalist
+import com.github.damontecres.wholphin.preferences.HomeScreenStyle
 import com.github.damontecres.wholphin.ui.tryRequestFocus
 import com.github.damontecres.wholphin.util.ApiRequestPager
 import com.github.damontecres.wholphin.util.GetItemsRequestHandler
@@ -120,6 +123,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.jellyfin.sdk.api.client.ApiClient
+import org.jellyfin.sdk.api.client.extensions.userLibraryApi
 import org.jellyfin.sdk.model.api.BaseItemKind
 import org.jellyfin.sdk.model.api.ImageType
 import org.jellyfin.sdk.model.api.ItemFields
@@ -252,6 +256,30 @@ class AlternativeBrowseViewModel
             widthPx: Int,
         ): String? = imageUrlService.getItemImageUrl(item, ImageType.BACKDROP, fillWidth = widthPx)
 
+        private val seriesGenres = java.util.concurrent.ConcurrentHashMap<java.util.UUID, List<String>>()
+
+        /**
+         * The genres of [item]. Episodes and seasons (the rows of Home like Continue watching) carry none, so they get
+         * the ones of their series, asked for once per series.
+         */
+        suspend fun genres(item: BaseItem): List<String> {
+            val own: List<String> = item.data.genres.orEmpty().ifEmpty { item.data.genreItems.orEmpty().mapNotNull { it.name } }
+            val seriesId = item.data.seriesId
+            if (own.isNotEmpty() || seriesId == null) return own
+            seriesGenres[seriesId]?.let { return it }
+            return try {
+                val series = api.userLibraryApi.getItem(itemId = seriesId).content
+                val found: List<String> = series.genres.orEmpty().ifEmpty { series.genreItems.orEmpty().mapNotNull { it.name } }
+                seriesGenres[seriesId] = found
+                found
+            } catch (ex: kotlinx.coroutines.CancellationException) {
+                throw ex
+            } catch (ex: Exception) {
+                Timber.w(ex, "Could not load the genres of series %s", seriesId)
+                emptyList()
+            }
+        }
+
         fun open(item: BaseItem) = navigationManager.navigateTo(item.destination())
 
         fun play(item: BaseItem) = navigationManager.navigateTo(Destination.Playback(item))
@@ -333,7 +361,27 @@ fun AlternativeBrowseLayout(
     preferences: UserPreferences,
     modifier: Modifier = Modifier,
     filter: BrowseFilter? = null,
+    showType: Boolean = false,
 ) {
+    // Thorphin: the Minimalist design has its own layout for the same data
+    if (LocalHomeScreenStyle.current.isMinimalist) {
+        MinimalistBrowseLayout(
+            heading = heading,
+            entries = entries,
+            selected = selected,
+            onSelect = onSelect,
+            items = items,
+            loading = loading,
+            images = images,
+            onOpen = onOpen,
+            onPlay = onPlay,
+            preferences = preferences,
+            modifier = modifier,
+            filter = filter,
+            showType = showType,
+        )
+        return
+    }
     var focusedItem by remember { mutableStateOf<BaseItem?>(null) }
     val gridFocus = remember { FocusRequester() }
     var focusedOnce by remember { mutableStateOf(false) }
@@ -515,7 +563,7 @@ fun AlternativeBrowseLayout(
 }
 
 @Composable
-private fun CatalogueRow(
+internal fun CatalogueRow(
     title: String,
     glyph: String?,
     collapsed: Boolean,
@@ -577,7 +625,7 @@ private fun CatalogueRow(
 }
 
 @Composable
-private fun BrowsePoster(
+internal fun BrowsePoster(
     item: BaseItem?,
     imageUrl: String?,
     onClick: () -> Unit,
@@ -799,7 +847,7 @@ private fun BrowseDetails(
 }
 
 @Composable
-private fun DetailsButton(
+internal fun DetailsButton(
     text: String,
     icon: ImageVector,
     primary: Boolean,
