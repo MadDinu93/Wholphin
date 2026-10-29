@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -260,7 +261,9 @@ fun MinimalistBrowseLayout(
                 }
                 if (items.isNotEmpty() && cards) {
                     val widthPx = remember(density) { (100 * density).toInt() }
+                    // Another catalogue starts at its first title, not where the previous one was scrolled to
                     LazyRow(
+                        state = remember(selected) { LazyListState() },
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                         contentPadding = PaddingValues(horizontal = 4.dp, vertical = 6.dp),
                         modifier = Modifier.fillMaxSize(),
@@ -280,6 +283,7 @@ fun MinimalistBrowseLayout(
                     }
                 } else if (items.isNotEmpty()) {
                     LazyColumn(
+                        state = remember(selected) { LazyListState() },
                         verticalArrangement = Arrangement.spacedBy(3.dp),
                         contentPadding = PaddingValues(vertical = 4.dp),
                         modifier = Modifier.fillMaxSize(),
@@ -477,8 +481,9 @@ private fun MinimalistTitleRow(
         shape = ClickableSurfaceDefaults.shape(shape),
         colors =
             ClickableSurfaceDefaults.colors(
-                containerColor = LiquidColors.Rail.copy(alpha = .6f),
-                focusedContainerColor = LiquidColors.Elevated,
+                // Drawn below with the border: the animated container color lags behind while scrolling
+                containerColor = Color.Transparent,
+                focusedContainerColor = Color.Transparent,
             ),
         border =
             ClickableSurfaceDefaults.border(
@@ -490,7 +495,11 @@ private fun MinimalistTitleRow(
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(10.dp),
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 6.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .background(if (focused) LiquidColors.Elevated else LiquidColors.Rail.copy(alpha = .6f), shape)
+                    .padding(horizontal = 12.dp, vertical = 6.dp),
         ) {
             Icon(
                 imageVector = Icons.Default.PlayArrow,

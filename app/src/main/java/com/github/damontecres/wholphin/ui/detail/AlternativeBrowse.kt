@@ -582,9 +582,10 @@ internal fun CatalogueRow(
         shape = ClickableSurfaceDefaults.shape(shape),
         colors =
             ClickableSurfaceDefaults.colors(
-                containerColor = if (selected) LiquidColors.Elevated else Color.Transparent,
+                // The background is drawn below, the animated container color of the surface lags behind while scrolling
+                containerColor = Color.Transparent,
                 contentColor = if (selected) LiquidColors.Accent else LiquidColors.TextSecondary,
-                focusedContainerColor = LiquidColors.Elevated,
+                focusedContainerColor = Color.Transparent,
                 focusedContentColor = LiquidColors.Accent,
             ),
         border =
@@ -594,31 +595,38 @@ internal fun CatalogueRow(
         scale = ClickableSurfaceDefaults.scale(focusedScale = 1.02f),
         modifier = modifier.fillMaxWidth(),
     ) {
-        if (collapsed) {
-            // The first characters of the name
-            Text(
-                text = title.take(6).trimEnd(),
-                fontSize = 12.sp,
-                fontWeight = if (selected) FontWeight.Bold else FontWeight.SemiBold,
-                maxLines = 1,
-                overflow = TextOverflow.Clip,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 8.dp),
-            )
-        } else {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
-            ) {
-                if (glyph != null) Text(text = glyph, fontFamily = FontAwesome, fontSize = 12.sp, modifier = Modifier.width(16.dp))
+        Box(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .background(if (selected || focused) LiquidColors.Elevated else Color.Transparent, shape),
+        ) {
+            if (collapsed) {
+                // The first characters of the name
                 Text(
-                    text = title,
+                    text = title.take(6).trimEnd(),
                     fontSize = 12.sp,
                     fontWeight = if (selected) FontWeight.Bold else FontWeight.SemiBold,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f),
+                    overflow = TextOverflow.Clip,
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 8.dp),
                 )
+            } else {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
+                ) {
+                    if (glyph != null) Text(text = glyph, fontFamily = FontAwesome, fontSize = 12.sp, modifier = Modifier.width(16.dp))
+                    Text(
+                        text = title,
+                        fontSize = 12.sp,
+                        fontWeight = if (selected) FontWeight.Bold else FontWeight.SemiBold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
             }
         }
     }
