@@ -267,6 +267,8 @@ message InterfacePreferences {
   TopBarStyle top_bar_style = 26;
   // Size of the text of the details of the Alternative UI in percent, 0 is the default of 100
   int32 details_text_scale = 27;
+  // The title and details on the hero card of the Alternative UI Minimalist disappear while its trailer plays instead of fading
+  bool hide_details_during_trailer = 28;
 }
 
 message AdvancedPreferences {

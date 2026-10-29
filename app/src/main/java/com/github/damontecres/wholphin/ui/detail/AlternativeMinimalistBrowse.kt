@@ -218,6 +218,7 @@ fun MinimalistBrowseLayout(
                     trailerService = trailerService,
                     muted = interfacePreferences.muteHeroTrailer,
                     textScale = textScale,
+                    hideDetails = interfacePreferences.hideDetailsDuringTrailer,
                     onPlay = { item?.let(onPlay) },
                 )
             }
@@ -327,12 +328,17 @@ private fun MinimalistShowcase(
     trailerService: HeroTrailerService,
     muted: Boolean,
     textScale: Float,
+    hideDetails: Boolean,
     onPlay: () -> Unit,
 ) {
     val labelStyle = MaterialTheme.typography.labelMedium.let { it.copy(fontSize = it.fontSize * textScale) }
     // The text steps back while a trailer plays and returns when it ends
     val trailerPlaying by trailerService.playing.collectAsStateWithLifecycle()
-    val overlayAlpha by animateFloatAsState(if (trailer != null && trailerPlaying) .35f else 1f, tween(600), label = "overlay_alpha")
+    val overlayAlpha by animateFloatAsState(
+        if (trailer != null && trailerPlaying) if (hideDetails) 0f else .35f else 1f,
+        tween(600),
+        label = "overlay_alpha",
+    )
     val shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)
     Box(modifier = Modifier.fillMaxSize().clip(shape).background(LiquidColors.Rail, shape)) {
         if (backdropUrl != null) {

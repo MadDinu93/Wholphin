@@ -52,7 +52,9 @@ URL helpers (same file): `unwrapTrailerUrl()` (Remux wraps every add-on trailer 
 ## Settings (proto `InterfacePreferences`, UI in `AppPreference.kt`)
 
 `show_home_hero`, `disable_hero_trailer` (inverted), `mute_hero_trailer`, `card_trailers`, `card_theme_music`,
-`theme_music_addon_url`. Delays are constants in `HeroTrailerService.Companion`.
+`theme_music_addon_url`, `hide_details_during_trailer` (Alternative UI Minimalist only: the title and details of the
+hero card disappear while its trailer plays instead of dimming to 35%). Delays are constants in
+`HeroTrailerService.Companion`.
 
 ## Pitfalls
 

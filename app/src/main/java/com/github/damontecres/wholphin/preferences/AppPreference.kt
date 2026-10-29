@@ -734,6 +734,18 @@ sealed interface AppPreference<Pref, T> {
                 summaryOff = R.string.disabled,
             )
 
+        val HideDetailsDuringTrailer =
+            AppSwitchPreference<AppPreferences>(
+                title = R.string.hide_details_during_trailer,
+                defaultValue = false,
+                getter = { it.interfacePreferences.hideDetailsDuringTrailer },
+                setter = { prefs, value ->
+                    prefs.updateInterfacePreferences { hideDetailsDuringTrailer = value }
+                },
+                summaryOn = R.string.hide_details_during_trailer_summary_on,
+                summaryOff = R.string.hide_details_during_trailer_summary_off,
+            )
+
         val DisplayTogglesPref =
             AppMultiChoicePreference<AppPreferences, DisplayToggle>(
                 title = R.string.display_toggles_title,
@@ -1449,6 +1461,7 @@ val basicPreferences =
                         AppPreference.HeroTrailer,
                         AppPreference.CardTrailers,
                         AppPreference.HeroTrailerSound,
+                        AppPreference.HideDetailsDuringTrailer,
                         AppPreference.PlayThemeMusic,
                         AppPreference.CardThemeMusic,
                         AppPreference.ThemeMusicAddonUrl,

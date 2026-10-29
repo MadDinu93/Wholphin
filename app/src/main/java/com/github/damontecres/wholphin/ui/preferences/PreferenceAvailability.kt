@@ -8,6 +8,7 @@ import com.github.damontecres.wholphin.preferences.HomeScreenStyle
 import com.github.damontecres.wholphin.preferences.NavigationStyle
 import com.github.damontecres.wholphin.ui.theme.isAlternative
 import com.github.damontecres.wholphin.ui.theme.isLiquid
+import com.github.damontecres.wholphin.ui.theme.isMinimalist
 
 /**
  * The reason a setting does nothing with the chosen home screen style or the other settings, or null when it applies.
@@ -47,6 +48,11 @@ fun preferenceDisabledReason(
         // No trailer plays anywhere when both trailer settings are off
         AppPreference.HeroTrailerSound -> {
             R.string.hero_trailer_sound_disabled.takeIf { ui.disableHeroTrailer && !ui.cardTrailers }
+        }
+
+        // Only the hero card of the Alternative UI Minimalist has details over its trailer
+        AppPreference.HideDetailsDuringTrailer -> {
+            R.string.hide_details_during_trailer_disabled.takeIf { !style.isMinimalist }
         }
 
         else -> {

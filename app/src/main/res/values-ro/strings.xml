@@ -451,6 +451,10 @@
     <string name="hero_trailer">Trailer în Hero</string>
     <string name="hero_trailer_summary_on">După 5 secunde trailerul rulează în spatele hero-ului: unul de pe server sau unul spre care trimite un addon</string>
     <string name="hero_trailer_sound">Sunet pentru trailere</string>
+    <string name="hide_details_during_trailer">Ascunde detaliile în timpul trailerului</string>
+    <string name="hide_details_during_trailer_summary_on">Titlul și detaliile dispar cât timp rulează trailerul</string>
+    <string name="hide_details_during_trailer_summary_off">Titlul și detaliile devin transparente cât timp rulează trailerul</string>
+    <string name="hide_details_during_trailer_disabled">Doar pentru designul Alternative UI Minimalist</string>
     <string name="card_trailers">Trailere în carduri</string>
     <string name="theme_lavender">Lavandă</string>
     <string name="theme_amber">Chihlimbar</string>

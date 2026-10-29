@@ -911,6 +911,10 @@
     <string name="hero_trailer">Hero trailer</string>
     <string name="hero_trailer_summary_on">After 5 seconds the trailer plays behind the hero: one on the server, or one an add-on links to</string>
     <string name="hero_trailer_sound">Trailer sound</string>
+    <string name="hide_details_during_trailer">Hide details during trailer</string>
+    <string name="hide_details_during_trailer_summary_on">The title and details disappear while the trailer plays</string>
+    <string name="hide_details_during_trailer_summary_off">The title and details become transparent while the trailer plays</string>
+    <string name="hide_details_during_trailer_disabled">Only for the Alternative UI Minimalist design</string>
     <string name="card_trailers">Trailers in cards</string>
     <string name="theme_lavender">Lavender</string>
     <string name="theme_amber">Amber</string>
