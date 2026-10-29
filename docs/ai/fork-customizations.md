@@ -17,8 +17,8 @@ Find fork code with `git diff 0aab8398 HEAD --stat`. `// Thorphin:` comments are
 | Navigation: top bar + Library page | new + modified | `ui/nav/TopNavBar.kt`, `NavDrawer.kt`, `NavDrawerService.kt`, `ui/detail/LibrariesPage.kt`, `AllItemsPages.kt` | [ui-and-navigation.md](ui-and-navigation.md) |
 | Library folder pages simplified | modified / removed | `CollectionFolderMovie.kt`, `CollectionFolderTv.kt`; deleted `RecommendedMovie.kt`, `RecommendedTvShow.kt` | [ui-and-navigation.md](ui-and-navigation.md) |
 | Hero card, glass theme, cards | new + modified | `ui/main/HomePage.kt`, `ui/components/RecommendedContent.kt`, `ui/cards/*`, `ui/theme/*` | [ui-and-navigation.md](ui-and-navigation.md) |
-| Two-pane settings, new prefs | modified | `ui/preferences/PreferencesContent.kt`, `preferences/AppPreference.kt`, proto | [ui-and-navigation.md](ui-and-navigation.md) |
-| Alternative UI (side rail, amber palette) | new + small hooks | `ui/nav/AlternativeNavigation.kt`, `ui/detail/AlternativeBrowse.kt`, `ui/preferences/AlternativeSettings.kt`; hooks in `NavDrawer.kt`, `LiquidStyle.kt`, `PreferencesContent.kt`, `DestinationContent.kt`, `ApplicationContent.kt` | [ui-and-navigation.md](ui-and-navigation.md) |
+| Two-pane settings, new prefs, style-dependent disabled settings | new + modified | `ui/preferences/PreferencesContent.kt`, `ui/preferences/PreferenceAvailability.kt`, `ComposablePreference.kt`, `SwitchPreference.kt`, `preferences/AppPreference.kt`, proto | [ui-and-navigation.md](ui-and-navigation.md) |
+| Alternative UI (side rail) | new + small hooks | `ui/nav/AlternativeNavigation.kt`, `ui/detail/AlternativeBrowse.kt`, `ui/preferences/AlternativeSettings.kt`; hooks in `NavDrawer.kt`, `LiquidStyle.kt`, `PreferencesContent.kt`, `DestinationContent.kt`, `ApplicationContent.kt` | [ui-and-navigation.md](ui-and-navigation.md) |
 | Alternative UI Minimalist (list layout of the same UI) | new + small hooks | `ui/detail/AlternativeMinimalistBrowse.kt`; hand-over in `AlternativeBrowse.kt`, `isAlternative` in `LiquidStyle.kt`, proto `STYLE_ALTERNATIVE_MINIMALIST` = 4 | [ui-and-navigation.md](ui-and-navigation.md) |
 | Home screen style (Modern / Squared) + shared new Library look | new + small hooks | `ui/theme/LiquidStyle.kt`, `ui/main/LiquidHome.kt`, `ui/detail/LiquidLibrary.kt`; hooks in `HomePage.kt`, `LibrariesPage.kt`, `AllItemsPages.kt`, `DestinationContent.kt`, `ApplicationContent.kt`, `ui/cards/*` | [ui-and-navigation.md](ui-and-navigation.md) |
 | Trailers & theme music | new | `services/HeroTrailerService.kt`, `ThemeMusicAddonService.kt`, `ui/nav/HeroTrailer.kt`, `ui/playback/TrailerVideoPage.kt`; modified `TrailerService`, `ThemeSongPlayer` | [trailers-and-theme-music.md](trailers-and-theme-music.md) |
@@ -41,7 +41,7 @@ Find fork code with `git diff 0aab8398 HEAD --stat`. `// Thorphin:` comments are
 
 ### Settings and data-format changes (merge-sensitive)
 - Proto (`app/src/main/proto/WholphinDataStore.proto`): `AppThemeColors` renumbered — `GLASS = 0` (was `PURPLE = 0`),
-  `PURPLE = 8`; new enums `NavigationStyle`, `CardProgressStyle`; `InterfacePreferences` fields 16–24;
+  `PURPLE = 8`, fork colors `LAVENDER = 100`, `AMBER = 101`; new enums `NavigationStyle`, `CardProgressStyle`; `InterfacePreferences` fields 16–24;
   `PlaybackPreferences.only_preferred_subtitles = 27`; `ExperimentalPreferences.convert_dolby_vision_profile_7 = 6`.
   Several booleans are deliberately inverted (`disable_hero_trailer`, `hide_card_info`) so the proto3 default (false)
   means "on" without a migration.

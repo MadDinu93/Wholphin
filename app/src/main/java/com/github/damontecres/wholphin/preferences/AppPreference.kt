@@ -20,6 +20,7 @@ import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
+import com.github.damontecres.wholphin.ui.theme.ThemeColorChoices
 
 /**
  * A preference that can be stored in [AppPreferences].
@@ -590,8 +591,9 @@ sealed interface AppPreference<Pref, T> {
                     prefs.updateInterfacePreferences { appThemeColors = value }
                 },
                 displayValues = R.array.app_theme_colors,
-                indexToValue = { AppThemeColors.forNumber(it) },
-                valueToIndex = { if (it != AppThemeColors.UNRECOGNIZED) it.number else 0 },
+                // Thorphin: listed in ThemeColorChoices order, the proto numbers have gaps
+                indexToValue = { ThemeColorChoices.getOrElse(it) { AppThemeColors.GLASS } },
+                valueToIndex = { ThemeColorChoices.indexOf(it).coerceAtLeast(0) },
             )
 
         val HomeScreenStylePref =

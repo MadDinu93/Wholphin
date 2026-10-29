@@ -133,6 +133,10 @@ enum AppThemeColors {
   RED = 6;
   BROWN = 7;
   PURPLE = 8;
+  // Thorphin: the accents of the Modern and Alternative UI designs. Far from upstream's numbers so a color added
+  // there does not collide; the settings list orders the colors by ThemeColorChoices, not by number
+  LAVENDER = 100;
+  AMBER = 101;
 }
 
 // How the Home page and the Library pages look, independent of the colors of AppThemeColors

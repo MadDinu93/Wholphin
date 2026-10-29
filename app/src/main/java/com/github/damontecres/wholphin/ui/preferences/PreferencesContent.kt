@@ -81,6 +81,7 @@ import com.github.damontecres.wholphin.ui.components.ConfirmDialog
 import com.github.damontecres.wholphin.ui.components.ErrorMessage
 import com.github.damontecres.wholphin.ui.components.LoadingPage
 import com.github.damontecres.wholphin.ui.components.ScrollableDialog
+import com.github.damontecres.wholphin.ui.detail.CatalogueRow
 import com.github.damontecres.wholphin.ui.ifElse
 import com.github.damontecres.wholphin.ui.indexOfFirstOrNull
 import com.github.damontecres.wholphin.ui.nav.Destination
@@ -237,15 +238,17 @@ fun PreferencesContent(
                 categoryFocusRequester.tryRequestFocus()
             }
         }
-        // The categories on the left, the settings of the focused category on the right
+        // The categories on the left, the settings of the focused category on the right. Thorphin: in the Alternative
+        // UI both are panels like the catalogues and the details of the Movies page, with the same sizes and spacing
         Row(
-            horizontalArrangement = Arrangement.spacedBy(32.dp),
+            horizontalArrangement = Arrangement.spacedBy(if (alternativeUi) 2.dp else 32.dp),
             modifier = Modifier.fillMaxSize(),
         ) {
             Column(
+                verticalArrangement = Arrangement.spacedBy(if (alternativeUi) 8.dp else 0.dp),
                 modifier =
                     Modifier
-                        .fillMaxWidth(.3f)
+                        .ifElse(alternativeUi, Modifier.width(220.dp), Modifier.fillMaxWidth(.3f))
                         .fillMaxHeight()
                         .background(
                             if (alternativeUi) LiquidColors.Rail else MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp),
@@ -253,25 +256,36 @@ fun PreferencesContent(
                         ).focusGroup()
                         .focusProperties {
                             onEnter = { categoryFocusRequester.tryRequestFocus() }
-                        },
+                        }.ifElse(alternativeUi, Modifier.padding(10.dp)),
             ) {
-                Text(
-                    text = stringResource(screenTitle),
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
-                )
+                if (alternativeUi) {
+                    AlternativePanelTitle(
+                        text = stringResource(screenTitle),
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 4.dp),
+                    )
+                } else {
+                    Text(
+                        text = stringResource(screenTitle),
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
+                    )
+                }
                 if (alternativeUi && preferenceScreenOption == PreferenceScreenOption.BASIC) {
                     AlternativeServerCard(
                         serverName = viewModel.serverName,
                         serverUrl = viewModel.serverUrl,
                         userName = currentUser?.name,
-                        modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 12.dp),
                     )
                 }
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(4.dp),
-                    contentPadding = PaddingValues(start = 12.dp, end = 12.dp, bottom = 16.dp),
+                    contentPadding =
+                        if (alternativeUi) {
+                            PaddingValues(bottom = 8.dp)
+                        } else {
+                            PaddingValues(start = 12.dp, end = 12.dp, bottom = 16.dp)
+                        },
                     modifier = Modifier.fillMaxSize(),
                 ) {
                     if (showUpdate) {
@@ -299,8 +313,10 @@ fun PreferencesContent(
                     }
                     itemsIndexed(prefList) { groupIndex, group ->
                         if (alternativeUi) {
-                            AlternativeCategoryItem(
+                            CatalogueRow(
                                 title = stringResource(group.title),
+                                glyph = null,
+                                collapsed = false,
                                 selected = groupIndex == selectedGroup,
                                 onClick = { focusRequester.tryRequestFocus() },
                                 onFocused = {
@@ -347,18 +363,30 @@ fun PreferencesContent(
                     Modifier
                         .weight(1f)
                         .fillMaxHeight()
-                        .onFocusChanged { if (it.hasFocus) focusInPreferences = true }
+                        .ifElse(
+                            alternativeUi,
+                            Modifier
+                                .background(LiquidColors.Base.copy(alpha = .5f), RoundedCornerShape(12.dp))
+                                .padding(horizontal = 8.dp),
+                        ).onFocusChanged { if (it.hasFocus) focusInPreferences = true }
                         .focusGroup()
                         .focusProperties {
                             onEnter = { focusRequester.tryRequestFocus() }
                         },
             ) {
-                Text(
-                    text = stringResource(group.title),
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 16.dp),
-                )
+                if (alternativeUi) {
+                    AlternativePanelTitle(
+                        text = stringResource(group.title),
+                        modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 14.dp, bottom = 6.dp),
+                    )
+                } else {
+                    Text(
+                        text = stringResource(group.title),
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 16.dp),
+                    )
+                }
                 if (group.inlinePage == InlinePreferencePage.USER_PROFILE) {
                     UserProfilePreferencesContent(
                         showTitle = false,
@@ -503,9 +531,14 @@ fun PreferencesContent(
                                 }
 
                                 AppPreference.UserPinnedNavDrawerItems -> {
+                                    // Thorphin: the side rail of the Alternative UI uses only part of the pins
+                                    val note = preferencePartialNote(pref, preferences)?.let { stringResource(it) }
                                     NavDrawerPreference(
                                         title = stringResource(pref.title),
-                                        summary = pref.summary(context, null),
+                                        summary =
+                                            listOfNotNull(pref.summary(context, null), note)
+                                                .joinToString("\n")
+                                                .ifEmpty { null },
                                         modifier = focusModifier,
                                         interactionSource = interactionSource,
                                     )
@@ -758,6 +791,8 @@ fun PreferencesContent(
 
                                 else -> {
                                     val value = pref.getter.invoke(preferences)
+                                    val disabledReason = preferenceDisabledReason(pref, preferences)
+                                    val partialNote = preferencePartialNote(pref, preferences)
                                     ComposablePreference(
                                         preference = pref,
                                         value = value,
@@ -787,13 +822,10 @@ fun PreferencesContent(
                                         },
                                         interactionSource = interactionSource,
                                         modifier = focusModifier,
-                                        // Thorphin: Alternative UI has a side rail, so the top bar style is not used
-                                        enabled =
-                                            !(
-                                                pref == AppPreference.TopBarStylePref &&
-                                                    preferences.interfacePreferences.homeScreenStyle.isAlternative
-                                            ),
-                                        disabledSummary = stringResource(R.string.top_bar_style_disabled_alternative),
+                                        // Thorphin: settings that do nothing with the home screen style are disabled
+                                        enabled = disabledReason == null,
+                                        disabledSummary = disabledReason?.let { stringResource(it) },
+                                        note = partialNote?.let { stringResource(it) },
                                     )
                                 }
                             }
@@ -959,7 +991,13 @@ fun PreferencesPage(
                     preferenceScreenOption,
                     Modifier
                         .fillMaxSize()
-                        .padding(horizontal = 48.dp, vertical = 27.dp),
+                        // Thorphin: next to the Alternative UI rail the page already has the 8 dp margins of the
+                        // other pages
+                        .ifElse(
+                            LocalHomeScreenStyle.current.isAlternative,
+                            Modifier.padding(bottom = 8.dp),
+                            Modifier.padding(horizontal = 48.dp, vertical = 27.dp),
+                        ),
                 )
             }
         }

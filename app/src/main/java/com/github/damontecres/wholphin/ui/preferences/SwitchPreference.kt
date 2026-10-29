@@ -41,11 +41,14 @@ fun SwitchPreference(
     summary: String? = null,
     onLongClick: (() -> Unit)? = null,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
+    // Thorphin: a setting that does nothing with the current settings
+    enabled: Boolean = true,
 ) {
     ListItem(
         selected = false,
         onClick = onClick,
         onLongClick = onLongClick,
+        enabled = enabled,
         headlineContent = {
             PreferenceTitle(title)
         },
@@ -56,6 +59,7 @@ fun SwitchPreference(
             Switch(
                 checked = value,
                 onCheckedChange = { onClick.invoke() },
+                enabled = enabled,
                 colors = SwitchColors(),
             )
         },
@@ -79,6 +83,8 @@ fun SwitchColors(): SwitchColors {
         AppThemeColors.ORANGE,
         AppThemeColors.BOLD_BLUE,
         AppThemeColors.GLASS,
+        AppThemeColors.LAVENDER,
+        AppThemeColors.AMBER,
         AppThemeColors.OLED_BLACK,
         AppThemeColors.RED,
         AppThemeColors.BROWN,

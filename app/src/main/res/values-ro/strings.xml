@@ -370,7 +370,7 @@
         <item quantity="other">Clipuri</item>
     </plurals>
     <string name="favorite_items_title">%s favorit</string>
-    <string name="app_theme">Temă aplicație</string>
+    <string name="app_theme">Culori temă</string>
     <string name="auto_check_for_updates">Verifică automat dacă există actualizări</string>
     <string name="ac3_supported">Dispozitivul acceptă formatele AC3/Dolby Digital</string>
     <string name="advanced_settings">Setări avansate</string>
@@ -407,10 +407,20 @@
     <string name="home_screen_style_classic">Clasic</string>
     <string name="home_screen_style_modern">Modern</string>
     <string name="home_screen_style_squared">Pătrat</string>
-    <string name="home_screen_style_alternative">Interfață alternativă</string>
-    <string name="home_screen_style_alternative_minimalist">Interfață alternativă minimalistă - listă</string>
-    <string name="home_screen_style_alternative_minimalist_cards">Interfață alternativă minimalistă - carduri</string>
-    <string name="top_bar_style_disabled_alternative">Nu se folosește în Interfața alternativă, care are o bară laterală în loc de bara de sus</string>
+    <string name="home_screen_style_alternative">Thorphin</string>
+    <string name="home_screen_style_alternative_minimalist">Thorphin minimalist - listă</string>
+    <string name="home_screen_style_alternative_minimalist_cards">Thorphin minimalist - carduri</string>
+    <string name="top_bar_style_disabled_alternative">Nu se folosește în stilurile Thorphin, care au o bară laterală în loc de bara de sus</string>
+    <string name="navigation_style_disabled_alternative">Nu se folosește în stilurile Thorphin, care au mereu bara laterală</string>
+    <string name="top_bar_style_disabled_drawer">Nu se folosește cu navigarea prin meniul lateral</string>
+    <string name="details_text_size_disabled">Se folosește doar în panoul de detalii al stilurilor Thorphin</string>
+    <string name="show_home_hero_disabled_alternative">Pagina principală a stilurilor Thorphin nu are hero</string>
+    <string name="hero_trailer_sound_disabled">Pornește întâi trailerul din hero sau trailerele din carduri</string>
+    <string name="card_settings_note_liquid">Cardurile de pe pagina principală au aspectul propriu al acestui stil, setarea se aplică celorlalte pagini</string>
+    <string name="customize_home_note_alternative">În stilurile Thorphin se aplică doar rândurile și ordinea lor, nu mărimea cardurilor sau tipul imaginii</string>
+    <string name="nav_drawer_pins_note_alternative">Bara laterală a stilurilor Thorphin folosește din această listă doar Favorite și Descoperă</string>
+    <string name="card_trailers_note_liquid">Cardurile Modern și Squared nu redau trailere, setarea pornește totuși trailerele pe paginile de detalii</string>
+    <string name="hero_trailer_note_no_hero">Fără hero pe pagina principală, trailerul rulează doar pe paginile de detalii</string>
     <string name="browse_all_movies">Toate filmele</string>
     <string name="browse_all_series">Toate serialele</string>
     <string name="browse_4k">4K Ultra HD</string>
@@ -442,6 +452,8 @@
     <string name="hero_trailer_summary_on">După 5 secunde trailerul rulează în spatele hero-ului: unul de pe server sau unul spre care trimite un addon</string>
     <string name="hero_trailer_sound">Sunet pentru trailere</string>
     <string name="card_trailers">Trailere în carduri</string>
+    <string name="theme_lavender">Lavandă</string>
+    <string name="theme_amber">Chihlimbar</string>
     <string name="theme_glass">Liquid Glass</string>
     <string name="settings_appearance">Aspect</string>
     <string name="settings_home_screen">Ecran principal</string>

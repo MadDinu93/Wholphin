@@ -110,6 +110,7 @@ import com.github.damontecres.wholphin.ui.playback.scale
 import com.github.damontecres.wholphin.ui.rememberPosition
 import com.github.damontecres.wholphin.ui.theme.LiquidStyleScope
 import com.github.damontecres.wholphin.ui.theme.isAlternative
+import com.github.damontecres.wholphin.ui.theme.isLiquid
 import com.github.damontecres.wholphin.ui.theme.LocalHomeScreenStyle
 import com.github.damontecres.wholphin.ui.theme.LocalLiquidStyle
 import com.github.damontecres.wholphin.ui.tryRequestFocus
@@ -251,8 +252,10 @@ fun HomePage(
             }
             val cardTrailers = rememberCardTrailers(viewModel.heroTrailerService, interfacePreferences.muteHeroTrailer)
             val trailerOwner = remember { Any() }
+            // Thorphin: the Modern and Squared cards draw no trailers, so card trailers must not silence the hero there
+            val cardTrailersOn = interfacePreferences.cardTrailers && !LocalHomeScreenStyle.current.isLiquid
             // The hero's trailer only plays while it is shown
-            val trailers = interfacePreferences.cardTrailers || (showHero && !interfacePreferences.disableHeroTrailer)
+            val trailers = cardTrailersOn || (showHero && !interfacePreferences.disableHeroTrailer)
             val cardThemeMusic = interfacePreferences.cardThemeMusic
             // Thorphin: only does something for the Modern and Squared styles
             LiquidStyleScope {
@@ -286,12 +289,12 @@ fun HomePage(
                             viewModel.heroTrailerService.focus(
                                 item,
                                 trailerOwner,
-                                inCard = interfacePreferences.cardTrailers,
+                                inCard = cardTrailersOn,
                                 trailers = trailers,
                                 themeMusic = cardThemeMusic,
                             )
                         }.takeIf { trailers || cardThemeMusic },
-                    cardTrailers = cardTrailers.takeIf { interfacePreferences.cardTrailers },
+                    cardTrailers = cardTrailers.takeIf { cardTrailersOn },
                     modifier = modifier,
                 )
             }

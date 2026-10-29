@@ -16,7 +16,9 @@ These were not edited (documentation-only audit limited to new files).
 
 ## Upstream-merge hazards
 
-- **Proto enum renumbering**: `AppThemeColors.GLASS = 0`, `PURPLE = 8`. If upstream adds a color with value 8, or
+- **Proto enum renumbering**: `AppThemeColors.GLASS = 0`, `PURPLE = 8`, fork-only `LAVENDER = 100`, `AMBER = 101`.
+  Upstream colors added later also need a `ThemePalette` and a place in `ThemeColorChoices` (the settings list is not
+  ordered by number), and upstream's own color schemes are no longer used. If upstream adds a color with value 8, or
   any new enum/field in `InterfacePreferences` (16–26; 25 is `home_screen_style`, 26 is `top_bar_style`), `PlaybackPreferences` (27) or `ExperimentalPreferences` (6),
   numbers collide. Always renumber the fork's side, never reuse a number for a different meaning on existing installs.
 - **Room version**: fork uses v42 (`AutoMigration(41, 42)`). An upstream v42 with a different schema conflicts with

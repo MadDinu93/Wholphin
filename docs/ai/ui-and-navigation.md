@@ -39,6 +39,14 @@ Each `NavEntry` content key includes server and user IDs, so switching user rebu
 - Rows/grids add their own 16 dp start inset; `TopNavContentStartInset` compensates so pages look centered.
 - Settings is a two-pane layout (`W/ui/preferences/PreferencesContent.kt`): categories left, settings right; back
   from a setting returns to its category, focus is restored when returning from a sub-screen.
+- *(fork)* `W/ui/preferences/PreferenceAvailability.kt` decides, from the home screen style and other settings, which
+  settings do nothing (`preferenceDisabledReason`: shown disabled with the reason instead of the value, via `enabled` on
+  `ComposablePreference` for choices, switches and sliders) and which apply only to some pages (`preferencePartialNote`:
+  a line under the summary). Disabled: Navigation style and Show home hero in the Alternative UI styles, Topbar style
+  in them or with the side drawer, Details text size outside them, Hero trailer sound when both trailer settings are
+  off. Notes: Card progress style and Card info in the non-Classic styles, Customize home and nav drawer
+  pins in the Alternative UI, Card trailers in Modern/Squared, Hero trailer when the home hero is off. Add new
+  style-dependent settings there.
 
 ## Home page
 
@@ -65,8 +73,17 @@ a synthetic non-item key so sort/filter are saved separately. Movie/TV library f
 - `W/ui/cards/`: `PosterCardShape` (12 dp), `Modifier.glassHighlight()` (rim + gloss + one-time sheen on focus, draw
   only), `CardTopOverlay` / `CardPill` / watched tab in `CardBadges.kt` (everything kept at the top of posters).
   `LocalCardProgressStyle` and `LocalShowCardInfo` come from interface preferences via `ApplicationContent`.
-- `W/ui/theme/colors/GlassThemeColors.kt`: grey/white/black scheme; `AppThemeColors.GLASS` (proto value 0) is the
-  default; `isMonochrome` covers GLASS and OLED_BLACK for components that must not disappear in greys.
+- **Theme colors** (`AppPreference.ThemeColors`, proto `AppThemeColors`, "Theme colors" in Appearance) changes the
+  same elements in every home screen style: the accent (focus rims and borders, active tab / rail entry / settings
+  category, Play button, progress bars, ratings, switches, sliders) and a light tint of backgrounds and panels.
+  `W/ui/theme/ThemePalette.kt` holds one `ThemePalette` per color (`accent`, `onAccent`, tint; Black has pure black
+  backgrounds) and `paletteThemeColors()`, which builds the Classic scheme from the grey Glass scheme
+  (`W/ui/theme/colors/GlassThemeColors.kt`) with the accent in `primary`/`inverseSurface`/`border` and tinted surfaces.
+  `WholphinTheme` uses it for every color and always provides `LocalTheme = GLASS`, so upstream components that branch
+  on the theme draw the Glass way; upstream's own color files (`getThemeColors`) are no longer used. The other styles
+  read the same palette through `LiquidColors` (`palette`, set in `ApplicationContent`). Glass (grey/white) is the
+  default everywhere; Lavender and Amber are the former Modern and Alternative accents. The settings list follows
+  `ThemeColorChoices`, not the proto numbers.
 - `Theme Designs/` (untracked) holds the Stitch design references ("Aetheria TV"); the Modern/Squared style below uses its tokens.
 
 ## Home screen style: Modern and Squared *(fork)*
@@ -85,19 +102,19 @@ theme (`AppThemeColors`); changing it writes only that field. `ApplicationConten
   with a short information panel (title, year, rating). Continue watching rows are landscape in both, with
   progress bar and time left. "Customize home page" applies (height, aspect ratio, image type, titles, spacing),
   with heights scaled down (`PortraitScale`/`LandscapeScale`) and tall ratios turned landscape for continue rows and
-  in Squared; its live preview is wrapped in the scope too. Card trailers are not drawn in these styles; "Image with dynamic color" backdrops are drawn image-only (neutral black) while a Modern or Squared home screen style is chosen. Moving between rows scrolls with an eased animation (`LiquidBringIntoViewSpec`), and the hero text cross-fades between items. Rows, focus,
+  in Squared; its live preview is wrapped in the scope too. Card trailers are not drawn in these styles, and `HomePage`
+  ignores the setting there so it does not silence the hero trailer (it still turns on details-page trailers); "Image with dynamic color" backdrops are drawn image-only (neutral black) while a Modern or Squared home screen style is chosen. Moving between rows scrolls with an eased animation (`LiquidBringIntoViewSpec`), and the hero text cross-fades between items. Rows, focus,
   cache and trailers otherwise are the classic code. `TopNavBar` follows the separate "Topbar style" setting (proto `top_bar_style` field 26, `TopBarStyle`: Classic, Modern,
   Squared; `LocalTopBarStyle`), not the home screen style: Modern and Squared share one layout (Squared has square corners): text tabs, icon-only search and settings, clock
   and profile in one capsule (white active tab) and hides the corner clock/profile.
-- *(fork)* **Alternative UI** (`STYLE_ALTERNATIVE` = 3, "Alternative UI" in the same setting): `NavDrawer` hands over to
+- *(fork)* **Alternative UI** (`STYLE_ALTERNATIVE` = 3, shown as "Thorphin" in the same setting, the Minimalist ones as "Thorphin Minimalist List / Cards"; code and docs keep the Alternative names): `NavDrawer` hands over to
   `AlternativeNavigation` (`W/ui/nav/AlternativeNavigation.kt`) whatever `navigation_style` says. It is a permanent 72 dp
   left rail (profile, Home, Movies, Series, Sets and Lists when the server has such
   libraries, Favorites/Discover, Search, Settings at the bottom; no "Library" or "Catalog" entry) and the page
   next to it, with the clock floating over the top right corner. The rail shows on the same root pages as the top bar, and on the main
-  Settings page (`ApplicationContent` treats `Settings(BASIC)` as not full screen in this style). The "Topbar style"
-  preference is shown disabled while it is selected (`enabled` on `ChoicePreference`/`ComposablePreference`, decided in
-  `PreferencesContent`). It is `isLiquid`, so Home and the library pages reuse the Modern code with 8 dp cards, and
-  `LiquidColors` switches to the amber "Thorphin TV" palette (`LiquidColors.alternative`, set in `ApplicationContent`).
+  Settings page (`ApplicationContent` treats `Settings(BASIC)` as not full screen in this style). It is `isLiquid`, so Home and the library pages reuse the Modern code with 8 dp cards, and
+  `LiquidColors` switches to the darker "Thorphin TV" neutrals (`LiquidColors.alternative`, set in `ApplicationContent`);
+  its amber accent is now the "Amber" theme color, not tied to the style.
   - Movies and Series (`AllMovies`/`AllSeries`) open `AlternativeBrowsePage` (`W/ui/detail/AlternativeBrowse.kt`)
     instead of the grid: the catalogues on the left are "All movies" (or "All TV shows") on top, then only the libraries
     of that kind (`CollectionType.MOVIES`/`TVSHOWS` from `NavDrawerService.allLibraries`), with counts; focusing one loads
@@ -120,12 +137,14 @@ theme (`AppThemeColors`); changing it writes only that field. `ApplicationConten
     longest first). Only `values-ro` has one, English has an empty array.
   - Appearance has "Details text size" (`AppPreference.DetailsTextScalePref`, proto `details_text_scale`, percent, 0 = 100)
     which scales the text of the details panel.
-  - Settings (`AlternativeSettings.kt`): categories are amber rows and the main page shows a server/user card.
+  - Settings (`AlternativeSettings.kt`, branches in `PreferencesContent`): laid out like the Movies page, with the
+    same 8 dp margins (no `PreferencesPage` padding), a 220 dp categories panel (`LiquidColors.Rail`, `CatalogueRow`
+    rows, `AlternativePanelTitle` heading) with a compact server/user card, and the settings in a `Base` panel next to it.
   - Not done from the designs: the sort dropdown of the grid, the static
     4K/HDR/ATMOS chips and "Jellyfin Direct" pill of the header (the server name is shown instead), the metric tiles
     of the server settings (latency etc., no data behind them).
   - **Alternative UI Minimalist List / Cards** (`STYLE_ALTERNATIVE_MINIMALIST` = 4 "List", `STYLE_ALTERNATIVE_MINIMALIST_CARDS` = 5 "Cards", `isMinimalist`; Cards shows the titles as a row of 88 dp posters (`BrowsePoster`) instead of the text list, 50/50 split; the rest of this paragraph applies to both) (design in `Theme Designs/Alternative UI Minimalist`) are a
-    second, selectable look of the same UI: everything above (rail, amber palette, settings page, Home/Movies/Series data,
+    second, selectable look of the same UI: everything above (rail, neutrals, settings page, Home/Movies/Series data,
     filters, trailers) applies through `HomeScreenStyle.isAlternative`; only the page layout differs.
     `AlternativeBrowseLayout` hands over to `MinimalistBrowseLayout` (`W/ui/detail/AlternativeMinimalistBrowse.kt`) when
     `LocalHomeScreenStyle` is Minimalist: fixed 190 dp catalogues, then a hero card for the focused title (the trailer or

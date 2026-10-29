@@ -50,9 +50,11 @@ fun <T> ComposablePreference(
     modifier: Modifier = Modifier,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     onClickPreference: (AppClickablePreference<*>) -> Unit = {},
-    // Thorphin: only used by choice preferences, a disabled one shows [disabledSummary] and cannot be opened
+    // Thorphin: a disabled choice, switch or slider shows [disabledSummary] and cannot be changed, [note] is shown
+    // under the summary of a setting that only applies to some pages
     enabled: Boolean = true,
     disabledSummary: String? = null,
+    note: String? = null,
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -61,6 +63,9 @@ fun <T> ComposablePreference(
     var showStringDialog by remember { mutableStateOf<StringInput?>(null) }
 
     val title = stringResource(preference.title)
+    val withNote: (String?) -> String? = { summary ->
+        listOfNotNull(summary, note).joinToString("\n").ifEmpty { null }
+    }
 
     val onLongClick: () -> Unit = {
         scope.launch(ExceptionHandler()) {
@@ -108,7 +113,7 @@ fun <T> ComposablePreference(
                 onClick = {
                     onNavigate.invoke(preference.destination)
                 },
-                summary = preference.summary(context, value),
+                summary = withNote(preference.summary(context, value)),
                 interactionSource = interactionSource,
                 modifier = modifier,
             )
@@ -130,7 +135,13 @@ fun <T> ComposablePreference(
                 title = title,
                 value = value as Boolean,
                 onClick = { onValueChange.invoke(!value as T) },
-                summary = preference.summary(context, value),
+                summary =
+                    if (enabled) {
+                        withNote(preference.summary(context, value))
+                    } else {
+                        disabledSummary ?: preference.summary(context, value)
+                    },
+                enabled = enabled,
                 interactionSource = interactionSource,
                 modifier = modifier,
             )
@@ -182,7 +193,7 @@ fun <T> ComposablePreference(
             val selectedIndex = remember(value) { preference.valueToIndex.invoke(value as T) }
             ChoicePreference(
                 title = title,
-                summary = if (enabled) summary else disabledSummary ?: summary,
+                summary = if (enabled) withNote(summary) else disabledSummary ?: summary,
                 enabled = enabled,
                 possibleValues = values,
                 selectedIndex = selectedIndex,
@@ -234,16 +245,28 @@ fun <T> ComposablePreference(
             val summary =
                 preference.summary(context, value)
                     ?: preference.summary?.let { stringResource(it) }
-            SliderPreference(
-                preference = preference,
-                title = title,
-                summary = summary,
-                value = value as Long,
-                onChange = { onValueChange(it as T) },
-                summaryBelow = false,
-                interactionSource = interactionSource,
-                modifier = modifier,
-            )
+            // A disabled slider is a plain row, so the D-pad cannot move it
+            if (!enabled) {
+                ClickPreference(
+                    title = title,
+                    onClick = {},
+                    summary = disabledSummary ?: summary,
+                    enabled = false,
+                    interactionSource = interactionSource,
+                    modifier = modifier,
+                )
+            } else {
+                SliderPreference(
+                    preference = preference,
+                    title = title,
+                    summary = withNote(summary),
+                    value = value as Long,
+                    onChange = { onValueChange(it as T) },
+                    summaryBelow = false,
+                    interactionSource = interactionSource,
+                    modifier = modifier,
+                )
+            }
         }
     }
 

@@ -333,16 +333,26 @@
     <string name="ac3_supported">Device supports AC3/Dolby Digital</string>
     <string name="advanced_settings">Advanced Settings</string>
     <string name="advanced_ui">Advanced UI</string>
-    <string name="app_theme">Application Theme</string>
+    <string name="app_theme">Theme colors</string>
     <string name="top_bar_style">Topbar style</string>
     <string name="home_screen_style">Home screen style</string>
     <string name="home_screen_style_classic">Classic</string>
     <string name="home_screen_style_modern">Modern</string>
     <string name="home_screen_style_squared">Squared</string>
-    <string name="home_screen_style_alternative">Alternative UI</string>
-    <string name="home_screen_style_alternative_minimalist">Alternative UI Minimalist List</string>
-    <string name="home_screen_style_alternative_minimalist_cards">Alternative UI Minimalist Cards</string>
-    <string name="top_bar_style_disabled_alternative">Not used by Alternative UI, which has a side rail instead of the top bar</string>
+    <string name="home_screen_style_alternative">Thorphin</string>
+    <string name="home_screen_style_alternative_minimalist">Thorphin Minimalist List</string>
+    <string name="home_screen_style_alternative_minimalist_cards">Thorphin Minimalist Cards</string>
+    <string name="top_bar_style_disabled_alternative">Not used by the Thorphin styles, which have a side rail instead of the top bar</string>
+    <string name="navigation_style_disabled_alternative">Not used by the Thorphin styles, which always have their side rail</string>
+    <string name="top_bar_style_disabled_drawer">Not used with the side drawer navigation</string>
+    <string name="details_text_size_disabled">Only used by the details panel of the Thorphin home screen styles</string>
+    <string name="show_home_hero_disabled_alternative">The Home page of the Thorphin styles has no hero</string>
+    <string name="hero_trailer_sound_disabled">Turn on the hero trailer or card trailers first</string>
+    <string name="card_settings_note_liquid">The Home cards of this home screen style have their own look, this applies to the other pages</string>
+    <string name="customize_home_note_alternative">In the Thorphin styles only the rows and their order apply, not the card size or image type</string>
+    <string name="nav_drawer_pins_note_alternative">The side rail of the Thorphin styles only uses Favorites and Discover from this list</string>
+    <string name="card_trailers_note_liquid">Modern and Squared cards play no trailers, it still turns on trailers on details pages</string>
+    <string name="hero_trailer_note_no_hero">Without the home hero it only plays on details pages</string>
     <string name="browse_all_movies">All movies</string>
     <string name="browse_all_series">All TV shows</string>
     <string name="browse_4k">4K Ultra HD</string>
@@ -666,16 +676,19 @@
     <string name="bold_blue">Bold Blue</string>
     <string name="black">Black</string>
     <string name="brown">Brown</string>
+    <!-- Thorphin: in the order of ThemeColorChoices, not of the proto numbers -->
     <string-array name="app_theme_colors">
         <item>@string/theme_glass</item>
-        <item>@string/blue</item>
-        <item>@string/green</item>
-        <item>@string/orange</item>
-        <item>@string/bold_blue</item>
         <item>@string/black</item>
+        <item>@string/theme_lavender</item>
+        <item>@string/purple</item>
+        <item>@string/blue</item>
+        <item>@string/bold_blue</item>
+        <item>@string/green</item>
+        <item>@string/theme_amber</item>
+        <item>@string/orange</item>
         <item>@string/red</item>
         <item>@string/brown</item>
-        <item>@string/purple</item>
     </string-array>
 
     <string name="skip_ignore">Ignore</string>
@@ -899,6 +912,8 @@
     <string name="hero_trailer_summary_on">After 5 seconds the trailer plays behind the hero: one on the server, or one an add-on links to</string>
     <string name="hero_trailer_sound">Trailer sound</string>
     <string name="card_trailers">Trailers in cards</string>
+    <string name="theme_lavender">Lavender</string>
+    <string name="theme_amber">Amber</string>
     <string name="theme_glass">Liquid Glass</string>
     <string name="settings_appearance">Appearance</string>
     <string name="settings_home_screen">Home screen</string>

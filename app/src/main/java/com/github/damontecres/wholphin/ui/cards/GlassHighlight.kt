@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.unit.dp
+import androidx.tv.material3.MaterialTheme
 
 /**
  * Apple TV style glass look for a focused card: a thin rim that catches the light along the top, a soft gloss from
@@ -37,6 +38,8 @@ fun Modifier.glassHighlight(
     shape: Shape = LocalPosterCardShape.current,
 ): Modifier {
     val focused by interactionSource.collectIsFocusedAsState()
+    // The rim takes the accent of "Theme colors", white with the default Glass colors
+    val accent = MaterialTheme.colorScheme.primary
     val focusAlpha = animateFloatAsState(if (focused) 1f else 0f, tween(if (focused) 250 else 150), label = "glass")
     val sheen = remember { Animatable(1f) }
     LaunchedEffect(focused) {
@@ -49,10 +52,10 @@ fun Modifier.glassHighlight(
         val rimWidth = 1.5.dp.toPx()
         val rim =
             Brush.verticalGradient(
-                0f to Color.White.copy(alpha = .95f),
-                .3f to Color.White.copy(alpha = .4f),
-                .7f to Color.White.copy(alpha = .15f),
-                1f to Color.White.copy(alpha = .4f),
+                0f to accent.copy(alpha = .95f),
+                .3f to accent.copy(alpha = .4f),
+                .7f to accent.copy(alpha = .15f),
+                1f to accent.copy(alpha = .4f),
             )
         val gloss =
             Brush.linearGradient(

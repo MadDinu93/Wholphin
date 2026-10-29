@@ -793,6 +793,8 @@ fun navItemColor(
 
                     AppThemeColors.BOLD_BLUE,
                     AppThemeColors.GLASS,
+                    AppThemeColors.LAVENDER,
+                    AppThemeColors.AMBER,
                     AppThemeColors.OLED_BLACK,
                     -> MaterialTheme.colorScheme.primary
                 }

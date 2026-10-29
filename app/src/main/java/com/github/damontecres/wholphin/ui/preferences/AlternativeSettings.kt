@@ -29,48 +29,21 @@ import androidx.tv.material3.Surface
 import androidx.tv.material3.Text
 import com.github.damontecres.wholphin.ui.theme.LiquidColors
 
-/**
- * A settings category of the Alternative UI: a rounded row, filled amber while its settings are the ones shown
- */
+/** The title of a settings panel of the Alternative UI, as the heading of the catalogues of the Movies page */
 @Composable
-fun AlternativeCategoryItem(
-    title: String,
-    selected: Boolean,
-    onClick: () -> Unit,
-    onFocused: () -> Unit,
+fun AlternativePanelTitle(
+    text: String,
     modifier: Modifier = Modifier,
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val focused by interactionSource.collectIsFocusedAsState()
-    LaunchedEffect(focused) { if (focused) onFocused() }
-    val shape = RoundedCornerShape(12.dp)
-    Surface(
-        onClick = onClick,
-        interactionSource = interactionSource,
-        shape = ClickableSurfaceDefaults.shape(shape),
-        colors =
-            ClickableSurfaceDefaults.colors(
-                containerColor = if (selected) LiquidColors.Accent else LiquidColors.Base,
-                contentColor = if (selected) LiquidColors.OnAccent else LiquidColors.TextPrimary,
-                focusedContainerColor = if (selected) LiquidColors.Accent else LiquidColors.Elevated,
-                focusedContentColor = if (selected) LiquidColors.OnAccent else LiquidColors.Accent,
-            ),
-        border =
-            ClickableSurfaceDefaults.border(
-                focusedBorder = Border(BorderStroke(2.dp, LiquidColors.Accent), shape = shape),
-            ),
-        scale = ClickableSurfaceDefaults.scale(focusedScale = 1.02f),
-        modifier = modifier.fillMaxWidth(),
-    ) {
-        Text(
-            text = title,
-            fontSize = 16.sp,
-            fontWeight = if (selected) FontWeight.Bold else FontWeight.SemiBold,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-        )
-    }
+    Text(
+        text = text,
+        color = LiquidColors.TextPrimary,
+        fontSize = 20.sp,
+        fontWeight = FontWeight.Bold,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+        modifier = modifier,
+    )
 }
 
 /** The server and the user of the Alternative UI settings, above the categories */
@@ -87,17 +60,17 @@ fun AlternativeServerCard(
         modifier =
             modifier
                 .fillMaxWidth()
-                .background(LiquidColors.Elevated, RoundedCornerShape(12.dp))
-                .padding(14.dp),
+                .background(LiquidColors.Elevated, RoundedCornerShape(8.dp))
+                .padding(horizontal = 10.dp, vertical = 8.dp),
     ) {
         Box(
-            modifier = Modifier.size(10.dp).background(LiquidColors.Accent, CircleShape),
+            modifier = Modifier.size(8.dp).background(LiquidColors.Accent, CircleShape),
         )
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = serverName ?: serverUrl.orEmpty(),
                 color = LiquidColors.TextPrimary,
-                fontSize = 16.sp,
+                fontSize = 13.sp,
                 fontWeight = FontWeight.Bold,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -107,7 +80,7 @@ fun AlternativeServerCard(
                 Text(
                     text = detail,
                     color = LiquidColors.TextSecondary,
-                    fontSize = 12.sp,
+                    fontSize = 11.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )

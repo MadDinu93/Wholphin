@@ -3,6 +3,7 @@ package com.github.damontecres.wholphin.ui.theme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.remember
 import androidx.tv.material3.MaterialTheme
 import com.github.damontecres.wholphin.preferences.AppThemeColors
 import com.github.damontecres.wholphin.ui.theme.colors.BlueThemeColors
@@ -29,7 +30,7 @@ fun getThemeColors(appThemeColors: AppThemeColors): ThemeColors =
         AppThemeColors.BOLD_BLUE -> BoldBlueThemeColors
         AppThemeColors.RED -> RedThemeColors
         AppThemeColors.BROWN -> BrownThemeColors
-        AppThemeColors.UNRECOGNIZED -> GlassThemeColors
+        AppThemeColors.LAVENDER, AppThemeColors.AMBER, AppThemeColors.UNRECOGNIZED -> GlassThemeColors
     }
 
 /**
@@ -44,14 +45,17 @@ fun WholphinTheme(
     appThemeColors: AppThemeColors = AppThemeColors.GLASS,
     content: @Composable () -> Unit,
 ) {
-    val themeColors = getThemeColors(appThemeColors)
+    // Thorphin: every color is the Glass scheme with that color's accent and tint (ThemePalette.kt), so the same
+    // elements change in every home screen style. Components that look at LocalTheme therefore always draw the Glass
+    // way; upstream's own schemes (getThemeColors) are no longer used.
+    val themeColors = remember(appThemeColors) { paletteThemeColors(appThemeColors.palette) }
 
     val colorScheme =
         when {
             darkTheme -> themeColors.darkScheme
             else -> themeColors.lightScheme
         }
-    CompositionLocalProvider(LocalTheme provides appThemeColors) {
+    CompositionLocalProvider(LocalTheme provides AppThemeColors.GLASS) {
         androidx.compose.material3.MaterialTheme(
             colorScheme = if (darkTheme) themeColors.darkSchemeMaterial else themeColors.lightSchemeMaterial,
             typography = androidx.compose.material3.Typography(),

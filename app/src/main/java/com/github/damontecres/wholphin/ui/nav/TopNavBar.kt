@@ -232,7 +232,7 @@ fun TopNavigation(
                             ClickableSurfaceDefaults.border(
                                 focusedBorder =
                                     Border(
-                                        BorderStroke(2.dp, MaterialTheme.colorScheme.onSurface),
+                                        BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
                                         shape = avatarShape,
                                     ),
                             ),
@@ -411,7 +411,7 @@ private fun TopNavTab(
     iconOnly: Boolean = false,
 ) {
     val onSurface = MaterialTheme.colorScheme.onSurface
-    // Modern and Squared: text only tabs and a white active tab
+    // Modern and Squared: text only tabs and an active tab in the accent of "Theme colors"
     val modern = LocalTopBarStyle.current.compact
     Surface(
         onClick = onClick,
@@ -420,18 +420,18 @@ private fun TopNavTab(
             ClickableSurfaceDefaults.colors(
                 containerColor =
                     when {
-                        modern && selected -> LiquidColors.TextPrimary
+                        modern && selected -> LiquidColors.Accent
                         selected -> onSurface.copy(alpha = .18f)
                         else -> Color.Transparent
                     },
                 contentColor =
                     when {
-                        modern && selected -> LiquidColors.Canvas
+                        modern && selected -> LiquidColors.OnAccent
                         selected -> onSurface
                         else -> onSurface.copy(alpha = .75f)
                     },
-                focusedContainerColor = onSurface,
-                focusedContentColor = MaterialTheme.colorScheme.surface,
+                focusedContainerColor = MaterialTheme.colorScheme.inverseSurface,
+                focusedContentColor = MaterialTheme.colorScheme.inverseOnSurface,
             ),
         scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f),
         modifier = modifier,
