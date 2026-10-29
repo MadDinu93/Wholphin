@@ -34,7 +34,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun Modifier.glassHighlight(
     interactionSource: InteractionSource,
-    shape: Shape = PosterCardShape,
+    shape: Shape = LocalPosterCardShape.current,
 ): Modifier {
     val focused by interactionSource.collectIsFocusedAsState()
     val focusAlpha = animateFloatAsState(if (focused) 1f else 0f, tween(if (focused) 250 else 150), label = "glass")

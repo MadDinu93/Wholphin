@@ -55,7 +55,9 @@ app/release/
 app/debug/
 .vscode
 .kotlin
-docs/
+docs/*
+# Claude Code project docs, see CLAUDE.md
+!docs/ai/
 
 # mpv
 app/src/main/obj/

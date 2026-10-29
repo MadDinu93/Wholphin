@@ -66,7 +66,7 @@ fun GenreCard(
         onClick = onClick,
         onLongClick = onLongClick,
         interactionSource = interactionSource,
-        shape = CardDefaults.shape(PosterCardShape),
+        shape = CardDefaults.shape(LocalPosterCardShape.current),
         border = posterCardBorder(),
         scale = posterCardScale(),
         colors =
@@ -80,7 +80,7 @@ fun GenreCard(
                 Modifier
                     .aspectRatio(AspectRatios.WIDE)
                     .fillMaxSize()
-                    .clip(PosterCardShape)
+                    .clip(LocalPosterCardShape.current)
                     .glassHighlight(interactionSource),
         ) {
             if (imageUrl != null) {

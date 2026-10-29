@@ -1,5 +1,7 @@
 package com.github.damontecres.wholphin.ui.nav
 
+import com.github.damontecres.wholphin.preferences.TopBarStyle
+import com.github.damontecres.wholphin.ui.theme.LiquidColors
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
@@ -14,11 +16,13 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.PlayArrow
@@ -42,6 +46,7 @@ import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.layout
@@ -49,6 +54,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.offset
 import androidx.compose.ui.unit.sp
@@ -67,6 +73,7 @@ import com.github.damontecres.wholphin.services.SetupDestination
 import com.github.damontecres.wholphin.ui.FontAwesome
 import com.github.damontecres.wholphin.ui.components.TimeDisplay
 import com.github.damontecres.wholphin.ui.ifElse
+import com.github.damontecres.wholphin.ui.util.LocalClock
 import com.github.damontecres.wholphin.ui.preferences.PreferenceScreenOption
 import com.github.damontecres.wholphin.ui.setup.UserIconCardImage
 import com.github.damontecres.wholphin.ui.tryRequestFocus
@@ -83,6 +90,16 @@ class TopNavBarState {
  * Provided while a page is shown below the [TopNavBar], null otherwise (e.g. with the side drawer)
  */
 val LocalTopNavBarState = compositionLocalOf<TopNavBarState?> { null }
+
+/** The look of the bar, from the "Topbar style" setting */
+private val LocalTopBarStyle = compositionLocalOf { TopBarStyle.TOPBAR_CLASSIC }
+
+/** Modern and Squared share one layout: text tabs, icon-only search and settings, the clock and profile inside */
+private val TopBarStyle.compact: Boolean get() = this != TopBarStyle.TOPBAR_CLASSIC
+
+/** Squared is the Modern bar with square corners */
+private fun TopBarStyle.shape(radius: Dp): Shape =
+    if (this == TopBarStyle.TOPBAR_SQUARED) RoundedCornerShape(radius) else CircleShape
 
 /** Vertical space the bar takes above the page content */
 val TopNavBarHeight = 76.dp
@@ -157,168 +174,206 @@ fun TopNavigation(
         focusBar()
     }
 
-    Box(modifier = modifier.fillMaxSize()) {
-        CompositionLocalProvider(LocalTopNavBarState provides if (showBar) barState else null) {
-            DestinationContent(
-                destination = destination,
-                preferences = preferences,
-                onClearBackdrop = onClearBackdrop,
-                modifier =
-                    Modifier
-                        .fillMaxSize()
-                        .padding(
-                            start = TopNavContentHorizontalPadding - TopNavContentStartInset,
-                            end = TopNavContentHorizontalPadding,
-                        )
-                        // Measured once for where the bar ends up, only the placement follows the animation, so the
-                        // page is not measured again every frame while the bar slides
-                        .layout { measurable, constraints ->
-                            val targetTop = if (barVisible) TopNavBarHeight.roundToPx() else 0
-                            val placeable = measurable.measure(constraints.offset(vertical = -targetTop))
-                            layout(placeable.width, placeable.height + targetTop) {
-                                placeable.place(0, topPadding.value.roundToPx())
-                            }
-                        },
-            )
-        }
-        if (showBar) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier =
-                    Modifier
-                        .align(Alignment.TopCenter)
-                        .fillMaxWidth()
-                        .graphicsLayer {
-                            alpha = barProgress.value
-                            translationY = -(1f - barProgress.value) * size.height
-                        }.padding(start = TopNavContentHorizontalPadding, end = TopNavContentHorizontalPadding, top = 16.dp, bottom = 8.dp)
-                        .onFocusChanged { barFocused = it.hasFocus }
-                        .focusGroup()
-                        .focusProperties {
-                            onEnter = { focusBar() }
-                        },
-            ) {
-                val userImageUrl = remember(user) { viewModel.getUserImage(user) }
-                Surface(
-                    onClick = { viewModel.navigateToSetup(SetupDestination.UserList(server)) },
-                    shape = ClickableSurfaceDefaults.shape(CircleShape),
-                    colors =
-                        ClickableSurfaceDefaults.colors(
-                            containerColor = Color.Transparent,
-                            focusedContainerColor = Color.Transparent,
-                        ),
-                    border =
-                        ClickableSurfaceDefaults.border(
-                            focusedBorder =
-                                Border(
-                                    BorderStroke(2.dp, MaterialTheme.colorScheme.onSurface),
-                                    shape = CircleShape,
-                                ),
-                        ),
-                    scale = ClickableSurfaceDefaults.scale(focusedScale = 1.1f),
-                ) {
-                    UserIconCardImage(
-                        id = user.id,
-                        name = user.name,
-                        imageUrl = userImageUrl,
-                        modifier =
-                            Modifier
-                                .size(44.dp)
-                                .clip(CircleShape),
-                    )
-                }
-                Spacer(Modifier.weight(1f))
+    val topBarStyle = preferences.appPreferences.interfacePreferences.topBarStyle
+    CompositionLocalProvider(LocalTopBarStyle provides topBarStyle) {
+        Box(modifier = modifier.fillMaxSize()) {
+            CompositionLocalProvider(LocalTopNavBarState provides if (showBar) barState else null) {
+                DestinationContent(
+                    destination = destination,
+                    preferences = preferences,
+                    onClearBackdrop = onClearBackdrop,
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .padding(
+                                start = TopNavContentHorizontalPadding - TopNavContentStartInset,
+                                end = TopNavContentHorizontalPadding,
+                            )
+                            // Measured once for where the bar ends up, only the placement follows the animation, so the
+                            // page is not measured again every frame while the bar slides
+                            .layout { measurable, constraints ->
+                                val targetTop = if (barVisible) TopNavBarHeight.roundToPx() else 0
+                                val placeable = measurable.measure(constraints.offset(vertical = -targetTop))
+                                layout(placeable.width, placeable.height + targetTop) {
+                                    placeable.place(0, topPadding.value.roundToPx())
+                                }
+                            },
+                )
+            }
+            if (showBar) {
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     modifier =
                         Modifier
-                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = .6f), CircleShape)
-                            .border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = .12f), CircleShape)
-                            .clip(CircleShape)
-                            .horizontalScroll(rememberScrollState())
-                            .padding(4.dp),
+                            .align(Alignment.TopCenter)
+                            .fillMaxWidth()
+                            .graphicsLayer {
+                                alpha = barProgress.value
+                                translationY = -(1f - barProgress.value) * size.height
+                            }.padding(start = TopNavContentHorizontalPadding, end = TopNavContentHorizontalPadding, top = 16.dp, bottom = 8.dp)
+                            .onFocusChanged { barFocused = it.hasFocus }
+                            .focusGroup()
+                            .focusProperties {
+                                onEnter = { focusBar() }
+                            },
                 ) {
-                    TopNavTab(
-                        text = stringResource(R.string.home),
-                        selected = selectedIndex == HOME_INDEX,
-                        onClick = {
-                            viewModel.setIndex(HOME_INDEX)
-                            if (destination is Destination.Home) {
-                                viewModel.navigationManager.reloadHome()
-                                onClearBackdrop.invoke()
-                            } else {
-                                viewModel.navigationManager.goToHome()
-                            }
-                        },
-                        icon = Icons.Default.Home,
+                    val userImageUrl = remember(user) { viewModel.getUserImage(user) }
+                    val avatarShape = LocalTopBarStyle.current.shape(8.dp)
+                    val profileButton: @Composable (Dp) -> Unit = { avatarSize ->
+                    Surface(
+                        onClick = { viewModel.navigateToSetup(SetupDestination.UserList(server)) },
+                        shape = ClickableSurfaceDefaults.shape(avatarShape),
+                        colors =
+                            ClickableSurfaceDefaults.colors(
+                                containerColor = Color.Transparent,
+                                focusedContainerColor = Color.Transparent,
+                            ),
+                        border =
+                            ClickableSurfaceDefaults.border(
+                                focusedBorder =
+                                    Border(
+                                        BorderStroke(2.dp, MaterialTheme.colorScheme.onSurface),
+                                        shape = avatarShape,
+                                    ),
+                            ),
+                        scale = ClickableSurfaceDefaults.scale(focusedScale = 1.1f),
+                    ) {
+                        UserIconCardImage(
+                            id = user.id,
+                            name = user.name,
+                            imageUrl = userImageUrl,
+                            modifier =
+                                Modifier
+                                    .size(avatarSize)
+                                    .clip(avatarShape),
+                        )
+                    }
+                    }
+                    val modernBar = LocalTopBarStyle.current.compact
+                    val barShape = LocalTopBarStyle.current.shape(12.dp)
+                    if (!modernBar) profileButton(44.dp)
+                    Spacer(Modifier.weight(1f))
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
                         modifier =
                             Modifier
-                                .focusRequester(homeFocusRequester)
-                                .ifElse(selectedIndex == HOME_INDEX, Modifier.focusRequester(selectedFocusRequester)),
-                    )
-                    if (serviceState.nowPlayingEnabled) {
+                                .background(
+                                    when (LocalTopBarStyle.current) {
+                                        // Thorphin: the capsule of the Modern design, with square corners for Squared
+                                        TopBarStyle.TOPBAR_MODERN,
+                                        TopBarStyle.TOPBAR_SQUARED,
+                                        -> LiquidColors.Base.copy(alpha = .8f)
+                                        else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = .6f)
+                                    },
+                                    barShape,
+                                ).border(
+                                    1.dp,
+                                    MaterialTheme.colorScheme.onSurface.copy(alpha = .12f),
+                                    barShape,
+                                ).clip(barShape)
+                                .horizontalScroll(rememberScrollState())
+                                .padding(4.dp),
+                    ) {
                         TopNavTab(
-                            text = stringResource(R.string.now_playing),
-                            selected = selectedIndex == NOW_PLAYING_INDEX,
+                            text = stringResource(R.string.home),
+                            selected = selectedIndex == HOME_INDEX,
                             onClick = {
-                                viewModel.setIndex(NOW_PLAYING_INDEX)
-                                viewModel.navigationManager.navigateTo(Destination.NowPlaying)
+                                viewModel.setIndex(HOME_INDEX)
+                                if (destination is Destination.Home) {
+                                    viewModel.navigationManager.reloadHome()
+                                    onClearBackdrop.invoke()
+                                } else {
+                                    viewModel.navigationManager.goToHome()
+                                }
                             },
-                            icon = Icons.Default.PlayArrow,
+                            icon = Icons.Default.Home,
                             modifier =
-                                Modifier.ifElse(
-                                    selectedIndex == NOW_PLAYING_INDEX,
-                                    Modifier.focusRequester(selectedFocusRequester),
-                                ),
+                                Modifier
+                                    .focusRequester(homeFocusRequester)
+                                    .ifElse(selectedIndex == HOME_INDEX, Modifier.focusRequester(selectedFocusRequester)),
                         )
-                    }
-                    val context = LocalContext.current
-                    serviceState.items.forEachIndexed { index, item ->
-                        TopNavTab(
-                            text = item.name(context),
-                            selected = selectedIndex == index,
-                            onClick = { viewModel.onClickDrawerItem(index, item) },
-                            iconContent = { NavDrawerItemIcon(item) },
-                            modifier =
-                                Modifier.ifElse(
-                                    selectedIndex == index,
-                                    Modifier.focusRequester(selectedFocusRequester),
-                                ),
-                        )
-                    }
-                    TopNavTab(
-                        text = stringResource(R.string.search),
-                        selected = selectedIndex == SEARCH_INDEX,
-                        onClick = {
-                            viewModel.setIndex(SEARCH_INDEX)
-                            viewModel.navigationManager.navigateToFromDrawer(Destination.Search())
-                        },
-                        icon = Icons.Default.Search,
-                        modifier =
-                            Modifier.ifElse(
-                                selectedIndex == SEARCH_INDEX,
-                                Modifier.focusRequester(selectedFocusRequester),
-                            ),
-                    )
-                    TopNavTab(
-                        text = stringResource(R.string.settings),
-                        selected = false,
-                        onClick = {
-                            viewModel.navigationManager.navigateTo(
-                                Destination.Settings(PreferenceScreenOption.BASIC),
+                        if (serviceState.nowPlayingEnabled) {
+                            TopNavTab(
+                                text = stringResource(R.string.now_playing),
+                                selected = selectedIndex == NOW_PLAYING_INDEX,
+                                onClick = {
+                                    viewModel.setIndex(NOW_PLAYING_INDEX)
+                                    viewModel.navigationManager.navigateTo(Destination.NowPlaying)
+                                },
+                                icon = Icons.Default.PlayArrow,
+                                modifier =
+                                    Modifier.ifElse(
+                                        selectedIndex == NOW_PLAYING_INDEX,
+                                        Modifier.focusRequester(selectedFocusRequester),
+                                    ),
                             )
-                        },
-                        icon = Icons.Default.Settings,
-                    )
+                        }
+                        val context = LocalContext.current
+                        serviceState.items.forEachIndexed { index, item ->
+                            TopNavTab(
+                                text = item.name(context),
+                                selected = selectedIndex == index,
+                                onClick = { viewModel.onClickDrawerItem(index, item) },
+                                iconContent = { NavDrawerItemIcon(item) },
+                                modifier =
+                                    Modifier.ifElse(
+                                        selectedIndex == index,
+                                        Modifier.focusRequester(selectedFocusRequester),
+                                    ),
+                            )
+                        }
+                        TopNavTab(
+                            text = stringResource(R.string.search),
+                            selected = selectedIndex == SEARCH_INDEX,
+                            onClick = {
+                                viewModel.setIndex(SEARCH_INDEX)
+                                viewModel.navigationManager.navigateToFromDrawer(Destination.Search())
+                            },
+                            icon = Icons.Default.Search,
+                            iconOnly = modernBar,
+                            modifier =
+                                Modifier.ifElse(
+                                    selectedIndex == SEARCH_INDEX,
+                                    Modifier.focusRequester(selectedFocusRequester),
+                                ),
+                        )
+                        TopNavTab(
+                            text = stringResource(R.string.settings),
+                            selected = false,
+                            onClick = {
+                                viewModel.navigationManager.navigateTo(
+                                    Destination.Settings(PreferenceScreenOption.BASIC),
+                                )
+                            },
+                            icon = Icons.Default.Settings,
+                            iconOnly = modernBar,
+                        )
+                        if (modernBar) {
+                            // Thorphin: the Modern design keeps the clock and the profile inside the capsule
+                            Box(Modifier.width(1.dp).height(20.dp).background(Color.White.copy(alpha = .12f)))
+                            if (preferences.appPreferences.interfacePreferences.showClock) {
+                                val timeString by LocalClock.current.timeString
+                                Text(
+                                    text = timeString,
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(horizontal = 6.dp),
+                                )
+                            }
+                            profileButton(32.dp)
+                        }
+                    }
+                    Spacer(Modifier.weight(1f))
+                    // Balances the profile button so the tabs stay centered
+                    if (!modernBar) Spacer(Modifier.width(44.dp))
                 }
-                Spacer(Modifier.weight(1f))
-                // Balances the profile button so the tabs stay centered
-                Spacer(Modifier.width(44.dp))
             }
-        }
-        if (preferences.appPreferences.interfacePreferences.showClock) {
-            TimeDisplay()
+            if (preferences.appPreferences.interfacePreferences.showClock &&
+                !topBarStyle.compact
+            ) {
+                TimeDisplay()
+            }
         }
     }
 }
@@ -330,10 +385,12 @@ private fun TopNavTab(
     onClick: () -> Unit,
     icon: ImageVector,
     modifier: Modifier = Modifier,
+    iconOnly: Boolean = false,
 ) = TopNavTab(
     text = text,
     selected = selected,
     onClick = onClick,
+    iconOnly = iconOnly,
     iconContent = {
         Icon(
             imageVector = icon,
@@ -351,15 +408,28 @@ private fun TopNavTab(
     onClick: () -> Unit,
     iconContent: @Composable () -> Unit,
     modifier: Modifier = Modifier,
+    iconOnly: Boolean = false,
 ) {
     val onSurface = MaterialTheme.colorScheme.onSurface
+    // Modern and Squared: text only tabs and a white active tab
+    val modern = LocalTopBarStyle.current.compact
     Surface(
         onClick = onClick,
-        shape = ClickableSurfaceDefaults.shape(CircleShape),
+        shape = ClickableSurfaceDefaults.shape(LocalTopBarStyle.current.shape(8.dp)),
         colors =
             ClickableSurfaceDefaults.colors(
-                containerColor = if (selected) onSurface.copy(alpha = .18f) else Color.Transparent,
-                contentColor = if (selected) onSurface else onSurface.copy(alpha = .75f),
+                containerColor =
+                    when {
+                        modern && selected -> LiquidColors.TextPrimary
+                        selected -> onSurface.copy(alpha = .18f)
+                        else -> Color.Transparent
+                    },
+                contentColor =
+                    when {
+                        modern && selected -> LiquidColors.Canvas
+                        selected -> onSurface
+                        else -> onSurface.copy(alpha = .75f)
+                    },
                 focusedContainerColor = onSurface,
                 focusedContentColor = MaterialTheme.colorScheme.surface,
             ),
@@ -369,10 +439,10 @@ private fun TopNavTab(
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(horizontal = 18.dp, vertical = 8.dp),
+            modifier = Modifier.padding(horizontal = if (iconOnly) 10.dp else 18.dp, vertical = 8.dp),
         ) {
-            iconContent()
-            Text(
+            if (!modern || iconOnly) iconContent()
+            if (!iconOnly) Text(
                 text = text,
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,

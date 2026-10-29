@@ -56,6 +56,9 @@ import com.github.damontecres.wholphin.data.model.SeerrServer
 import com.github.damontecres.wholphin.data.model.SeerrUser
 import com.github.damontecres.wholphin.preferences.AppPreference
 import com.github.damontecres.wholphin.preferences.AppPreferences
+import com.github.damontecres.wholphin.preferences.HomeScreenStyle
+import com.github.damontecres.wholphin.ui.theme.LiquidColors
+import com.github.damontecres.wholphin.ui.theme.LocalHomeScreenStyle
 import com.github.damontecres.wholphin.preferences.AppSwitchPreference
 import com.github.damontecres.wholphin.preferences.ExoPlayerPreferences
 import com.github.damontecres.wholphin.preferences.ExperimentalPreference
@@ -211,6 +214,8 @@ fun PreferencesContent(
             preferences.autoCheckForUpdates &&
             updateAvailable
 
+    // Thorphin: the Alternative UI draws the categories as amber rows
+    val alternativeUi = LocalHomeScreenStyle.current == HomeScreenStyle.STYLE_ALTERNATIVE
     val selectedGroup = focusedIndex.first.coerceIn(0, prefList.lastIndex)
     // Each category starts at its top
     val state = remember(selectedGroup) { LazyListState() }
@@ -242,7 +247,7 @@ fun PreferencesContent(
                         .fillMaxWidth(.3f)
                         .fillMaxHeight()
                         .background(
-                            MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp),
+                            if (alternativeUi) LiquidColors.Rail else MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp),
                             RoundedCornerShape(12.dp),
                         ).focusGroup()
                         .focusProperties {
@@ -255,6 +260,14 @@ fun PreferencesContent(
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
                 )
+                if (alternativeUi && preferenceScreenOption == PreferenceScreenOption.BASIC) {
+                    AlternativeServerCard(
+                        serverName = viewModel.serverName,
+                        serverUrl = viewModel.serverUrl,
+                        userName = currentUser?.name,
+                        modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 12.dp),
+                    )
+                }
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                     contentPadding = PaddingValues(start = 12.dp, end = 12.dp, bottom = 16.dp),
@@ -284,6 +297,23 @@ fun PreferencesContent(
                         }
                     }
                     itemsIndexed(prefList) { groupIndex, group ->
+                        if (alternativeUi) {
+                            AlternativeCategoryItem(
+                                title = stringResource(group.title),
+                                selected = groupIndex == selectedGroup,
+                                onClick = { focusRequester.tryRequestFocus() },
+                                onFocused = {
+                                    focusInPreferences = false
+                                    if (groupIndex != selectedGroup) focusedIndex = Pair(groupIndex, 0)
+                                },
+                                modifier =
+                                    Modifier.ifElse(
+                                        groupIndex == selectedGroup,
+                                        Modifier.focusRequester(categoryFocusRequester),
+                                    ),
+                            )
+                            return@itemsIndexed
+                        }
                         ListItem(
                             selected = groupIndex == selectedGroup,
                             onClick = { focusRequester.tryRequestFocus() },
@@ -756,6 +786,14 @@ fun PreferencesContent(
                                         },
                                         interactionSource = interactionSource,
                                         modifier = focusModifier,
+                                        // Thorphin: Alternative UI has a side rail, so the top bar style is not used
+                                        enabled =
+                                            !(
+                                                pref == AppPreference.TopBarStylePref &&
+                                                    preferences.interfacePreferences.homeScreenStyle ==
+                                                    HomeScreenStyle.STYLE_ALTERNATIVE
+                                            ),
+                                        disabledSummary = stringResource(R.string.top_bar_style_disabled_alternative),
                                     )
                                 }
                             }

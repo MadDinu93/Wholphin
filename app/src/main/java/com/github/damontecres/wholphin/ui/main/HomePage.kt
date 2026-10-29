@@ -64,6 +64,7 @@ import com.github.damontecres.wholphin.data.model.BaseItem
 import com.github.damontecres.wholphin.data.model.HomeRowConfig
 import com.github.damontecres.wholphin.data.model.HomeRowViewOptions
 import com.github.damontecres.wholphin.data.model.QuickDetailsData
+import com.github.damontecres.wholphin.preferences.HomeScreenStyle
 import com.github.damontecres.wholphin.preferences.UserPreferences
 import com.github.damontecres.wholphin.ui.AspectRatios
 import com.github.damontecres.wholphin.ui.Cards
@@ -107,6 +108,9 @@ import com.github.damontecres.wholphin.ui.playback.isPlayKeyUp
 import com.github.damontecres.wholphin.ui.playback.playable
 import com.github.damontecres.wholphin.ui.playback.scale
 import com.github.damontecres.wholphin.ui.rememberPosition
+import com.github.damontecres.wholphin.ui.theme.LiquidStyleScope
+import com.github.damontecres.wholphin.ui.theme.LocalHomeScreenStyle
+import com.github.damontecres.wholphin.ui.theme.LocalLiquidStyle
 import com.github.damontecres.wholphin.ui.tryRequestFocus
 import com.github.damontecres.wholphin.ui.util.ScrollToTopBringIntoViewSpec
 import com.github.damontecres.wholphin.util.HomeRowLoadingState
@@ -249,34 +253,47 @@ fun HomePage(
             // The hero's trailer only plays while it is shown
             val trailers = interfacePreferences.cardTrailers || (showHero && !interfacePreferences.disableHeroTrailer)
             val cardThemeMusic = interfacePreferences.cardThemeMusic
-            HomePageContent(
-                homeRows = homeRows,
-                position = position,
-                onFocusPosition = onFocusPosition,
-                onClickItem = onClickItem,
-                onLongClickItem = onLongClickItem,
-                onClickPlay = onClickPlay,
-                loadingState = refreshing,
-                showingCached = showingCached,
-                showClock = preferences.appPreferences.interfacePreferences.showClock,
-                onUpdateBackdrop = viewModel::updateBackdrop,
-                showLogo = preferences.appPreferences.interfacePreferences.showLogos,
-                showViewMore = true,
-                onClickViewMore = onClickViewMore,
-                showHero = showHero,
-                onTrailerItemChanged =
-                    { item: BaseItem? ->
-                        viewModel.heroTrailerService.focus(
-                            item,
-                            trailerOwner,
-                            inCard = interfacePreferences.cardTrailers,
-                            trailers = trailers,
-                            themeMusic = cardThemeMusic,
-                        )
-                    }.takeIf { trailers || cardThemeMusic },
-                cardTrailers = cardTrailers.takeIf { interfacePreferences.cardTrailers },
-                modifier = modifier,
-            )
+            // Thorphin: only does something for the Modern and Squared styles
+            LiquidStyleScope {
+                if (LocalHomeScreenStyle.current == HomeScreenStyle.STYLE_ALTERNATIVE) {
+                    // Thorphin: Alternative UI, the rows are the catalogues of a Movies-like page
+                    LaunchedEffect(Unit) { viewModel.clearBackdrop() }
+                    AlternativeHomeContent(
+                        homeRows = homeRows,
+                        onClickItem = onClickItem,
+                        onClickPlay = { item -> onClickPlay(RowColumn(0, 0), item) },
+                        preferences = preferences,
+                        modifier = modifier,
+                    )
+                } else HomePageContent(
+                    homeRows = homeRows,
+                    position = position,
+                    onFocusPosition = onFocusPosition,
+                    onClickItem = onClickItem,
+                    onLongClickItem = onLongClickItem,
+                    onClickPlay = onClickPlay,
+                    loadingState = refreshing,
+                    showingCached = showingCached,
+                    showClock = preferences.appPreferences.interfacePreferences.showClock,
+                    onUpdateBackdrop = viewModel::updateBackdrop,
+                    showLogo = preferences.appPreferences.interfacePreferences.showLogos,
+                    showViewMore = true,
+                    onClickViewMore = onClickViewMore,
+                    showHero = showHero,
+                    onTrailerItemChanged =
+                        { item: BaseItem? ->
+                            viewModel.heroTrailerService.focus(
+                                item,
+                                trailerOwner,
+                                inCard = interfacePreferences.cardTrailers,
+                                trailers = trailers,
+                                themeMusic = cardThemeMusic,
+                            )
+                        }.takeIf { trailers || cardThemeMusic },
+                    cardTrailers = cardTrailers.takeIf { interfacePreferences.cardTrailers },
+                    modifier = modifier,
+                )
+            }
             overviewDialog?.let { info ->
                 ItemDetailsDialog(
                     info = info,
@@ -345,19 +362,36 @@ fun HomePageContent(
     onTrailerItemChanged: ((BaseItem?) -> Unit)? = null,
     cardTrailers: CardTrailers? = null,
     headerComposable: @Composable (focusedItem: BaseItem?) -> Unit = { focusedItem ->
-        HomePageHeader(
-            item = focusedItem,
-            showLogo = showLogo,
-            modifier =
-                if (LocalTopNavBarState.current != null) {
-                    // The top bar already leaves room above, so the hero can be taller instead
-                    Modifier
-                        .padding(start = HeaderUtils.startPadding, top = 8.dp, bottom = 20.dp)
-                        .height(HeroHeight)
-                } else {
-                    HeaderUtils.modifier
-                },
-        )
+        if (LocalLiquidStyle.current != null) {
+            // Thorphin: the Modern and Squared home screen styles
+            LiquidHomeHero(
+                item = focusedItem,
+                showLogo = showLogo,
+                onPlay = { focusedItem?.let { onClickPlay(position, it) } },
+                modifier =
+                    if (LocalTopNavBarState.current != null) {
+                        Modifier
+                            .padding(start = HeaderUtils.startPadding, top = 8.dp, bottom = 20.dp)
+                            .height(LiquidHeroHeight)
+                    } else {
+                        HeaderUtils.modifier
+                    },
+            )
+        } else {
+            HomePageHeader(
+                item = focusedItem,
+                showLogo = showLogo,
+                modifier =
+                    if (LocalTopNavBarState.current != null) {
+                        // The top bar already leaves room above, so the hero can be taller instead
+                        Modifier
+                            .padding(start = HeaderUtils.startPadding, top = 8.dp, bottom = 20.dp)
+                            .height(HeroHeight)
+                    } else {
+                        HeaderUtils.modifier
+                    },
+            )
+        }
     },
     onClickViewMore: (RowColumn, HomeRowLoadingState.Success) -> Unit = { _, _ -> },
 ) {
@@ -466,7 +500,13 @@ fun HomePageContent(
                 }
             val defaultBringIntoViewSpec = LocalBringIntoViewSpec.current
             CompositionLocalProvider(
-                LocalBringIntoViewSpec provides ScrollToTopBringIntoViewSpec(spaceAbovePx),
+                LocalBringIntoViewSpec provides
+                    if (LocalLiquidStyle.current != null) {
+                        // Thorphin: an eased scroll between the rows in the Modern and Squared styles
+                        LiquidBringIntoViewSpec(spaceAbovePx)
+                    } else {
+                        ScrollToTopBringIntoViewSpec(spaceAbovePx)
+                    },
                 LocalCardTrailers provides cardTrailers,
             ) {
                 LazyColumn(
@@ -570,17 +610,33 @@ fun HomePageContent(
                                                             }
                                                         }
                                                     }
-                                                HomePageCardContent(
-                                                    index = index,
-                                                    item = item,
-                                                    onClick = onClick,
-                                                    onLongClick = onLongClick,
-                                                    viewOptions = viewOptions,
-                                                    modifier =
-                                                        cardModifier
-                                                            .onFocusChanged { onFocus(it.isFocused) }
-                                                            .onKeyEvent { onKey(it) },
-                                                )
+                                                val liquidStyle = LocalLiquidStyle.current
+                                                val focusModifier =
+                                                    cardModifier
+                                                        .onFocusChanged { onFocus(it.isFocused) }
+                                                        .onKeyEvent { onKey(it) }
+                                                if (liquidStyle != null) {
+                                                    // Thorphin: the Modern and Squared home screen styles
+                                                    LiquidHomeCard(
+                                                        style = liquidStyle,
+                                                        index = index,
+                                                        item = item,
+                                                        isContinueRow = row.isContinueWatchingNextUp,
+                                                        onClick = onClick,
+                                                        onLongClick = onLongClick,
+                                                        viewOptions = viewOptions,
+                                                        modifier = focusModifier,
+                                                    )
+                                                } else {
+                                                    HomePageCardContent(
+                                                        index = index,
+                                                        item = item,
+                                                        onClick = onClick,
+                                                        onLongClick = onLongClick,
+                                                        viewOptions = viewOptions,
+                                                        modifier = focusModifier,
+                                                    )
+                                                }
                                             },
                                             showViewMore = showViewMore && row.showViewMore,
                                             viewMoreCardContent = { mod ->

@@ -594,6 +594,46 @@ sealed interface AppPreference<Pref, T> {
                 valueToIndex = { if (it != AppThemeColors.UNRECOGNIZED) it.number else 0 },
             )
 
+        val HomeScreenStylePref =
+            AppChoicePreference<AppPreferences, HomeScreenStyle>(
+                title = R.string.home_screen_style,
+                defaultValue = HomeScreenStyle.STYLE_CLASSIC,
+                getter = { it.interfacePreferences.homeScreenStyle },
+                setter = { prefs, value ->
+                    prefs.updateInterfacePreferences { homeScreenStyle = value }
+                },
+                displayValues = R.array.home_screen_style_options,
+                indexToValue = { HomeScreenStyle.forNumber(it) },
+                valueToIndex = { if (it != HomeScreenStyle.UNRECOGNIZED) it.number else 0 },
+            )
+
+        val TopBarStylePref =
+            AppChoicePreference<AppPreferences, TopBarStyle>(
+                title = R.string.top_bar_style,
+                defaultValue = TopBarStyle.TOPBAR_CLASSIC,
+                getter = { it.interfacePreferences.topBarStyle },
+                setter = { prefs, value ->
+                    prefs.updateInterfacePreferences { topBarStyle = value }
+                },
+                displayValues = R.array.top_bar_style_options,
+                indexToValue = { TopBarStyle.forNumber(it) },
+                valueToIndex = { if (it != TopBarStyle.UNRECOGNIZED) it.number else 0 },
+            )
+
+        val DetailsTextScalePref =
+            AppSliderPreference<AppPreferences>(
+                title = R.string.details_text_size,
+                defaultValue = 100,
+                min = 80,
+                max = 180,
+                interval = 10,
+                getter = { (it.interfacePreferences.detailsTextScale.takeIf { scale -> scale > 0 } ?: 100).toLong() },
+                setter = { prefs, value ->
+                    prefs.updateInterfacePreferences { detailsTextScale = value.toInt() }
+                },
+                summarizer = { value -> "${value ?: 100}%" },
+            )
+
         val ShowLogos =
             AppSwitchPreference<AppPreferences>(
                 title = R.string.prefer_logos,
@@ -1372,6 +1412,9 @@ val basicPreferences =
                 preferences =
                     listOf(
                         AppPreference.ThemeColors,
+                        AppPreference.HomeScreenStylePref,
+                        AppPreference.TopBarStylePref,
+                        AppPreference.DetailsTextScalePref,
                         AppPreference.NavigationStylePref,
                         AppPreference.UserPinnedNavDrawerItems,
                         AppPreference.ShowClock,

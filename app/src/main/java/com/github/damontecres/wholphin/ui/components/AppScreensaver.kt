@@ -143,7 +143,7 @@ fun AppScreensaverContent(
 
             is ScreensaverItem.Error -> {
                 ScreensaverPlaceholder(
-                    text = "Error connecting to Jellyfin server",
+                    text = stringResource(R.string.screensaver_error_connecting),
                     duration = duration,
                     modifier = Modifier.fillMaxSize(),
                 )

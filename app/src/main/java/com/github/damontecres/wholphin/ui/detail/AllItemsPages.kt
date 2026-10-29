@@ -1,7 +1,10 @@
 package com.github.damontecres.wholphin.ui.detail
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -9,7 +12,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.github.damontecres.wholphin.R
 import com.github.damontecres.wholphin.data.filter.DefaultTvFilterOptions
@@ -25,6 +30,7 @@ import com.github.damontecres.wholphin.ui.components.ViewOptionsPoster
 import com.github.damontecres.wholphin.ui.data.MovieSortOptions
 import com.github.damontecres.wholphin.ui.data.SeriesSortOptions
 import com.github.damontecres.wholphin.ui.data.VideoSortOptions
+import com.github.damontecres.wholphin.ui.theme.LocalLiquidStyle
 import org.jellyfin.sdk.model.api.BaseItemKind
 
 /*
@@ -57,66 +63,77 @@ fun AllMoviesPage(
         }
     var showHeader by rememberSaveable { mutableStateOf(true) }
 
-    TabbedPage(
-        itemId = ALL_MOVIES_KEY,
-        tabs = tabs,
-        modifier = modifier,
-        showTabs = showHeader,
-    ) { tabIndex, tabDetails ->
-        when (tabIndex) {
-            0 -> {
-                CollectionFolderView(
-                    preferences = preferences,
-                    itemId = ALL_MOVIES_KEY,
-                    initialFilter =
-                        CollectionFolderFilter(
-                            filter = GetItemsFilter(includeItemTypes = listOf(BaseItemKind.MOVIE)),
-                        ),
-                    recursive = true,
-                    actions = actions,
-                    sortOptions = MovieSortOptions,
-                    // Playing all needs a library to play from
-                    playEnabled = false,
-                    defaultViewOptions = ViewOptionsPoster,
-                    showTitle = false,
-                    positionCallback = { columns, position ->
-                        showHeader = position < columns
-                    },
-                    focusRequesterOnEmpty = tabDetails.tabFocusRequester,
-                    modifier =
-                        Modifier
-                            .fillMaxSize()
-                            .focusRequester(tabDetails.contentFocusRequester),
-                )
-            }
+    Column(modifier = modifier) {
+        // Thorphin: the Modern and Squared styles open the page with a large title and the number of movies
+        if (LocalLiquidStyle.current != null && showHeader) {
+            val count = viewModel.sections.collectAsState().value.movies.count
+            LibraryTitle(
+                title = stringResource(R.string.movies_title),
+                subtitle = count?.let { pluralStringResource(R.plurals.library_title_count, it, it) },
+                modifier = Modifier.padding(start = 16.dp, top = 24.dp, bottom = 8.dp),
+            )
+        }
+        TabbedPage(
+            itemId = ALL_MOVIES_KEY,
+            tabs = tabs,
+            modifier = Modifier.weight(1f),
+            showTabs = showHeader,
+        ) { tabIndex, tabDetails ->
+            when (tabIndex) {
+                0 -> {
+                    CollectionFolderView(
+                        preferences = preferences,
+                        itemId = ALL_MOVIES_KEY,
+                        initialFilter =
+                            CollectionFolderFilter(
+                                filter = GetItemsFilter(includeItemTypes = listOf(BaseItemKind.MOVIE)),
+                            ),
+                        recursive = true,
+                        actions = actions,
+                        sortOptions = MovieSortOptions,
+                        // Playing all needs a library to play from
+                        playEnabled = false,
+                        defaultViewOptions = ViewOptionsPoster,
+                        showTitle = false,
+                        positionCallback = { columns, position ->
+                            showHeader = position < columns
+                        },
+                        focusRequesterOnEmpty = tabDetails.tabFocusRequester,
+                        modifier =
+                            Modifier
+                                .fillMaxSize()
+                                .focusRequester(tabDetails.contentFocusRequester),
+                    )
+                }
 
-            1 -> {
-                CollectionFolderView(
-                    preferences = preferences,
-                    itemId = ALL_COLLECTIONS_KEY,
-                    initialFilter =
-                        CollectionFolderFilter(
-                            filter = GetItemsFilter(includeItemTypes = listOf(BaseItemKind.BOX_SET)),
-                        ),
-                    recursive = true,
-                    actions = actions,
-                    sortOptions = VideoSortOptions,
-                    playEnabled = false,
-                    defaultViewOptions = ViewOptionsPoster,
-                    showTitle = false,
-                    positionCallback = { columns, position ->
-                        showHeader = position < columns
-                    },
-                    focusRequesterOnEmpty = tabDetails.tabFocusRequester,
-                    modifier =
-                        Modifier
-                            .fillMaxSize()
-                            .focusRequester(tabDetails.contentFocusRequester),
-                )
-            }
+                1 -> {
+                    CollectionFolderView(
+                        preferences = preferences,
+                        itemId = ALL_COLLECTIONS_KEY,
+                        initialFilter =
+                            CollectionFolderFilter(
+                                filter = GetItemsFilter(includeItemTypes = listOf(BaseItemKind.BOX_SET)),
+                            ),
+                        recursive = true,
+                        actions = actions,
+                        sortOptions = VideoSortOptions,
+                        playEnabled = false,
+                        defaultViewOptions = ViewOptionsPoster,
+                        showTitle = false,
+                        positionCallback = { columns, position ->
+                            showHeader = position < columns
+                        },
+                        focusRequesterOnEmpty = tabDetails.tabFocusRequester,
+                        modifier =
+                            Modifier
+                                .fillMaxSize()
+                                .focusRequester(tabDetails.contentFocusRequester),
+                    )
+                }
 
-            else -> {
-                ErrorMessage("Invalid tab index $tabIndex", null)
+                else -> {
+                    ErrorMessage("Invalid tab index $tabIndex", null)
+                }
             }
         }
     }

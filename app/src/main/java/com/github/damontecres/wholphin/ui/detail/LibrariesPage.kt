@@ -58,7 +58,7 @@ import com.github.damontecres.wholphin.services.NavigationManager
 import com.github.damontecres.wholphin.services.destination
 import com.github.damontecres.wholphin.ui.AspectRatios
 import com.github.damontecres.wholphin.ui.cards.GenreCard
-import com.github.damontecres.wholphin.ui.cards.PosterCardShape
+import com.github.damontecres.wholphin.ui.cards.LocalPosterCardShape
 import com.github.damontecres.wholphin.ui.cards.glassHighlight
 import com.github.damontecres.wholphin.ui.cards.posterCardBorder
 import com.github.damontecres.wholphin.ui.components.LoadingPage
@@ -199,9 +199,12 @@ fun LibrariesPage(
         verticalArrangement = Arrangement.spacedBy(spacing),
         modifier = modifier.padding(top = 24.dp, start = 16.dp, end = 16.dp),
     ) {
-        Text(
-            text = stringResource(R.string.library),
-            style = MaterialTheme.typography.headlineMedium,
+        val totalTitles =
+            sections.movies.count
+                ?.let { movies -> sections.series.count?.let { movies + it } }
+        LibraryTitle(
+            title = stringResource(R.string.library),
+            subtitle = totalTitles?.let { pluralStringResource(R.plurals.library_title_count, it, it) },
         )
         Row(
             horizontalArrangement = Arrangement.spacedBy(spacing),
@@ -281,7 +284,7 @@ private fun LibrarySectionCard(
     Card(
         onClick = onClick,
         interactionSource = interactionSource,
-        shape = CardDefaults.shape(PosterCardShape),
+        shape = CardDefaults.shape(LocalPosterCardShape.current),
         border = posterCardBorder(),
         scale = CardDefaults.scale(focusedScale = 1.05f),
         colors = CardDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
@@ -292,7 +295,7 @@ private fun LibrarySectionCard(
                 Modifier
                     .fillMaxWidth()
                     .aspectRatio(AspectRatios.WIDE)
-                    .clip(PosterCardShape)
+                    .clip(LocalPosterCardShape.current)
                     .glassHighlight(interactionSource),
         ) {
             if (imageUrl != null) {
@@ -384,9 +387,9 @@ fun ServerCatalogsPage(
         verticalArrangement = Arrangement.spacedBy(spacing),
         modifier = modifier.padding(top = 24.dp),
     ) {
-        Text(
-            text = stringResource(R.string.server_catalogs),
-            style = MaterialTheme.typography.headlineMedium,
+        LibraryTitle(
+            title = stringResource(R.string.server_catalogs),
+            subtitle = pluralStringResource(R.plurals.library_catalog_count, libraries.size, libraries.size),
             modifier = Modifier.padding(start = 16.dp),
         )
         LazyVerticalGrid(

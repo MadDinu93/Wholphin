@@ -1,5 +1,8 @@
 package com.github.damontecres.wholphin.ui.nav
 
+import com.github.damontecres.wholphin.ui.theme.isLiquid
+import com.github.damontecres.wholphin.preferences.BackdropStyle
+import com.github.damontecres.wholphin.preferences.HomeScreenStyle
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -27,6 +30,9 @@ import com.github.damontecres.wholphin.services.NavigationManager
 import com.github.damontecres.wholphin.services.ThemeSongPlayer
 import com.github.damontecres.wholphin.ui.cards.LocalCardProgressStyle
 import com.github.damontecres.wholphin.ui.cards.LocalShowCardInfo
+import com.github.damontecres.wholphin.ui.preferences.PreferenceScreenOption
+import com.github.damontecres.wholphin.ui.theme.LiquidColors
+import com.github.damontecres.wholphin.ui.theme.LocalHomeScreenStyle
 import com.github.damontecres.wholphin.ui.components.ErrorMessage
 import com.github.damontecres.wholphin.ui.launchIO
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -65,10 +71,25 @@ fun ApplicationContent(
     viewModel: ApplicationContentViewModel = hiltViewModel(),
 ) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
+    // Thorphin: the Alternative UI has its own amber palette, written before any page reads it
+    val homeScreenStyle = preferences.appPreferences.interfacePreferences.homeScreenStyle
+    (homeScreenStyle == HomeScreenStyle.STYLE_ALTERNATIVE).let {
+        if (LiquidColors.alternative != it) LiquidColors.alternative = it
+    }
     Box(
         modifier = modifier,
     ) {
-        val backdropStyle = preferences.appPreferences.interfacePreferences.backdropStyle
+        val chosenBackdropStyle = preferences.appPreferences.interfacePreferences.backdropStyle
+        // Thorphin: the Modern and Squared designs have a neutral black background, the colors taken from the
+        // picture would tint it purple and blue
+        val backdropStyle =
+            if (preferences.appPreferences.interfacePreferences.homeScreenStyle.isLiquid &&
+                (chosenBackdropStyle == BackdropStyle.BACKDROP_DYNAMIC_COLOR || chosenBackdropStyle == BackdropStyle.UNRECOGNIZED)
+            ) {
+                BackdropStyle.BACKDROP_IMAGE_ONLY
+            } else {
+                chosenBackdropStyle
+            }
         val heroTrailerPlaying by viewModel.heroTrailerService.playing.collectAsStateWithLifecycle()
         // Otherwise the trailer plays inside a card, see CardTrailers
         val heroTrailerInCard by viewModel.heroTrailerService.inCard.collectAsStateWithLifecycle()
@@ -90,6 +111,7 @@ fun ApplicationContent(
             LocalHeroTrailerArea provides heroTrailerArea,
             LocalCardProgressStyle provides preferences.appPreferences.interfacePreferences.cardProgressStyle,
             LocalShowCardInfo provides !preferences.appPreferences.interfacePreferences.hideCardInfo,
+            LocalHomeScreenStyle provides preferences.appPreferences.interfacePreferences.homeScreenStyle,
         ) {
             NavDisplay(
                 backStack = navigationManager.backStack,
@@ -103,7 +125,15 @@ fun ApplicationContent(
                     key as Destination
                     val contentKey = "${key}_${server?.id}_${user?.id}"
                     NavEntry(key, contentKey = contentKey) {
-                        if (key.fullScreen) {
+                        // Thorphin: the Alternative UI shows its rail next to the main settings too
+                        val fullScreen =
+                            key.fullScreen &&
+                                !(
+                                    homeScreenStyle == HomeScreenStyle.STYLE_ALTERNATIVE &&
+                                        key is Destination.Settings &&
+                                        key.screen == PreferenceScreenOption.BASIC
+                                )
+                        if (fullScreen) {
                             DestinationContent(
                                 destination = key,
                                 preferences = preferences,

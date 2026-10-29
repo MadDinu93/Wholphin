@@ -13,11 +13,13 @@ fun ClickPreference(
     modifier: Modifier = Modifier,
     summary: String? = null,
     onLongClick: (() -> Unit)? = null,
+    enabled: Boolean = true,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
 ) {
     ListItem(
         selected = false,
         onClick = onClick,
+        enabled = enabled,
         onLongClick = onLongClick,
         headlineContent = {
             PreferenceTitle(title)

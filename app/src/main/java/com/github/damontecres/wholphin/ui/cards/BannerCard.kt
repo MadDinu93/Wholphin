@@ -100,7 +100,7 @@ fun BannerCard(
         onClick = { currentOnClick() },
         onLongClick = { currentOnLongClick() },
         interactionSource = cardInteractionSource,
-        shape = CardDefaults.shape(PosterCardShape),
+        shape = CardDefaults.shape(LocalPosterCardShape.current),
         border = posterCardBorder(),
         scale = posterCardScale(),
         colors =

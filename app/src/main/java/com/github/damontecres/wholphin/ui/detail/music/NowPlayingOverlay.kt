@@ -154,7 +154,7 @@ fun NowPlayingOverlay(
                 state.musicServiceState.queueSize,
             )
         if (queue.isEmpty()) {
-            Text("No items")
+            Text(stringResource(R.string.no_items))
         } else {
             Text(
                 text = stringResource(R.string.queue),

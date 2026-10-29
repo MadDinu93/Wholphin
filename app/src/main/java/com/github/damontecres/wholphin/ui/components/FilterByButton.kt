@@ -84,6 +84,8 @@ fun FilterByButton(
     getPossibleValues: suspend (ItemFilterBy<*>) -> List<FilterValueOption>,
     modifier: Modifier = Modifier,
     onShow: ((Boolean) -> Unit)? = null,
+    // Thorphin: show the label also while not focused
+    alwaysExpanded: Boolean = false,
 ) {
     var dropDown by remember { mutableStateOf(false) }
     var nestedDropDown by remember { mutableStateOf<ItemFilterBy<*>?>(null) }
@@ -97,6 +99,7 @@ fun FilterByButton(
                 dropDown = true
             },
             modifier = Modifier,
+            alwaysExpanded = alwaysExpanded,
         )
 
         DropdownMenu(
@@ -393,8 +396,9 @@ fun ExpandableFilterButton(
     modifier: Modifier = Modifier,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     iconColor: Color = Color.Unspecified,
+    alwaysExpanded: Boolean = false,
 ) {
-    val isFocused = interactionSource.collectIsFocusedAsState().value
+    val isFocused = interactionSource.collectIsFocusedAsState().value || alwaysExpanded
     Button(
         onClick = onClick,
         modifier =

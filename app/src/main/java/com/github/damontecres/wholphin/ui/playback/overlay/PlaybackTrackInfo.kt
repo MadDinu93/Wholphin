@@ -82,7 +82,7 @@ fun PlaybackTrackInfo(
                         modifier = Modifier.weight(selectedWeight),
                     ) {
                         Text(
-                            text = "Selected",
+                            text = stringResource(R.string.selected),
                             style = textStyle,
                         )
                     }

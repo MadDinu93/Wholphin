@@ -60,6 +60,9 @@ class PreferencesViewModel
                 SharingStarted.Eagerly,
                 null,
             )
+        val serverName: String? get() = serverRepository.currentServer?.let { it.name ?: it.url }
+        val serverUrl: String? get() = serverRepository.currentServer?.url
+
         val currentUserDto =
             serverRepository.currentUserDtoFlow.stateIn(
                 viewModelScope,

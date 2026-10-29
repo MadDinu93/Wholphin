@@ -334,6 +334,32 @@
     <string name="advanced_settings">Advanced Settings</string>
     <string name="advanced_ui">Advanced UI</string>
     <string name="app_theme">Application Theme</string>
+    <string name="top_bar_style">Topbar style</string>
+    <string name="home_screen_style">Home screen style</string>
+    <string name="home_screen_style_classic">Classic</string>
+    <string name="home_screen_style_modern">Modern</string>
+    <string name="home_screen_style_squared">Squared</string>
+    <string name="home_screen_style_alternative">Alternative UI</string>
+    <string name="top_bar_style_disabled_alternative">Not used by Alternative UI, which has a side rail instead of the top bar</string>
+    <string name="browse_all_movies">All movies</string>
+    <string name="browse_all_series">All TV shows</string>
+    <string name="browse_4k">4K Ultra HD</string>
+    <string name="browse_top_rated">Top rated</string>
+    <string name="browse_unwatched">Unwatched</string>
+    <string name="browse_recently_aired">Recently aired</string>
+    <string name="browse_details">Details</string>
+    <string name="browse_empty">Nothing here yet</string>
+    <string name="details_text_size">Details text size</string>
+    <string name="screensaver_error_connecting">Error connecting to Jellyfin server</string>
+    <string name="no_items">No items</string>
+    <string name="removed_from_next_up">Removed from next up</string>
+    <string name="discard">Discard</string>
+    <string name="selected">Selected</string>
+    <string name="nav_catalog">Catalog</string>
+    <string name="nav_movies">Movies</string>
+    <string name="nav_series">Series</string>
+    <string name="nav_sets">Sets</string>
+    <string name="nav_lists">Lists</string>
     <string name="auto_check_for_updates">Automatically check for updates</string>
     <string name="auto_play_next_delay">Delay before playing next up</string>
     <string name="auto_play_next">Auto play next up</string>
@@ -783,6 +809,19 @@
         <item>@string/card_progress_top_compact</item>
     </string-array>
 
+    <string-array name="top_bar_style_options">
+        <item>@string/home_screen_style_classic</item>
+        <item>@string/home_screen_style_modern</item>
+        <item>@string/home_screen_style_squared</item>
+    </string-array>
+
+    <string-array name="home_screen_style_options">
+        <item>@string/home_screen_style_classic</item>
+        <item>@string/home_screen_style_modern</item>
+        <item>@string/home_screen_style_squared</item>
+        <item>@string/home_screen_style_alternative</item>
+    </string-array>
+
     <string-array name="navigation_style_options">
         <item>@string/navigation_style_top_bar</item>
         <item>@string/navigation_style_side_drawer</item>
@@ -1030,4 +1069,6 @@
     <string name="home_settings_source_server_profile">Server user profile</string>
     <string name="home_settings_source_plugin">Server default</string>
     <string name="home_settings_source_web">User web client</string>
+    <!-- "English=Translation" pairs for the names the server gives to libraries and rows, see ServerNames.kt -->
+    <string-array name="server_name_translations" />
 </resources>

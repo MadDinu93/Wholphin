@@ -1,5 +1,7 @@
 package com.github.damontecres.wholphin.ui.components
 
+import com.github.damontecres.wholphin.ui.theme.LocalLiquidStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
@@ -268,19 +270,23 @@ val CollectionType.baseItemKinds: List<BaseItemKind>
         }
 
 @Composable
-@NonRestartableComposable
 fun GridTitle(
     title: String,
     modifier: Modifier = Modifier,
-) = Text(
-    text = title,
-    style = MaterialTheme.typography.displaySmall,
-    color = MaterialTheme.colorScheme.onBackground,
-    textAlign = TextAlign.Center,
-    maxLines = 1,
-    overflow = TextOverflow.Ellipsis,
-    modifier = modifier.fillMaxWidth(),
-)
+) {
+    // Thorphin: the Modern and Squared styles put the title at the start, large and bold
+    val liquid = LocalLiquidStyle.current != null
+    Text(
+        text = title,
+        style = MaterialTheme.typography.displaySmall,
+        fontWeight = if (liquid) FontWeight.ExtraBold else null,
+        color = MaterialTheme.colorScheme.onBackground,
+        textAlign = if (liquid) TextAlign.Start else TextAlign.Center,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+        modifier = modifier.fillMaxWidth().then(if (liquid) Modifier.padding(start = 16.dp) else Modifier),
+    )
+}
 
 data class GridClickActions(
     val onClickItem: (Int, BaseItem) -> Unit,

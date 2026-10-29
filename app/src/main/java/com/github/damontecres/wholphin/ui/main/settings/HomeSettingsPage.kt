@@ -40,6 +40,7 @@ import com.github.damontecres.wholphin.ui.data.RowColumn
 import com.github.damontecres.wholphin.ui.detail.possibleFavoriteTypes
 import com.github.damontecres.wholphin.ui.launchIO
 import com.github.damontecres.wholphin.ui.main.HomePageContent
+import com.github.damontecres.wholphin.ui.theme.LiquidStyleScope
 import com.github.damontecres.wholphin.ui.main.settings.HomeSettingsDestination.ChooseRowType
 import com.github.damontecres.wholphin.ui.main.settings.HomeSettingsDestination.RowSettings
 import com.github.damontecres.wholphin.ui.rememberPosition
@@ -347,26 +348,29 @@ fun HomeSettingsPage(
                 },
             )
         }
-        HomePageContent(
-            loadingState = state.loading,
-            homeRows = state.rowData,
-            position = position,
-            onFocusPosition = { position = it },
-            onClickItem = { _, _ -> },
-            onLongClickItem = { _, _ -> },
-            onClickPlay = { _, _ -> },
-            showClock = false,
-            onUpdateBackdrop = viewModel::updateBackdrop,
-            listState = listState,
-            takeFocus = false,
-            showEmptyRows = true,
-            showLogo = preferences.appPreferences.interfacePreferences.showLogos,
-            showViewMore = false,
-            modifier =
-                Modifier
-                    .fillMaxHeight()
-                    .weight(1f),
-        )
+        // Thorphin: previews the rows in the chosen Modern or Squared style
+        LiquidStyleScope {
+            HomePageContent(
+                loadingState = state.loading,
+                homeRows = state.rowData,
+                position = position,
+                onFocusPosition = { position = it },
+                onClickItem = { _, _ -> },
+                onLongClickItem = { _, _ -> },
+                onClickPlay = { _, _ -> },
+                showClock = false,
+                onUpdateBackdrop = viewModel::updateBackdrop,
+                listState = listState,
+                takeFocus = false,
+                showEmptyRows = true,
+                showLogo = preferences.appPreferences.interfacePreferences.showLogos,
+                showViewMore = false,
+                modifier =
+                    Modifier
+                        .fillMaxHeight()
+                        .weight(1f),
+            )
+        }
     }
     showConfirmDialog?.let { (body, onConfirm) ->
         ConfirmDialog(

@@ -2,6 +2,8 @@ package com.github.damontecres.wholphin.ui.cards
 
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Border
 import androidx.tv.material3.CardBorder
@@ -15,6 +17,9 @@ val PosterCardCornerRadius = 12.dp
 
 /** Rounded corners for image cards, rounder than the default for an Apple TV look */
 val PosterCardShape = RoundedCornerShape(PosterCardCornerRadius)
+
+/** Thorphin: the Modern and Squared home screen styles give image cards their own corners */
+val LocalPosterCardShape = compositionLocalOf<Shape> { PosterCardShape }
 
 /** No outline on focus, [glassHighlight] draws the edge instead */
 @Composable

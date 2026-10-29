@@ -38,7 +38,7 @@ fun SaveHomeSettingsDialog(
                             onClick = onSaveServer,
                         ),
                         DialogItem(
-                            text = "Discard",
+                            text = resources.getString(R.string.discard),
                             icon = Icons.Default.Delete,
                             iconColor = Color.Red,
                             onClick = onDiscard,

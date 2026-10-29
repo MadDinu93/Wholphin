@@ -1,5 +1,6 @@
 package com.github.damontecres.wholphin.ui.cards
 
+import com.github.damontecres.wholphin.ui.theme.LocalLiquidStyle
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
@@ -78,7 +79,7 @@ fun GridCard(
             onClick = onClick,
             onLongClick = onLongClick,
             interactionSource = interactionSource,
-            shape = CardDefaults.shape(PosterCardShape),
+            shape = CardDefaults.shape(LocalPosterCardShape.current),
             border = posterCardBorder(),
             scale = posterCardScale(),
             colors =
@@ -132,6 +133,8 @@ fun GridCard(
                     textAlign = TextAlign.Start,
                     style = MaterialTheme.typography.bodySmall,
                     fontWeight = FontWeight.Normal,
+                    // Thorphin: secondary text in the Modern and Squared styles
+                    color = if (LocalLiquidStyle.current != null) MaterialTheme.colorScheme.onSurfaceVariant else Color.Unspecified,
                     modifier =
                         Modifier
                             .fillMaxWidth()

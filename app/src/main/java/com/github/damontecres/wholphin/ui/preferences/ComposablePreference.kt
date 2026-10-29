@@ -50,6 +50,9 @@ fun <T> ComposablePreference(
     modifier: Modifier = Modifier,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     onClickPreference: (AppClickablePreference<*>) -> Unit = {},
+    // Thorphin: only used by choice preferences, a disabled one shows [disabledSummary] and cannot be opened
+    enabled: Boolean = true,
+    disabledSummary: String? = null,
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -179,7 +182,8 @@ fun <T> ComposablePreference(
             val selectedIndex = remember(value) { preference.valueToIndex.invoke(value as T) }
             ChoicePreference(
                 title = title,
-                summary = summary,
+                summary = if (enabled) summary else disabledSummary ?: summary,
+                enabled = enabled,
                 possibleValues = values,
                 selectedIndex = selectedIndex,
                 onValueChange = { index ->

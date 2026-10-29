@@ -162,7 +162,7 @@ fun RemovedNextUpContent(
         modifier = modifier,
     ) {
         Text(
-            text = "Removed from next up",
+            text = stringResource(R.string.removed_from_next_up),
             style = MaterialTheme.typography.displaySmall,
         )
         when (val s = state.loading) {

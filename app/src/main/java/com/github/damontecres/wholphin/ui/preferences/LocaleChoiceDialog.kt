@@ -4,6 +4,14 @@ import android.content.Context
 import android.content.res.XmlResourceParser
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
+import androidx.tv.material3.surfaceColorAtElevation
+import androidx.tv.material3.MaterialTheme
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -181,12 +189,22 @@ fun LocaleChoiceDialog(
                             )
                         }
                     }
+                // Thorphin: the same container as DialogPopup, the list had no background
+                val containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)
                 DialogPopupContent(
                     title = stringResource(R.string.user_interface_language),
                     dialogItems = dialogItems,
                     waiting = false,
                     onDismissRequest = onDismissRequest,
-                    modifier = Modifier.focusRequester(focusRequester),
+                    modifier =
+                        Modifier
+                            .focusRequester(focusRequester)
+                            .shadow(elevation = 1.dp, shape = RoundedCornerShape(28.dp))
+                            .graphicsLayer {
+                                this.clip = true
+                                this.shape = RoundedCornerShape(28.dp)
+                            }.drawBehind { drawRect(color = containerColor) }
+                            .padding(24.dp),
                 )
             }
         }

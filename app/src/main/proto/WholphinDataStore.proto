@@ -135,6 +135,21 @@ enum AppThemeColors {
   PURPLE = 8;
 }
 
+// How the Home page and the Library pages look, independent of the colors of AppThemeColors
+enum HomeScreenStyle{
+  STYLE_CLASSIC = 0;
+  STYLE_MODERN = 1;
+  STYLE_SQUARED = 2;
+  STYLE_ALTERNATIVE = 3;
+}
+
+// The look of the top navigation bar, independent of the home screen style
+enum TopBarStyle{
+  TOPBAR_CLASSIC = 0;
+  TOPBAR_MODERN = 1;
+  TOPBAR_SQUARED = 2;
+}
+
 enum EdgeStyle{
   EDGE_NONE = 0;
   EDGE_SOLID = 1;
@@ -242,6 +257,10 @@ message InterfacePreferences {
   bool card_theme_music = 23;
   // Address of an add-on giving links to theme music the server has none of, see ThemeMusicAddonService
   string theme_music_addon_url = 24;
+  HomeScreenStyle home_screen_style = 25;
+  TopBarStyle top_bar_style = 26;
+  // Size of the text of the details of the Alternative UI in percent, 0 is the default of 100
+  int32 details_text_scale = 27;
 }
 
 message AdvancedPreferences {

@@ -71,6 +71,7 @@ import com.github.damontecres.wholphin.R
 import com.github.damontecres.wholphin.data.model.JellyfinServer
 import com.github.damontecres.wholphin.data.model.JellyfinUser
 import com.github.damontecres.wholphin.preferences.AppThemeColors
+import com.github.damontecres.wholphin.preferences.HomeScreenStyle
 import com.github.damontecres.wholphin.preferences.NavigationStyle
 import com.github.damontecres.wholphin.preferences.UserPreferences
 import com.github.damontecres.wholphin.services.BackdropService
@@ -357,6 +358,19 @@ fun NavDrawer(
             key = "${server.id}_${user.id}", // Keyed to the server & user to ensure its reset when switching either
         ),
 ) {
+    // Thorphin: the Alternative UI always uses its own side rail, whatever the navigation style says
+    if (preferences.appPreferences.interfacePreferences.homeScreenStyle == HomeScreenStyle.STYLE_ALTERNATIVE) {
+        AlternativeNavigation(
+            destination = destination,
+            preferences = preferences,
+            user = user,
+            server = server,
+            onClearBackdrop = onClearBackdrop,
+            viewModel = viewModel,
+            modifier = modifier,
+        )
+        return
+    }
     if (preferences.appPreferences.interfacePreferences.navigationStyle != NavigationStyle.NAVIGATION_SIDE_DRAWER) {
         TopNavigation(
             destination = destination,
