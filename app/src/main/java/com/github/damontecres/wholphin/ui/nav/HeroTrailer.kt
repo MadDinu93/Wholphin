@@ -93,7 +93,8 @@ fun HeroTrailerBackdrop(
     val inCard by heroTrailerService.inCard.collectAsStateWithLifecycle()
     // Otherwise the focused card plays it, see CardTrailers
     val source = current.takeUnless { inCard }
-    LifecycleEventEffect(Lifecycle.Event.ON_STOP) {
+    // Thorphin: on pause, not stop, as a TV input switch may not stop the activity and the sound would play on
+    LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) {
         heroTrailerService.focus(null)
     }
     val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
@@ -379,7 +380,8 @@ fun TrailerPlayer(
         delay(15.seconds)
         if (!playing) onEnded()
     }
-    LifecycleEventEffect(Lifecycle.Event.ON_STOP) {
+    // On pause, not stop, as a TV input switch may not stop the activity and the sound would play on
+    LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) {
         // Not in the background
         heroTrailerService.focus(null)
     }

@@ -41,6 +41,8 @@ URL helpers (same file): `unwrapTrailerUrl()` (Remux wraps every add-on trailer 
 - `ZoomedTrailerPlayer` (used by the three Alternative layouts' details window) builds on that: it scales and centers
   the video so the picture covers the window, which zooms past letterbox bars and only fits a video without bars.
 - `ApplicationContent` hides the backdrop image while a hero (not in-card) trailer plays.
+- `HeroTrailerBackdrop` and `TrailerPlayer` stop the trailer on `ON_PAUSE` (like `PlaybackLifecycleObserver` does for
+  the player and theme music), not `ON_STOP`: a TV input switch may only pause the activity, and the sound played on.
 
 ## Theme music
 
