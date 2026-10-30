@@ -1,0 +1,471 @@
+<!DOCTYPE html><html class="dark" lang="en" style=""><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><meta content="web_standard" name="shell-type"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"inverse-surface":"#e3e2e6","secondary-container":"#474952","on-tertiary-fixed":"#2d1600","on-tertiary-fixed-variant":"#6a3b00","primary-fixed-dim":"#c2c1ff","on-secondary-fixed":"#191b23","on-background":"#e3e2e6","on-error-container":"#ffdad6","on-secondary":"#2e3039","secondary-fixed":"#e1e1ed","on-primary":"#1a00a7","on-tertiary-container":"#412200","on-secondary-container":"#b7b8c2","surface-container":"#1f1f23","error":"#ffb4ab","surface-container-low":"#1b1b1f","surface-variant":"#343538","on-primary-fixed-variant":"#342dbc","primary":"#c2c1ff","primary-fixed":"#e2dfff","surface-dim":"#121316","surface-bright":"#38393d","surface-container-lowest":"#0d0e11","secondary":"#c5c6d1","surface":"#121316","inverse-on-surface":"#2f3034","tertiary-fixed":"#ffdcbf","secondary-fixed-dim":"#c5c6d1","surface-container-high":"#292a2d","outline":"#918fa0","on-secondary-fixed-variant":"#45464f","tertiary-container":"#d17c12","surface-tint":"#c2c1ff","surface-container-highest":"#343538","on-surface-variant":"#c7c4d7","on-primary-fixed":"#0c006a","on-surface":"#e3e2e6","tertiary-fixed-dim":"#ffb873","inverse-primary":"#4e4ad4","on-tertiary":"#4a2800","tertiary":"#ffb873","on-primary-container":"#150093","on-error":"#690005","primary-container":"#8482ff","background":"#121316","error-container":"#93000a","outline-variant":"#464554"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"gutter":"1.75rem","space-md":"1.25rem","space-xl":"3rem","margin":"3.5rem","space-xs":"0.5rem","space-sm":"0.75rem","space-lg":"2rem"},"fontFamily":{"headline-md":["Inter"],"badge-spec":["Inter"],"body-lg":["Inter"],"headline-lg":["Inter"],"label-lg":["Inter"],"display-hero":["Inter"],"label-md":["Inter"],"headline-xl":["Inter"],"body-md":["Inter"]},"fontSize":{"headline-md":["22px",{"lineHeight":"30px","letterSpacing":"0em","fontWeight":"600"}],"badge-spec":["12px",{"lineHeight":"14px","letterSpacing":"0.08em","fontWeight":"700"}],"body-lg":["20px",{"lineHeight":"30px","letterSpacing":"0em","fontWeight":"400"}],"headline-lg":["28px",{"lineHeight":"36px","letterSpacing":"-0.01em","fontWeight":"600"}],"label-lg":["18px",{"lineHeight":"24px","letterSpacing":"0.02em","fontWeight":"600"}],"display-hero":["56px",{"lineHeight":"64px","letterSpacing":"-0.02em","fontWeight":"800"}],"label-md":["14px",{"lineHeight":"18px","letterSpacing":"0.04em","fontWeight":"600"}],"headline-xl":["40px",{"lineHeight":"48px","letterSpacing":"-0.015em","fontWeight":"700"}],"body-md":["16px",{"lineHeight":"24px","letterSpacing":"0.01em","fontWeight":"400"}]}}}};</script></head><body class="bg-background font-body-md text-on-surface antialiased min-h-screen selection:bg-primary selection:text-on-primary"><header class="fixed top-0 left-0 right-0 z-50 pointer-events-none pt-space-md flex justify-center"><div class="pointer-events-auto flex items-center gap-space-md rounded-full bg-surface-container/75 px-3 py-1.5 backdrop-blur-2xl shadow-[0_16px_36px_rgba(0,0,0,0.65)] ring-1 ring-white/15"><nav class="flex items-center gap-1"><a aria-current="page" class="rounded-full bg-inverse-surface px-3 py-1 font-label-md text-label-md text-inverse-on-surface shadow-[0_0_24px_rgba(194,193,255,0.45)] ring-2 ring-white/80 transition-all duration-200 focus:outline-none focus:scale-105" data-path="home" href="#">Home</a><a class="rounded-full px-3 py-1 font-label-md text-label-md text-on-surface-variant transition-all duration-200 hover:bg-surface-container-high hover:text-on-surface focus:bg-inverse-surface focus:text-inverse-on-surface focus:outline-none focus:scale-105 focus:ring-2 focus:ring-white" data-path="movies" href="#">Movies</a><a class="rounded-full px-3 py-1 font-label-md text-label-md text-on-surface-variant transition-all duration-200 hover:bg-surface-container-high hover:text-on-surface focus:bg-inverse-surface focus:text-inverse-on-surface focus:outline-none focus:scale-105 focus:ring-2 focus:ring-white" data-path="tv-shows" href="#">TV Shows</a><a class="rounded-full px-3 py-1 font-label-md text-label-md text-on-surface-variant transition-all duration-200 hover:bg-surface-container-high hover:text-on-surface focus:bg-inverse-surface focus:text-inverse-on-surface focus:outline-none focus:scale-105 focus:ring-2 focus:ring-white" data-path="collections" href="#">Collections</a></nav><div class="flex items-center gap-space-xs pl-2 border-l border-white/10"><a aria-label="Search" class="flex h-8 w-8 items-center justify-center rounded-full bg-surface-container-high/60 text-on-surface-variant transition-all duration-200 hover:bg-surface-container-highest hover:text-on-surface focus:bg-inverse-surface focus:text-inverse-on-surface focus:outline-none focus:scale-110 focus:ring-2 focus:ring-white" data-path="search" href="#"><span class="material-symbols-outlined text-[18px]">search</span></a><div class="flex items-center gap-1 px-1"><span class="font-label-md text-label-md text-on-surface-variant">20:45</span></div><a aria-label="Profile &amp; Settings" class="flex items-center p-0.5 rounded-full hover:bg-surface-container-high/60 focus:outline-none focus:scale-105 focus:ring-2 focus:ring-white transition-all duration-200" data-path="settings" href="#"><div class="flex h-7 w-7 items-center justify-center rounded-full bg-primary"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></a></div></div></header><main class="w-full min-h-screen bg-background pt-20 pb-margin"><div class="flex flex-col w-full">
+<!-- Cinematic Hero Stage (52% Viewport Elevation) -->
+<section class="relative w-full -mt-20 overflow-hidden" style="height: 640px;">
+<!-- Backdrop Cinematic Artwork with Dynamic Vignette Matrix -->
+<div class="absolute inset-0 bg-cover bg-center transition-all duration-700 scale-[1.02]" data-alt="Cinematic still from Chronicles of Dune Awakening featuring vast orange and copper sandstorms over an alien desert planet with colossal sandworms looming in the atmospheric twilight, cinematic lighting with anamorphic lens flare and deep shadow contrast, 8k resolution, shot on Arri Alexa 65." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDcXI-UtGp5OYRqKIt9oazyxhF0u3J3SL8wEnomgQ5lRisYqCGOfR3t7h4SCAtLlXMzMghj9ynW5E4rZhz2-EedbQ8UnMYgwBDbTYZ-aKEmuJjEdDkUEdTZYlX_ngQ9o-ktSt5tHB8fzYWE23rQyGYvn6scQ3187_2fNLeU9XGwyuf9meU3GrxUTgDejjUWLYhlu2DoBG2sTFBHJ9PmpO_2Fu0eR5s3ochUqf-wbfk')">
+</div>
+<!-- Multi-directional Obsidian Scrim & Atmosphere Gradients -->
+<div class="absolute inset-0 bg-gradient-to-r from-background via-background/85 to-transparent w-full lg:w-3/4"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent"></div>
+<div class="absolute inset-0 bg-gradient-to-b from-background/90 via-transparent to-transparent h-40"></div>
+<!-- Hero Ambient Light Reflection -->
+<div class="absolute -top-32 -left-32 w-96 h-96 bg-primary-container/20 rounded-full blur-[140px] pointer-events-none"></div>
+<div class="absolute bottom-24 left-1/3 w-80 h-80 bg-tertiary-container/15 rounded-full blur-[120px] pointer-events-none"></div>
+<!-- Hero Content Container (Aligned to TV Safe Area) -->
+<div class="relative h-full max-w-[1792px] mx-auto px-margin flex flex-col justify-end pb-12 pt-36">
+<div class="max-w-3xl flex flex-col gap-space-sm">
+<!-- Curated Status Tag -->
+<div class="inline-flex items-center gap-space-xs self-start px-space-sm py-1 rounded-full bg-surface-container/70 backdrop-blur-md shadow-sm">
+<span class="inline-block w-2 h-2 rounded-full bg-tertiary animate-pulse"></span>
+<span class="font-badge-spec text-badge-spec tracking-wider uppercase text-tertiary">PREMIERE • RECENTLY ADDED</span>
+</div>
+<!-- Grand Display Hero Title -->
+<h1 class="font-display-hero text-display-hero tracking-tight text-on-surface uppercase drop-shadow-[0_8px_24px_rgba(0,0,0,0.8)] line-clamp-2">
+          CHRONICLES OF DUNE: AWAKENING
+        </h1>
+<!-- TV Metadata Spec Row -->
+<div class="flex flex-wrap items-center gap-space-sm font-label-md text-label-md text-secondary">
+<span class="text-on-surface font-headline-md text-headline-md">2024</span>
+<span class="text-outline">•</span>
+<span class="px-2 py-0.5 rounded bg-surface-container-high/80 text-on-surface font-badge-spec text-badge-spec">PG-13</span>
+<span class="text-outline">•</span>
+<span class="">2h 46m</span>
+<span class="text-outline">•</span>
+<span class="text-primary-fixed-dim">Sci-Fi / Adventure</span>
+<!-- High-Contrast Formatted Audio/Video Spec Badges -->
+<div class="flex items-center gap-1.5 ml-space-xs">
+<span class="px-1.5 py-0.5 rounded bg-surface-bright/40 text-on-surface font-badge-spec text-badge-spec tracking-widest uppercase">4K UHD</span>
+<span class="px-1.5 py-0.5 rounded bg-surface-bright/40 text-on-surface font-badge-spec text-badge-spec tracking-widest uppercase">HDR10+</span>
+<span class="px-1.5 py-0.5 rounded bg-surface-bright/40 text-on-surface font-badge-spec text-badge-spec tracking-widest uppercase">DOLBY ATMOS</span>
+<span class="px-1.5 py-0.5 rounded bg-tertiary-container/30 text-tertiary-fixed font-badge-spec text-badge-spec tracking-widest uppercase">IMAX</span>
+</div>
+</div>
+<!-- Synopsis Scrimmed Copy -->
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl line-clamp-3 text-shadow-sm">
+          Paul Atreides unites with Chani and the Fremen on a perilous journey of vengeance against the conspirators who destroyed his family, confronting his destiny across the shifting sands of Arrakis.
+        </p>
+<!-- D-Pad Action Hub -->
+<div class="flex items-center justify-between pt-space-xs mt-2">
+<div class="flex items-center gap-space-md">
+<!-- Focused Play Button (Peak Interaction Scale) -->
+<button class="d-pad-item group relative h-14 px-8 rounded-full bg-inverse-surface text-inverse-on-surface flex items-center gap-space-xs shadow-[0_0_32px_rgba(194,193,255,0.45)] transition-all duration-300" data-nav="0" data-row="0">
+<span class="material-symbols-outlined text-headline-lg text-inverse-on-surface" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+<span class="font-label-lg text-label-lg tracking-wide uppercase">Play Movie</span>
+</button>
+<!-- Secondary Liquid Glass Action: More Info -->
+<button class="d-pad-item h-14 px-6 rounded-full bg-surface-container/70 backdrop-blur-xl text-on-surface flex items-center gap-space-xs shadow-md transition-all duration-300 hover:bg-surface-container-high focus:bg-inverse-surface focus:text-inverse-on-surface focus:scale-105" data-nav="1" data-row="0">
+<span class="material-symbols-outlined text-headline-md">info</span>
+<span class="font-label-lg text-label-lg tracking-wide">More Info</span>
+</button>
+<!-- Icon Capsule: Add to List -->
+<button aria-label="Add to Watchlist" class="d-pad-item w-14 h-14 rounded-full bg-surface-container/70 backdrop-blur-xl text-on-surface flex items-center justify-center shadow-md transition-all duration-300 hover:bg-surface-container-high focus:bg-inverse-surface focus:text-inverse-on-surface focus:scale-105" data-nav="2" data-row="0">
+<span class="material-symbols-outlined text-headline-md">bookmark_add</span>
+</button>
+</div>
+<!-- Trailer Live State Floating Capsule -->
+<div class="hidden sm:flex items-center gap-space-xs px-space-md py-space-xs rounded-full bg-surface-container-lowest/80 backdrop-blur-xl text-secondary">
+<span class="material-symbols-outlined text-body-md text-primary animate-pulse">volume_up</span>
+<span class="font-label-md text-label-md tracking-wider">Trailer Autoplaying</span>
+<span class="w-1.5 h-1.5 rounded-full bg-secondary ml-1"></span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- TV Rails Container with Strict Safe Zone Margins -->
+<div class="w-full max-w-[1792px] mx-auto px-margin flex flex-col gap-space-xl -mt-6 z-10">
+<!-- RAIL 1: CONTINUE WATCHING (16:9 Landscape Dynamic Cards) -->
+<section class="flex flex-col gap-space-md" data-rail-index="1">
+<div class="flex items-center justify-between">
+<div class="flex items-baseline gap-space-sm">
+<h2 class="font-headline-lg text-headline-lg text-on-surface tracking-normal">Continue Watching</h2>
+<span class="font-label-md text-label-md text-outline">5 Incomplete Titles</span>
+</div>
+<div class="flex items-center gap-space-xs text-secondary font-label-md text-label-md">
+<span class="">Sort by Recent</span>
+<span class="material-symbols-outlined text-body-md">keyboard_arrow_right</span>
+</div>
+</div>
+<!-- Horizontal Continuous Rail -->
+<div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-gutter overflow-visible py-2">
+<!-- Card 1: Severance (Active D-Pad Focus Visual Archetype) -->
+<div class="d-pad-item group relative flex flex-col rounded-xl overflow-hidden bg-surface-container-high shadow-[0_20px_40px_rgba(0,0,0,0.85)] cursor-pointer transition-all duration-300" data-nav="0" data-row="1">
+<div class="relative w-full aspect-video overflow-hidden">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105" data-alt="Still from Severance television series depicting Adam Scott in a fluorescent-lit mid-century corporate hallway with mint green cubicles, deep geometric symmetry, cool desaturated corporate blue tones and surreal high-contrast lighting." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDdxBHC7g7a6zGuV_AEKOkm4yAkpOkA38z5B7I5Bei_JnrPOGDeESzrc-KRkRXLs5uFe6AnrSY_eFcpnpUb97O4m05mPcTZyDqLFiv5XwWYPh972rdqiu2jHG8-9Kb_Xkk-eEHvPsfoXkrBVqefHTdbPT-txp_38JVG0mWz_TeIWjCP-TNZJgHWn5jrY4JYfsfGx7b3sZiWK0oLBOoH3oMyDb96s3vOxN4Uq29agzI')">
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-high via-transparent to-transparent"></div>
+<!-- Play badge watermark -->
+<div class="absolute inset-0 flex items-center justify-center">
+<div class="w-12 h-12 rounded-full bg-inverse-surface/90 text-inverse-on-surface flex items-center justify-center shadow-lg">
+<span class="material-symbols-outlined text-headline-md" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</div>
+</div>
+<!-- Progress Line Container -->
+<div class="absolute bottom-0 left-0 right-0 h-1.5 bg-surface-bright/60">
+<div class="h-full bg-primary" style="width: 65%;"></div>
+</div>
+</div>
+<div class="p-space-sm flex flex-col gap-0.5">
+<div class="flex items-center justify-between">
+<h3 class="font-label-lg text-label-lg text-on-surface truncate">Severance</h3>
+<span class="font-badge-spec text-badge-spec text-primary">38m left</span>
+</div>
+<p class="font-label-md text-label-md text-on-surface-variant truncate">S2:E3 • The Aftermath</p>
+</div>
+</div>
+<!-- Card 2: Dune: Prophecy -->
+<div class="d-pad-item group relative flex flex-col rounded-xl overflow-hidden bg-surface-container shadow-md cursor-pointer transition-all duration-300 hover:scale-[1.03] hover:bg-surface-container-high focus:scale-[1.04] focus:bg-surface-container-high ring-4 ring-inverse-surface scale-[1.04]" data-nav="1" data-row="1">
+<div class="relative w-full aspect-video overflow-hidden">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105" data-alt="Dune Prophecy sisterhood ritual inside a dark stone sanctuary illuminated by glowing spice lanterns and geometric shadow patterns, atmospheric amber and midnight blue cinematic tonality." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuABaCOPbZak7Lr0dy5NOgJoCWAWSvXajp8Wi78NZIuNZobswaQyRpe0XLNs5Ro9ThNjCaNUDu0rfukQYQtJhqYmTjAUUe7XNO4xPLevtiKncPcd0WH4g_NbZJ1CrMC227gH66uGd089glhsqZbGiaTWyZ9C7VDwW-Nd3OM-VEo_umPd0N8KisCZCLGDkmZ4pyi8soVd_9YdsevhJxJOKDD5O8XGXtEvltbzd0sA1z0')">
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container via-transparent to-transparent"></div>
+<div class="absolute bottom-0 left-0 right-0 h-1 bg-surface-bright/40">
+<div class="h-full bg-primary" style="width: 40%;"></div>
+</div>
+</div>
+<div class="p-space-sm flex flex-col gap-0.5">
+<div class="flex items-center justify-between">
+<h3 class="font-label-lg text-label-lg text-on-surface truncate">Dune: Prophecy</h3>
+<span class="font-badge-spec text-badge-spec text-secondary">18m left</span>
+</div>
+<p class="font-label-md text-label-md text-on-surface-variant truncate">S1:E2 • The Sisterhood</p>
+</div>
+</div>
+<!-- Card 3: Interstellar -->
+<div class="d-pad-item group relative flex flex-col rounded-xl overflow-hidden bg-surface-container shadow-md cursor-pointer transition-all duration-300 hover:scale-[1.03] hover:bg-surface-container-high focus:scale-[1.04] focus:bg-surface-container-high" data-nav="2" data-row="1">
+<div class="relative w-full aspect-video overflow-hidden">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105" data-alt="Interstellar spacecraft orbiting a massive golden accretion disk of Gargantua black hole, high realism cosmic void, extreme deep space optical illumination." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCaFhDrto-rUWamNzkbLKAnc5tcSFWYsVGOdkIilX9wJRW2cj4i9ZeSjN5CVt6g-4Kh8q-WdpRMozwqL-ewF3y8bK6Kn_d6aNrLlEzSjbEsAUhUrDZOE5DT_WwX_hc75q1Y7r66XuWFsvW0YCjH6X1L13ZkURkKoQXYgAouxwD5iSNyfeE5TqzgT-wuzFN8THB9v6NpVfnnJu-jrB8SJ14agsHOnrqk6rFEybqKJpw')">
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container via-transparent to-transparent"></div>
+<div class="absolute bottom-0 left-0 right-0 h-1 bg-surface-bright/40">
+<div class="h-full bg-primary" style="width: 55%;"></div>
+</div>
+</div>
+<div class="p-space-sm flex flex-col gap-0.5">
+<div class="flex items-center justify-between">
+<h3 class="font-label-lg text-label-lg text-on-surface truncate">Interstellar</h3>
+<span class="font-badge-spec text-badge-spec text-secondary">1h 12m left</span>
+</div>
+<p class="font-label-md text-label-md text-on-surface-variant truncate">Christopher Nolan • Feature</p>
+</div>
+</div>
+<!-- Card 4: Blade Runner 2049 -->
+<div class="d-pad-item group relative flex flex-col rounded-xl overflow-hidden bg-surface-container shadow-md cursor-pointer transition-all duration-300 hover:scale-[1.03] hover:bg-surface-container-high focus:scale-[1.04] focus:bg-surface-container-high" data-nav="3" data-row="1">
+<div class="relative w-full aspect-video overflow-hidden">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105" data-alt="Blade Runner 2049 orange dust storm haze over abandoned Las Vegas ruins with colossal female holographic statues, atmospheric silhouette lighting, cinematic neon orange grading." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCSCVZ57XWWqRKMIYm7mT8kyj065avazpbbxkPCKJnlMbti7OXa4WmDHcxyioabb6fmu6yVhpHKDveN8ne6fXgiaDd59KYc8ZBFuHti8FSbBVdUXlDnUHIU-anKWsqeMtgm32GCy874TpWr5YmV4EVe3xe8fb4rvIz1BmoCKbg_7Ul0QkZipKaBgTI5fnkXabKhOhcmYhQAJcbLsWHhCafE8t1XcQdfbrf9GsTezC8')">
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container via-transparent to-transparent"></div>
+<div class="absolute bottom-0 left-0 right-0 h-1 bg-surface-bright/40">
+<div class="h-full bg-primary" style="width: 80%;"></div>
+</div>
+</div>
+<div class="p-space-sm flex flex-col gap-0.5">
+<div class="flex items-center justify-between">
+<h3 class="font-label-lg text-label-lg text-on-surface truncate">Blade Runner 2049</h3>
+<span class="font-badge-spec text-badge-spec text-secondary">45m left</span>
+</div>
+<p class="font-label-md text-label-md text-on-surface-variant truncate">Denis Villeneuve • Feature</p>
+</div>
+</div>
+<!-- Card 5: The Last of Us -->
+<div class="d-pad-item group relative flex flex-col rounded-xl overflow-hidden bg-surface-container shadow-md cursor-pointer transition-all duration-300 hover:scale-[1.03] hover:bg-surface-container-high focus:scale-[1.04] focus:bg-surface-container-high" data-nav="4" data-row="1">
+<div class="relative w-full aspect-video overflow-hidden">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105" data-alt="The Last of Us overgrown post-apocalyptic snowy mountain valley at twilight with rusted patrol towers and dense evergreen foliage, melancholic muted cinematic tones." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCje2q4YZa4hggtVEfzeoQKNPfVXaG1hRj-uANMCalzMnrRKQu8VBsaQHSfv-LnDG4TgcgynW7qEDNAxrllGPM3YZ3y9ledxGuMruSQxK3Au9H8clWth7eXILsQUPYSdwkNRC_c6BCctkJdW-i9d2RFWR5-p1QVpF50qm2KWlqRCOMSS_r_ZOVfOgSvGKg6qT2ONFsNP7evYUngW0jg9YqqR61pTUFfyw0PQDKI67U')">
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container via-transparent to-transparent"></div>
+<div class="absolute bottom-0 left-0 right-0 h-1 bg-surface-bright/40">
+<div class="h-full bg-primary" style="width: 88%;"></div>
+</div>
+</div>
+<div class="p-space-sm flex flex-col gap-0.5">
+<div class="flex items-center justify-between">
+<h3 class="font-label-lg text-label-lg text-on-surface truncate">The Last of Us</h3>
+<span class="font-badge-spec text-badge-spec text-secondary">12m left</span>
+</div>
+<p class="font-label-md text-label-md text-on-surface-variant truncate">S1:E8 • When We Are in Need</p>
+</div>
+</div>
+</div>
+</section>
+<!-- RAIL 2: RECENTLY ADDED MOVIES (2:3 Portrait Posters) -->
+<section class="flex flex-col gap-space-md" data-rail-index="2">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<h2 class="font-headline-lg text-headline-lg text-on-surface tracking-normal">Recently Added Movies</h2>
+<span class="px-2 py-0.5 rounded-full bg-primary-container/20 text-primary font-badge-spec text-badge-spec">NEW 4K</span>
+</div>
+<div class="flex items-center gap-space-xs text-secondary font-label-md text-label-md">
+<span class="">Explore All 148</span>
+<span class="material-symbols-outlined text-body-md">keyboard_arrow_right</span>
+</div>
+</div>
+<!-- 7-Poster TV Panorama Grid Track -->
+<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-gutter overflow-visible py-2">
+<!-- Poster 1: Oppenheimer -->
+<div class="d-pad-item group flex flex-col gap-space-xs cursor-pointer transition-all duration-300 hover:scale-105 focus:scale-105" data-nav="0" data-row="2">
+<div class="relative w-full aspect-[2/3] rounded-xl overflow-hidden bg-surface-container shadow-lg">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105" data-alt="Oppenheimer cinematic movie poster featuring close-up profile portrait against swirling nuclear firestorm plasma sparks, high contrast shadows and intense copper amber lighting." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDRwMBZ-MIiTTebxCveQf5MZkIz7gd41n911WK9-aV-zrx-GTSJyssCkkYhFcfS_zy5XKCI0JkildwIWvO8KXq9S-EM579rZbpFeRTm0wZuufQaZzUURFm-BH0G9w69qlVNmaIZ-bmEDzipwdX90okklm3njRbf41UUuYZTSxQUf9BNaralNonF58D-FmDB80kM7yeNhWLnqGQRK2fs6WJzsoDnGqC-CpPtvhHOUFM')">
+</div>
+<div class="absolute top-2 right-2 px-1.5 py-0.5 rounded bg-surface-container-lowest/80 text-on-surface font-badge-spec text-badge-spec backdrop-blur-sm">4K UHD</div>
+</div>
+<div class="flex flex-col">
+<h3 class="font-label-lg text-label-lg text-on-surface truncate">Oppenheimer</h3>
+<div class="flex items-center gap-space-xs font-label-md text-label-md text-on-surface-variant">
+<span class="">2023</span>
+<span class="">•</span>
+<span class="text-tertiary">9.2</span>
+<span class="">•</span>
+<span class="">R</span>
+</div>
+</div>
+</div>
+<!-- Poster 2: Poor Things -->
+<div class="d-pad-item group flex flex-col gap-space-xs cursor-pointer transition-all duration-300 hover:scale-105 focus:scale-105" data-nav="1" data-row="2">
+<div class="relative w-full aspect-[2/3] rounded-xl overflow-hidden bg-surface-container shadow-lg">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105" data-alt="Poor Things surrealist Victorian portrait poster with vivid hyper-saturated pastel colors, ornate eccentric costume and whimsical eccentric lighting." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBhEutDd7SzmD9tE7Y194Fauw4HstgYExUrvpyXj6OvSbsnomEMmcEPDhvZQLu89NIdptb8Tb_GWTMP3NJEbyLyOxwKkhVQMz6IZRD7MMOPLNDVQcSQLAVSyuEVj_onGWWN4XBiGRSEFgoilNr-gf3_IVUorWVCLk-ypi9N7ZgFHvdDBgCScHWIVwjVbiemn70r8ahRhpdnoqZn7eG7DDE2gy8o29OwkxCca-OyFhQ')">
+</div>
+<div class="absolute top-2 right-2 px-1.5 py-0.5 rounded bg-surface-container-lowest/80 text-on-surface font-badge-spec text-badge-spec backdrop-blur-sm">HDR</div>
+</div>
+<div class="flex flex-col">
+<h3 class="font-label-lg text-label-lg text-on-surface truncate">Poor Things</h3>
+<div class="flex items-center gap-space-xs font-label-md text-label-md text-on-surface-variant">
+<span class="">2023</span>
+<span class="">•</span>
+<span class="text-tertiary">8.4</span>
+<span class="">•</span>
+<span class="">R</span>
+</div>
+</div>
+</div>
+<!-- Poster 3: Civil War -->
+<div class="d-pad-item group flex flex-col gap-space-xs cursor-pointer transition-all duration-300 hover:scale-105 focus:scale-105" data-nav="2" data-row="2">
+<div class="relative w-full aspect-[2/3] rounded-xl overflow-hidden bg-surface-container shadow-lg">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105" data-alt="Civil War movie poster showing Lady Liberty crown sniper outpost against a smoky dystopian Washington DC skyline with heavy dust haze and photojournalistic contrast." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAm4j3ESpWcPMEt5v81yFPbYBpL2bqJ7zOzpKtRfiSDiWPLCAsfCf9cXvpCOZhhMGJFAiV9I4PzbKHSQcItXTtB_b8zgdiZhQBl0aexhNGdXZtTm3iYUAl0rANRWDXE8F8MnzZW3XL4aPlanIXboOo6TztvYkZHAgjHnFBt9UIzgdmad79-4Zhd0E4tKp2Y3DYktu3khf1A4TpiqI-fqNbbBLoLo1dVa19IAmrCPkM')">
+</div>
+<div class="absolute top-2 right-2 px-1.5 py-0.5 rounded bg-surface-container-lowest/80 text-on-surface font-badge-spec text-badge-spec backdrop-blur-sm">DV</div>
+</div>
+<div class="flex flex-col">
+<h3 class="font-label-lg text-label-lg text-on-surface truncate">Civil War</h3>
+<div class="flex items-center gap-space-xs font-label-md text-label-md text-on-surface-variant">
+<span class="">2024</span>
+<span class="">•</span>
+<span class="text-tertiary">7.8</span>
+<span class="">•</span>
+<span class="">R</span>
+</div>
+</div>
+</div>
+<!-- Poster 4: Anatomy of a Fall -->
+<div class="d-pad-item group flex flex-col gap-space-xs cursor-pointer transition-all duration-300 hover:scale-105 focus:scale-105" data-nav="3" data-row="2">
+<div class="relative w-full aspect-[2/3] rounded-xl overflow-hidden bg-surface-container shadow-lg">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105" data-alt="Anatomy of a Fall French alpine chalet snowscape with sharp blood splatter contrast on pure white snow, austere minimalist European thriller composition." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDL2R3hZ-souegmImeIFeJrLtbsykUYDg3WrXXN5DjGlLPlD9cg7SB15OMRwdtDES1Y8Jl94W0VQt8ICJUhRwtL4nVME52jdFCSt1LUKOwv4w9JY73ptDDVP7ZRXzQVzh_VTetStmd60r4OEl-nJa8VVC_1b4ddr-vMKAq6gpYWUMp2FGRg-ZWFDKs-wrw2ui4vfAEbyDlAFdm5wTwS9zS1yCBkoteSk07eJo5V9lA')">
+</div>
+<div class="absolute top-2 right-2 px-1.5 py-0.5 rounded bg-surface-container-lowest/80 text-on-surface font-badge-spec text-badge-spec backdrop-blur-sm">4K</div>
+</div>
+<div class="flex flex-col">
+<h3 class="font-label-lg text-label-lg text-on-surface truncate">Anatomy of a Fall</h3>
+<div class="flex items-center gap-space-xs font-label-md text-label-md text-on-surface-variant">
+<span class="">2023</span>
+<span class="">•</span>
+<span class="text-tertiary">8.1</span>
+<span class="">•</span>
+<span class="">R</span>
+</div>
+</div>
+</div>
+<!-- Poster 5: The Zone of Interest -->
+<div class="d-pad-item group flex flex-col gap-space-xs cursor-pointer transition-all duration-300 hover:scale-105 focus:scale-105" data-nav="4" data-row="2">
+<div class="relative w-full aspect-[2/3] rounded-xl overflow-hidden bg-surface-container shadow-lg">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105" data-alt="The Zone of Interest theatrical poster with lush green garden flowers in stark contrast with austere cold stone perimeter architecture and overcast grey sky." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBCJHvVhb6qiZSBhLBymFEkdhAcQ199xTpRvlCJsczVvDxtsLSsCnEJ6p3HtdX2vWChIC-m0itV8FhD4xZicEcmuL1r6phRZcHouz5BsDHpXU7cFpw1rh-_GCb9enV3RVuFo2mnhd8Qeds2ne_ZTVYUMmP2JXydiPB4R-S5-dYxSZ5CQ5UfImxHjI8a_kjHsjnUk0OtrRM7bmmGgBNYIR29lDAVt-QLwyQBzmQ5Goc')">
+</div>
+<div class="absolute top-2 right-2 px-1.5 py-0.5 rounded bg-surface-container-lowest/80 text-on-surface font-badge-spec text-badge-spec backdrop-blur-sm">ATMOS</div>
+</div>
+<div class="flex flex-col">
+<h3 class="font-label-lg text-label-lg text-on-surface truncate">The Zone of Interest</h3>
+<div class="flex items-center gap-space-xs font-label-md text-label-md text-on-surface-variant">
+<span class="">2023</span>
+<span class="">•</span>
+<span class="text-tertiary">7.9</span>
+<span class="">•</span>
+<span class="">PG-13</span>
+</div>
+</div>
+</div>
+<!-- Poster 6: Furiosa -->
+<div class="d-pad-item group flex flex-col gap-space-xs cursor-pointer transition-all duration-300 hover:scale-105 focus:scale-105" data-nav="5" data-row="2">
+<div class="relative w-full aspect-[2/3] rounded-xl overflow-hidden bg-surface-container shadow-lg">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105" data-alt="Furiosa A Mad Max Saga theatrical artwork featuring war rig engines roaring through fiery wasteland storm, golden desert dust with high octane chrome reflections." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDmnVG4UW2ZBwCN26-7X4nIJtZrpePHqCIWqUeOc5IEUt8O1wkGkRO1ePMq2XInmKlryhDAA_o4_CRAjm6u0FLu6kTbnEE3oWxg-bWHDNS7RLZQeVMSy_pi3xVdadwuwL4dGwY4hIaOeAOZwXx6QwiVN9RhSRsZyFtHKSC6Y7YvUMDQPM0GY6F9hOUG6SnWAASpr9cRMxftg3B9_iBbXj747jT4plp5XZEFLjv-Ryc')">
+</div>
+<div class="absolute top-2 right-2 px-1.5 py-0.5 rounded bg-surface-container-lowest/80 text-on-surface font-badge-spec text-badge-spec backdrop-blur-sm">IMAX</div>
+</div>
+<div class="flex flex-col">
+<h3 class="font-label-lg text-label-lg text-on-surface truncate">Furiosa: Mad Max</h3>
+<div class="flex items-center gap-space-xs font-label-md text-label-md text-on-surface-variant">
+<span class="">2024</span>
+<span class="">•</span>
+<span class="text-tertiary">8.3</span>
+<span class="">•</span>
+<span class="">R</span>
+</div>
+</div>
+</div>
+<!-- Poster 7: Alien: Romulus -->
+<div class="d-pad-item group flex flex-col gap-space-xs cursor-pointer transition-all duration-300 hover:scale-105 focus:scale-105" data-nav="6" data-row="2">
+<div class="relative w-full aspect-[2/3] rounded-xl overflow-hidden bg-surface-container shadow-lg">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105" data-alt="Alien Romulus poster showing derelict research station corridor drenched in emergency amber flashing light with xenomorph silhouette emerging from high ventilation shafts." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAQfrckBdedo3KhNrsohviY4qDn-Ir86TyKHBviz0S6252wd1_2wULgmcCD1YG3D8qon0apyw4nSMOWcHrCS_vDbDf9AeYTYkR0NeKJUTLXxAUi3sGbIXS0fd0oSQtq3nz_ffmKwzikLhfmimxi8m3HGww1v_CPQwx5yAy1sR-ZXantuqEwB-LvM_QKmcPFJ7hwO3m1W9UzPhxahvhb9BaNYwpHcTw71k9CR8rBy7w')">
+</div>
+<div class="absolute top-2 right-2 px-1.5 py-0.5 rounded bg-surface-container-lowest/80 text-on-surface font-badge-spec text-badge-spec backdrop-blur-sm">4K UHD</div>
+</div>
+<div class="flex flex-col">
+<h3 class="font-label-lg text-label-lg text-on-surface truncate">Alien: Romulus</h3>
+<div class="flex items-center gap-space-xs font-label-md text-label-md text-on-surface-variant">
+<span class="">2024</span>
+<span class="">•</span>
+<span class="text-tertiary">7.6</span>
+<span class="">•</span>
+<span class="">R</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- RAIL 3: RECOMMENDED FROM YOUR LIBRARY (Bento Glass Hybrid Row) -->
+<section class="flex flex-col gap-space-md mb-8" data-rail-index="3">
+<div class="flex items-center justify-between">
+<div class="flex items-baseline gap-space-sm">
+<h2 class="font-headline-lg text-headline-lg text-on-surface tracking-normal">Recommended From Your Library</h2>
+<span class="font-label-md text-label-md text-primary">Curated for Living Room Soundstage</span>
+</div>
+<div class="flex items-center gap-space-xs text-secondary font-label-md text-label-md">
+<span class="">Manage Preferences</span>
+<span class="material-symbols-outlined text-body-md">tune</span>
+</div>
+</div>
+<!-- Bento-style Curated Showcase Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter py-2">
+<!-- Large Spotlight Card: Succession -->
+<div class="d-pad-item group relative rounded-2xl overflow-hidden bg-surface-container cursor-pointer transition-all duration-300 hover:scale-[1.02] focus:scale-[1.02] shadow-xl p-space-lg flex flex-col justify-end min-h-[260px]" data-nav="0" data-row="3">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" data-alt="Succession television drama still with Roy family members standing on a high glass terrace overlooking Manhattan skyline, luxury tailored coats, golden late afternoon dramatic sunlight." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCefRgGTLUkAUxIgevUp3qsUD46g8Th8kcHpAFY082J2ImaeM_yixkqHLTq85nNdMj7mO_2b5tJeVGWUthSVtCB9XUEePP_u7bZjxaJ5BNAAdJ-G_P5cnXs1j7MYqhuPam8rftK2VPcjatPiouR1m2-AmzQeneAmovSRBPh1rtk1cP9aa7qS9hq2y3MxmrOffLlW26V8yDFijh0GhBL2-2Cn488xSvFgFM7VxnOfew')">
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-surface-container-lowest/70 to-transparent"></div>
+<div class="relative z-10 flex flex-col gap-1">
+<div class="flex items-center gap-space-xs">
+<span class="px-2 py-0.5 rounded bg-primary text-on-primary font-badge-spec text-badge-spec">99% MATCH</span>
+<span class="text-on-surface font-badge-spec text-badge-spec uppercase tracking-wider">HBO • 4 SEASONS</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface">Succession: Complete Series</h3>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2">
+              Re-experience the battle for control of Waystar RoyCo. Full Dolby Vision HDR master remastered for Aether Sound.
+            </p>
+</div>
+</div>
+<!-- Spotlight Card 2: Shōgun -->
+<div class="d-pad-item group relative rounded-2xl overflow-hidden bg-surface-container cursor-pointer transition-all duration-300 hover:scale-[1.02] focus:scale-[1.02] shadow-xl p-space-lg flex flex-col justify-end min-h-[260px]" data-nav="1" data-row="3">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" data-alt="Shogun television series scene with samurai general in intricate blackened armor and gold crest against morning sea mist in feudal Japan, breathtaking cinematic depth." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDhvZ5eoQInC6icvralfnJIBSPVK76UjU6RG4ruLacNAvq8x4DXleIlhqgdiL-lBfibDkexOy9BUjHFxPES-YlJpMWAd-CL1hSUmQ91NWUy3hzII-RDjtf-fvxxwL4VLw_QnUH_thYtVxKieZV6m8xNVCdvVWEB07n6hDb2b2REU8dhodUOGfOihYIh3WNEbNZJWzLbWqYirDSveaGnRNT6p-aYwZIN3kZPsCopA4M')">
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-surface-container-lowest/70 to-transparent"></div>
+<div class="relative z-10 flex flex-col gap-1">
+<div class="flex items-center gap-space-xs">
+<span class="px-2 py-0.5 rounded bg-primary text-on-primary font-badge-spec text-badge-spec">98% MATCH</span>
+<span class="text-on-surface font-badge-spec text-badge-spec uppercase tracking-wider">FX • LIMITED SERIES</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface">Shōgun</h3>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2">
+              Lord Toranaga battles for survival in feudal Japan when a mysterious European ship arrives on the coast.
+            </p>
+</div>
+</div>
+<!-- Spotlight Card 3: The Bear -->
+<div class="d-pad-item group relative rounded-2xl overflow-hidden bg-surface-container cursor-pointer transition-all duration-300 hover:scale-[1.02] focus:scale-[1.02] shadow-xl p-space-lg flex flex-col justify-end min-h-[260px]" data-nav="2" data-row="3">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" data-alt="The Bear television series scene showing intensely focused chef Carmy Berzatto in high-end stainless steel kitchen under warm overhead culinary heat lamps with copper pans." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBa8zRrod5qHSamVd3cYRi9vk7ytjUUxYTtuX2Wwu7lquBDMBhA6r4KXwIvf0ScP8sZH9gmqVHCqr0cS9f3tP3-Sod4yZrOt310--M7iHrhuF-uZQiI3ZsAaUskQYeVdJsbx06t2nrij07kFkTKXQzgXNbtQKWG3tUYIfPC8KY8tkNhm2BsjmpSFyLG06KsrFBElmDCeTAGORr0z6Dm7nJO1ltHzhkJfEv9kVRimvI')">
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-surface-container-lowest/70 to-transparent"></div>
+<div class="relative z-10 flex flex-col gap-1">
+<div class="flex items-center gap-space-xs">
+<span class="px-2 py-0.5 rounded bg-primary text-on-primary font-badge-spec text-badge-spec">95% MATCH</span>
+<span class="text-on-surface font-badge-spec text-badge-spec uppercase tracking-wider">FX • 3 SEASONS</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface">The Bear</h3>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2">
+              A young chef from the fine-dining world comes home to run his family Italian beef sandwich shop in Chicago.
+            </p>
+</div>
+</div>
+</div>
+</section>
+</div>
+</div>
+<script>
+  (function() {
+    let currentRow = 0;
+    let currentCol = 0;
+
+    function getItemsByRow(row) {
+      return Array.from(document.querySelectorAll(`.d-pad-item[data-row="${row}"]`));
+    }
+
+    function updateFocus(row, col) {
+      const allItems = document.querySelectorAll('.d-pad-item');
+      allItems.forEach(el => {
+        el.classList.remove('ring-4', 'ring-inverse-surface', 'scale-105', 'scale-[1.04]', 'scale-[1.02]');
+      });
+
+      const rowItems = getItemsByRow(row);
+      if (rowItems.length === 0) return;
+
+      const safeCol = Math.max(0, Math.min(col, rowItems.length - 1));
+      currentCol = safeCol;
+      currentRow = row;
+
+      const target = rowItems[safeCol];
+      if (target) {
+        target.focus();
+        target.classList.add('ring-4', 'ring-inverse-surface');
+        if (row === 0) target.classList.add('scale-105');
+        else if (row === 1) target.classList.add('scale-[1.04]');
+        else target.classList.add('scale-105');
+
+        target.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }
+    }
+
+    window.addEventListener('keydown', function(e) {
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter'].includes(e.key)) {
+        e.preventDefault();
+      }
+
+      if (e.key === 'ArrowRight') {
+        const rowItems = getItemsByRow(currentRow);
+        if (currentCol < rowItems.length - 1) {
+          updateFocus(currentRow, currentCol + 1);
+        }
+      } else if (e.key === 'ArrowLeft') {
+        if (currentCol > 0) {
+          updateFocus(currentRow, currentCol - 1);
+        }
+      } else if (e.key === 'ArrowDown') {
+        if (currentRow < 3) {
+          updateFocus(currentRow + 1, currentCol);
+        }
+      } else if (e.key === 'ArrowUp') {
+        if (currentRow > 0) {
+          updateFocus(currentRow - 1, currentCol);
+        }
+      }
+    });
+
+    document.querySelectorAll('.d-pad-item').forEach(item => {
+      item.addEventListener('mouseenter', () => {
+        const r = parseInt(item.getAttribute('data-row') || '0', 10);
+        const c = parseInt(item.getAttribute('data-nav') || '0', 10);
+        updateFocus(r, c);
+      });
+    });
+  })();
+</script></main><footer class="w-full px-margin py-space-lg bg-surface-container-lowest/80 backdrop-blur-md"><div class="max-w-[1792px] mx-auto flex items-center justify-between text-on-surface-variant font-label-md text-label-md"><div class="flex items-center gap-space-lg"><span class="flex items-center gap-space-xs"><span class="inline-block w-2 h-2 rounded-full bg-primary"></span>AETHER TV Engine 4K</span><span class="">Dolby Vision · Atmos Ready</span></div><div class="flex items-center gap-space-lg"><span class="">Press [Back] for previous menu</span><span class="">© 2025 AETHER Media Systems</span></div></div></footer>
+
+
+
+</body></html>
