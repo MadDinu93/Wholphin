@@ -126,8 +126,9 @@ fun TopNavigation(
     viewModel: NavDrawerViewModel,
     modifier: Modifier = Modifier,
 ) {
-    LaunchedEffect(Unit) { viewModel.updateSelectedIndex() }
     val serviceState by viewModel.serviceState.collectAsState()
+    // Thorphin: re-evaluated on every page change, otherwise the tab of a page reached by back or a card stays highlighted
+    LaunchedEffect(destination, serviceState.items) { viewModel.updateSelectedIndex() }
     val state by viewModel.state.collectAsState()
     val selectedIndex = state.selectedIndex
 
