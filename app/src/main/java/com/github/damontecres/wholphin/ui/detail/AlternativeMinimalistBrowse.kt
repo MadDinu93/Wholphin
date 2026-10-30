@@ -34,6 +34,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.runtime.Composable
@@ -539,6 +540,14 @@ private fun MinimalistTitleRow(
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f, fill = false),
             )
+            if (item?.data?.userData?.played == true) {
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = null,
+                    tint = LiquidColors.OnAccent,
+                    modifier = Modifier.size(14.dp).background(LiquidColors.Accent, CircleShape).padding(2.dp),
+                )
+            }
             val rating = item?.data?.communityRating
             if (rating != null && rating > 0f) {
                 Row(verticalAlignment = Alignment.CenterVertically) {

@@ -30,6 +30,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.runtime.Composable
@@ -699,6 +700,20 @@ internal fun BrowsePoster(
                         Icon(Icons.Default.Star, null, tint = LiquidColors.Accent, modifier = Modifier.size(8.dp))
                         Text(text = "%.1f".format(rating), color = LiquidColors.Accent, fontSize = 8.sp, fontWeight = FontWeight.Bold)
                     }
+                }
+                if (item?.data?.userData?.played == true) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = null,
+                        tint = LiquidColors.OnAccent,
+                        modifier =
+                            Modifier
+                                .align(Alignment.BottomEnd)
+                                .padding(4.dp)
+                                .size(14.dp)
+                                .background(LiquidColors.Accent, CircleShape)
+                                .padding(2.dp),
+                    )
                 }
             }
         }

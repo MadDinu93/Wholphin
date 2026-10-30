@@ -282,7 +282,8 @@ fun PreferencesContent(
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                     contentPadding =
                         if (alternativeUi) {
-                            PaddingValues(bottom = 8.dp)
+                            // The top padding keeps the outline of the first row clear of the server card
+                            PaddingValues(top = 6.dp, bottom = 8.dp)
                         } else {
                             PaddingValues(start = 12.dp, end = 12.dp, bottom = 16.dp)
                         },
