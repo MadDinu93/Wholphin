@@ -6,6 +6,45 @@ Remux is a self-hosted media server that speaks the Jellyfin API. Instead of sca
 
 Thorphin still works with a regular Jellyfin server. Everything Wholphin does is still here: ExoPlayer and MPV playback, a customizable home page, Live TV, music, Seerr, trickplay and more, see the [Wholphin README](https://github.com/damontecres/Wholphin#features).
 
+## Screenshots
+
+Thorphin has five home screen styles, picked in Settings > Appearance > Home screen style. The movie and TV show catalogs look the same, so only Movies is shown. Library is part of the top bar styles only.
+
+### Classic
+
+| Home | Library | Movies |
+|---|---|---|
+| ![Classic home](screenshots/1-classic/1-home.jpg) | ![Classic library](screenshots/1-classic/2-library.jpg) | ![Classic movies](screenshots/1-classic/3-movies.jpg) |
+
+### Squared
+
+| Home | Library | Movies |
+|---|---|---|
+| ![Squared home](screenshots/2-squared/1-home.jpg) | ![Squared library](screenshots/2-squared/2-library.jpg) | ![Squared movies](screenshots/2-squared/3-movies.jpg) |
+
+### Thorphin
+
+| Home | Movies |
+|---|---|
+| ![Thorphin home](screenshots/3-thorphin/1-home.jpg) | ![Thorphin movies](screenshots/3-thorphin/3-movies.jpg) |
+
+### Thorphin Minimalist List
+
+| Home | Movies |
+|---|---|
+| ![Minimalist List home](screenshots/4-minimalist-list/1-home.jpg) | ![Minimalist List movies](screenshots/4-minimalist-list/3-movies.jpg) |
+
+### Thorphin Minimalist Cards
+
+| Home | Movies |
+|---|---|
+| ![Minimalist Cards home](screenshots/5-minimalist-cards/1-home.jpg) | ![Minimalist Cards movies](screenshots/5-minimalist-cards/3-movies.jpg) |
+
+### Details page
+
+The details page is the same in every style.
+
+![Movie details](screenshots/details.jpg)
 ## What Thorphin adds
 
 ### Remux
