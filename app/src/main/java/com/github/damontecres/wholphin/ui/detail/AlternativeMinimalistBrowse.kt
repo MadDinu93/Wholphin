@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -83,7 +82,7 @@ import com.github.damontecres.wholphin.ui.components.QuickDetails
 import com.github.damontecres.wholphin.ui.ifElse
 import com.github.damontecres.wholphin.ui.isNotNullOrBlank
 import com.github.damontecres.wholphin.ui.main.streamBadges
-import com.github.damontecres.wholphin.ui.nav.TrailerPlayer
+import com.github.damontecres.wholphin.ui.nav.ZoomedTrailerPlayer
 import com.github.damontecres.wholphin.preferences.HomeScreenStyle
 import com.github.damontecres.wholphin.ui.theme.LiquidColors
 import com.github.damontecres.wholphin.ui.theme.LocalHomeScreenStyle
@@ -351,17 +350,13 @@ private fun MinimalistShowcase(
             )
         }
         if (trailer != null) {
-            // The video is 16:9 and covers the section, what does not fit is cut off
-            BoxWithConstraints(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                val videoRatio = 16f / 9f
-                val coverWidth = if (maxWidth / maxHeight > videoRatio) maxWidth else maxHeight * videoRatio
-                TrailerPlayer(
-                    trailer = trailer,
-                    heroTrailerService = trailerService,
-                    muted = muted,
-                    modifier = Modifier.requiredSize(coverWidth, coverWidth / videoRatio),
-                )
-            }
+            // The picture covers the section without the video's black bars, what does not fit is cut off
+            ZoomedTrailerPlayer(
+                trailer = trailer,
+                heroTrailerService = trailerService,
+                muted = muted,
+                modifier = Modifier.fillMaxSize(),
+            )
         }
         // The text stays readable on the left, the picture shows on the right and fades into the list below
         Box(
@@ -381,6 +376,8 @@ private fun MinimalistShowcase(
             modifier =
                 Modifier
                     .fillMaxSize()
+                    // Steps back with the text, so a playing trailer is not darkened
+                    .graphicsLayer { alpha = overlayAlpha }
                     .background(Brush.verticalGradient(.6f to Color.Transparent, 1f to LiquidColors.Rail.copy(alpha = .6f))),
         )
         if (item != null) {

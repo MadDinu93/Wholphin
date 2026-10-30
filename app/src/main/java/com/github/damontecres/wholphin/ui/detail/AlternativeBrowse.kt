@@ -62,7 +62,7 @@ import com.github.damontecres.wholphin.services.HeroTrailerService
 import com.github.damontecres.wholphin.services.HeroTrailerSource
 import com.github.damontecres.wholphin.services.NavDrawerService
 import com.github.damontecres.wholphin.ui.main.settings.Library
-import com.github.damontecres.wholphin.ui.nav.TrailerPlayer
+import com.github.damontecres.wholphin.ui.nav.ZoomedTrailerPlayer
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import org.jellyfin.sdk.model.api.CollectionType
@@ -766,20 +766,22 @@ private fun BrowseDetails(
                 )
             }
             if (trailer != null) {
-                TrailerPlayer(
+                ZoomedTrailerPlayer(
                     trailer = trailer,
                     heroTrailerService = trailerService,
                     muted = muted,
                     modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(12.dp)),
                 )
             }
+            // Only the bottom edge blends into the panel, the rest of the picture keeps its brightness
             Box(
                 modifier =
                     Modifier
                         .fillMaxSize()
                         .background(
                             Brush.verticalGradient(
-                                listOf(Color.Transparent, LiquidColors.Rail.copy(alpha = .9f)),
+                                .75f to Color.Transparent,
+                                1f to LiquidColors.Rail.copy(alpha = .7f),
                             ),
                             RoundedCornerShape(12.dp),
                         ),

@@ -4,9 +4,12 @@ import android.graphics.Bitmap
 import android.view.TextureView
 import androidx.annotation.OptIn
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -287,6 +290,57 @@ fun FocusedCardThemeMusic(
         heroTrailerService.focus(item, owner, trailers = false, themeMusic = true)
     }
     DisposableEffect(Unit) { onDispose { heroTrailerService.focus(null, owner) } }
+}
+
+/**
+ * Plays [trailer] filling its box with the picture of the video, zoomed in just enough to push the black bars many
+ * trailers have in the video itself out of view; a video without bars is only fitted to the box
+ */
+@Composable
+fun ZoomedTrailerPlayer(
+    trailer: HeroTrailerSource,
+    heroTrailerService: HeroTrailerService,
+    muted: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    var picture by remember(trailer) { mutableStateOf(PictureBounds()) }
+    // The first picture found is where the zoom starts, only later growth of the picture moves smoothly
+    var first by remember(trailer) { mutableStateOf<PictureBounds?>(null) }
+    val spec: AnimationSpec<Float> = if (first == null || picture == first) snap() else tween(400)
+    val left by animateFloatAsState(picture.left, spec, label = "zoom_left")
+    val top by animateFloatAsState(picture.top, spec, label = "zoom_top")
+    val right by animateFloatAsState(picture.right, spec, label = "zoom_right")
+    val bottom by animateFloatAsState(picture.bottom, spec, label = "zoom_bottom")
+    BoxWithConstraints(modifier = modifier.clipToBounds()) {
+        val boxWidth = constraints.maxWidth
+        val boxHeight = constraints.maxHeight
+        TrailerPlayer(
+            trailer = trailer,
+            heroTrailerService = heroTrailerService,
+            muted = muted,
+            onPicture = {
+                if (first == null) first = it
+                picture = it
+            },
+            modifier =
+                Modifier.layout { measurable, _ ->
+                    // The video is 16:9, scaled so its picture covers the box and centered on that picture
+                    val videoWidth = boxWidth.toFloat()
+                    val videoHeight = videoWidth / AspectRatios.WIDE
+                    val pictureWidth = ((right - left) * videoWidth).coerceAtLeast(1f)
+                    val pictureHeight = ((bottom - top) * videoHeight).coerceAtLeast(1f)
+                    val scale = max(boxWidth / pictureWidth, boxHeight / pictureHeight)
+                    val width = videoWidth * scale
+                    val height = videoHeight * scale
+                    val placeable = measurable.measure(Constraints.fixed(width.roundToInt(), height.roundToInt()))
+                    layout(boxWidth, boxHeight) {
+                        val x = (boxWidth - width) / 2 + (.5f - (left + right) / 2) * width
+                        val y = (boxHeight - height) / 2 + (.5f - (top + bottom) / 2) * height
+                        placeable.place(x.roundToInt(), y.roundToInt())
+                    }
+                },
+        )
+    }
 }
 
 /**

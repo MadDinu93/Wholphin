@@ -38,6 +38,8 @@ URL helpers (same file): `unwrapTrailerUrl()` (Remux wraps every add-on trailer 
   first row; fades on every side via `fadeStops`.
 - `TrailerPlayer` detects letterbox bars from video frames (`findPicture` → `PictureBounds`) and only shows the video
   once the picture is not black, so the backdrop stays until real content appears.
+- `ZoomedTrailerPlayer` (used by the three Alternative layouts' details window) builds on that: it scales and centers
+  the video so the picture covers the window, which zooms past letterbox bars and only fits a video without bars.
 - `ApplicationContent` hides the backdrop image while a hero (not in-card) trailer plays.
 
 ## Theme music
