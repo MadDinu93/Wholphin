@@ -79,5 +79,5 @@ jobs:
           shopt -s globstar
 
           gh release create "${{ env.TAG_NAME }}" \
-            --latest --title "${{ env.TAG_NAME }}" --verify-tag -n "" --draft \
+            --latest --title "${{ env.TAG_NAME }}" --verify-tag -n "" \
             app/build/outputs/apk/**/*.apk
