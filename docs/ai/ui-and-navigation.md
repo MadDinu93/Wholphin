@@ -84,7 +84,7 @@ a synthetic non-item key so sort/filter are saved separately. Movie/TV library f
   read the same palette through `LiquidColors` (`palette`, set in `ApplicationContent`). Glass (grey/white) is the
   default everywhere; Lavender and Amber are the former Modern and Alternative accents. The settings list follows
   `ThemeColorChoices`, not the proto numbers.
-- `Theme Designs/` (untracked) holds the Stitch design references ("Aetheria TV"); the Modern/Squared style below uses its tokens.
+- The Modern/Squared style below uses the tokens of the Stitch "liquid glass" designs ("Aetheria TV"); the design files themselves are not in the repo.
 
 ## Home screen style: Modern and Squared *(fork)*
 

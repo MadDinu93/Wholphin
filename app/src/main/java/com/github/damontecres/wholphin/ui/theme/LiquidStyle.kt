@@ -40,8 +40,8 @@ val HomeScreenStyle.isLiquid: Boolean
     get() = this != HomeScreenStyle.STYLE_CLASSIC
 
 /**
- * Tokens of the Stitch "liquid glass" designs, see Theme Designs/DESIGN.md, and with the Alternative UI the darker
- * neutrals of Theme Designs/Alternative UI, see [alternative]. The accent and the tint of the backgrounds come from
+ * Tokens of the Stitch "liquid glass" designs, and with the Alternative UI the darker
+ * neutrals of the Alternative UI designs, see [alternative]. The accent and the tint of the backgrounds come from
  * the "Theme colors" setting ([palette]), like in the Classic style.
  */
 object LiquidColors {

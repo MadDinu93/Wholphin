@@ -55,7 +55,6 @@ recording folders in `NavDrawerService`, server-plugin check alongside home sett
 settings only await it when they must come from the plugin). Locale is only set when it changes.
 
 ### Untracked / non-code items in the working tree
-- `Theme Designs/` (untracked): `DESIGN.md` design tokens + Stitch export zips. Not referenced by code.
 - `Improvement Ideas.txt`: personal notes, git-ignored on purpose.
 
 ## Implications for future changes

@@ -32,7 +32,6 @@ These were not edited (documentation-only audit limited to new files).
 
 - `.gitignore` ignores `docs/*` (upstream had `docs/`) with an exception for `docs/ai/`. It must stay `docs/*`, not
   `docs/`: git cannot re-include a path inside an ignored directory.
-- `Theme Designs/` is untracked and not referenced by code.
 - Local branches `fix/playbackinfo-subtitle-streams`, `pr-2017`, and `main` exist; the active branch is `thorphin`,
   tracking `thorphin/main`. The repo has three remotes: `origin` (Wholphin fork), `thorphin` (this project),
   `upstream` (damontecres/Wholphin).
